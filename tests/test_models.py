@@ -34,6 +34,15 @@ def test_model_predicts_positive_rates_and_ranks_risky_group_higher(name, data):
     assert 2.0 < ratio < 4.5
 
 
+def test_tree_hyperparameters_can_be_overridden():
+    lg = models.make("lgbm", num_leaves=15, min_child_samples=500, learning_rate=0.03)
+    assert lg.model.get_params()["num_leaves"] == 15
+    assert lg.model.get_params()["min_child_samples"] == 500
+    assert lg.model.get_params()["learning_rate"] == 0.03
+    xg = models.make("xgb", max_depth=5, min_child_weight=10)
+    assert xg.params["max_depth"] == 5 and xg.params["min_child_weight"] == 10
+
+
 def test_gam_recovers_smooth_u_shaped_effect():
     rng = np.random.default_rng(1)
     n = 30000

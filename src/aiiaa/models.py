@@ -103,10 +103,11 @@ class GAM(Balanced):
 class LGBM(Balanced):
     # C015: shallow trees (7 leaves, >= 3000 rows per leaf); deeper trees early-stopped after ~50 rounds
     def __init__(self, n_estimators=5000, learning_rate=0.05, **params):
-        self.model = lgb.LGBMRegressor(
+        defaults = dict(
             objective="tweedie", tweedie_variance_power=POWER, n_estimators=n_estimators,
             learning_rate=learning_rate, num_leaves=7, min_child_samples=3000, subsample=0.8, subsample_freq=1,
-            colsample_bytree=0.8, reg_lambda=1.0, random_state=SEED, verbose=-1, **params)
+            colsample_bytree=0.8, reg_lambda=1.0, random_state=SEED, verbose=-1)
+        self.model = lgb.LGBMRegressor(**{**defaults, **params})
 
     def _fit(self, x, y, w, valid=None):
         kw = {}
@@ -124,11 +125,11 @@ class LGBM(Balanced):
 class XGB(Balanced):
     # C015: depth 3 (up to 8 leaves) to match the shallow LightGBM setting
     def __init__(self, n_estimators=5000, learning_rate=0.05, **params):
-        self.params = dict(
+        defaults = dict(
             objective="reg:tweedie", tweedie_variance_power=POWER, n_estimators=n_estimators,
             learning_rate=learning_rate, max_depth=3, min_child_weight=50, subsample=0.8, colsample_bytree=0.8,
-            reg_lambda=1.0, tree_method="hist", enable_categorical=True, max_cat_to_onehot=1, random_state=SEED,
-            **params)
+            reg_lambda=1.0, tree_method="hist", enable_categorical=True, max_cat_to_onehot=1, random_state=SEED)
+        self.params = {**defaults, **params}
 
     def _fit(self, x, y, w, valid=None):
         kw = {}
