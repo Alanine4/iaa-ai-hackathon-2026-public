@@ -1,0 +1,81 @@
+﻿== Reporting lag by line (accident year 2021 only, observed for >= 3 years)
+  buildings count-weighted share reported within L days: {7: 0.435, 30: 0.8812, 90: 0.9718, 180: 0.985, 365: 0.9936, 730: 1.0, 1095: 1.0}
+  buildings cost -weighted share reported within L days: {7: 0.4917, 30: 0.8573, 90: 0.9327, 180: 0.968, 365: 0.9921, 730: 1.0, 1095: 1.0}
+  contents  count-weighted share reported within L days: {7: 0.5471, 30: 0.9435, 90: 0.9921, 180: 0.993, 365: 0.993, 730: 1.0, 1095: 1.0}
+  contents  cost -weighted share reported within L days: {7: 0.5634, 30: 0.9493, 90: 0.9888, 180: 0.9895, 365: 0.9895, 730: 1.0, 1095: 1.0}
+  motor     count-weighted share reported within L days: {7: 0.4316, 30: 0.8365, 90: 0.9422, 180: 0.9651, 365: 0.9835, 730: 0.9989, 1095: 0.9998}
+  motor     cost -weighted share reported within L days: {7: 0.2688, 30: 0.5555, 90: 0.7226, 180: 0.8272, 365: 0.9217, 730: 0.9909, 1095: 0.9987}
+
+== Reporting lag by peril (AY 2021): median / p90 / p99 days, mean cost
+                                 n    med    p90    p99  mean_cost
+line      peril                                                   
+buildings accidental_damage    877    8.0   23.0   61.0     1176.0
+          escape_of_water     2480   11.0   36.0   76.0     5130.0
+          fire                 236    3.0   10.0   33.0    54347.0
+          flood                554    8.0   22.0   42.0    28504.0
+          storm               1774    8.0   25.0   55.0     3079.0
+          subsidence           283   85.0  260.0  473.0    22049.0
+contents  accidental_damage   2167    7.0   23.0   47.0      763.0
+          escape_of_water     1273   11.0   34.0  441.0     2589.0
+          flood                405    7.0   25.0  459.0     9511.0
+          theft               1743    4.0   13.0   28.0     3492.0
+motor     bodily_injury       2146  129.0  426.0  801.0    21442.0
+          glass_hail          3574    5.0   17.0   41.0      944.0
+          own_damage         11996    7.0   24.0   55.0     1726.0
+          theft               1481    4.0   12.0   30.0     6071.0
+          third_party_prop    8193   15.0   49.0  113.0     3285.0
+
+== Lag stability: count share reported within 90 days by accident year (only lags fully observable)
+  buildings {2021: 0.9718, 2022: 0.9669, 2023: 0.9676}
+  contents  {2021: 0.9921, 2022: 0.9949, 2023: 0.9937}
+  motor     {2021: 0.9422, 2022: 0.9481, 2023: 0.9506}
+
+== Open-claim case estimates (IBNER): mean net cost, closed vs open, by line x AY
+                  mean              size        
+status          closed     open   closed    open
+line      ay                                    
+buildings 2020  5175.0      NaN     46.0     NaN
+          2021  8677.0  22885.0   6187.0    17.0
+          2022  8893.0  29443.0   6742.0    55.0
+          2023  9009.0  26345.0   6623.0   201.0
+          2024  8769.0  14777.0   4951.0  1620.0
+contents  2020  3654.0      NaN     29.0     NaN
+          2021  2665.0      NaN   5588.0     NaN
+          2022  2662.0      NaN   6032.0     NaN
+          2023  2816.0  13067.0   6146.0    19.0
+          2024  2750.0   4073.0   5197.0   791.0
+motor     2020  3688.0  20325.0    194.0     2.0
+          2021  3668.0  20867.0  27069.0   321.0
+          2022  3585.0  20561.0  29117.0   608.0
+          2023  3258.0  27268.0  26931.0  1089.0
+          2024  2813.0   6115.0  20440.0  5424.0
+
+== Mean paid / incurred for open claims by AY (how much of the estimate is already paid)
+ay          2020   2021   2022   2023   2024
+line                                        
+buildings    NaN  0.444  0.351  0.308  0.209
+contents     NaN    NaN    NaN  0.304  0.231
+motor      0.386  0.331  0.317  0.180  0.200
+
+== Frequency and severity by line x AY (reported only; 2024 is incomplete)
+-- motor
+             expo      n          cost    freq        sev  pure_prem
+ay                                                                  
+2021  187991.5397  27356  1.058976e+08  0.1455  3871.0940   563.3107
+2022  199698.5014  29691  1.167232e+08  0.1487  3931.2649   584.4971
+2023  199681.8521  27990  1.173077e+08  0.1402  4191.0577   587.4730
+2024  199785.6301  25864  9.066698e+07  0.1295  3505.5280   453.8213
+-- buildings
+             expo     n         cost    freq         sev  pure_prem
+ay                                                                 
+2021  140782.9288  6195  54052834.19  0.0440   8725.2355   383.9445
+2022  149872.4329  6792  61529331.08  0.0453   9059.0888   410.5447
+2023  149987.2959  6817  64832471.23  0.0455   9510.4109   432.2531
+2024  149917.5233  6571  67353949.55  0.0438  10250.1826   449.2734
+-- contents
+             expo     n         cost    freq        sev  pure_prem
+ay                                                                
+2021  140931.3808  5583  14870108.25  0.0396  2663.4620   105.5131
+2022  149986.1918  6024  16040968.62  0.0402  2662.8434   106.9496
+2023  149974.9479  6158  17539466.93  0.0411  2848.2408   116.9493
+2024  149966.7644  5988  17516035.05  0.0399  2925.1896   116.7994

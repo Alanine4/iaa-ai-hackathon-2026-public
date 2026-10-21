@@ -1,0 +1,15 @@
+# Change log
+
+Every change to data handling, code behaviour or modelling assumptions is recorded here.
+Each entry: what changed, why, evidence, and where it lives in code (`file:function`).
+Raw files in `data/` are never edited; all corrections are applied in code at load time.
+
+| ID | Date | Area | Change | Why / evidence | Code |
+|---|---|---|---|---|---|
+| C000 | 2026-10-21 | repo | Initial repo: docs, profiling scripts, checklist | Baseline | `scripts/profile_data.py`, `scripts/check_quality.py` |
+| C001 | 2026-10-21 | data (Q1) | `exposure` recomputed as (period_end − period_start + 1) / 365 on every row; stored value kept as `exposure_raw` | 5,723 motor / 4,176 buildings / 4,305 contents training rows disagree with their dates: value 365 (days instead of years), 1.0139 (370/365) and a 360-day basis. Claim frequency of these rows matches normal rows, so only the field is wrong. Test files have no mismatches. The data uses a 365-day year (2024 full-year rows end 2024-12-30). Evidence: `docs/investigate_q1_q3_q4.txt` | `src/aiiaa/clean.py:fix_exposure` |
+| C002 | 2026-10-21 | data (Q2) | `customer_id` left-padded with zeros to 8 characters | 98,110 motor training and 25,554 motor test rows lost leading zeros; after padding 100% match `customers` | `src/aiiaa/clean.py:fix_customer_id` |
+| C003 | 2026-10-21 | data (Q3) | `sum_insured` > 5,000,000 divided by 1,000; flag column `sum_insured_scaled` added | Buildings: genuine max 953k, scaled min 52m; same policies in other years differ by a median factor of exactly 1000; premiums equal to normal rows. Contents: same pattern (median ratio 990). Applied to test as well (370 buildings, 360 contents rows). Scaled buildings rows show lower claim frequency (0.030 vs 0.045), so the flag is kept as a possible feature | `src/aiiaa/clean.py:fix_sum_insured` |
+| C004 | 2026-10-21 | data (Q4) | `construction_type` lower-cased; codes T/t and W/w mapped to `timber`; unknown codes raise an error | T appears only in 2021–2022 and W only in 2023–2024; 13,250 policies switch from T to W across years. Official categories are brick, stone, timber, non-standard, so T/W = timber | `src/aiiaa/clean.py:fix_construction_type` |
+| C005 | 2026-10-21 | target (Q5) | Claims whose loss date falls outside every row of their policy are excluded from the target and listed for audit | 294 motor, 67 buildings, 49 contents claims (mostly loss year 2020, before cover in the data). Costs 1.13m / 0.43m / 0.16m. Reconciliation difference is 0 | `src/aiiaa/target.py:match_claims` |
+| C006 | 2026-10-21 | target | Reported cost developed to ultimate with a cost-weighted reporting-lag CDF per line (accident year 2021); per-row `completeness` = average CDF over the row's days; `claim_cost_ult` = reported / completeness, `exposure_eff` = exposure × completeness. Open-claim case estimates assumed unbiased | Single valuation snapshot, so no incurred triangle is possible. Motor 2024 pure premium 454 reported → 585 developed, in line with 2021–2023 (564–606). Evidence: `docs/investigate_development.txt`, `docs/target_summary.txt` | `src/aiiaa/development.py` |

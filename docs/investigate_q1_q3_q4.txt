@@ -1,0 +1,138 @@
+﻿
+######## motor
+Q1 exposure - days/365 buckets:
+(-2.0, -0.01]             0
+(-0.01, -0.0001]          0
+(-0.0001, 0.0001]    974245
+(0.0001, 0.01]         1249
+(0.01, 0.02]           3540
+(0.02, 1.0]               0
+(1.0, 400.0]            934
+Q1 odd rows: exposure value counts (top 8): {1.0139: 3037, 365.0: 574, 0.4917: 12, 0.3556: 12, 0.1083: 11, 0.7361: 10, 0.6861: 10, 0.8861: 10}
+Q1 odd rows: days value counts (top 8): {365: 3611, 177: 14, 56: 13, 247: 13, 39: 12, 128: 12, 265: 11, 319: 11}
+Q1 odd rows by year: {2021: 1223, 2022: 1472, 2023: 1499, 2024: 1529}
+Q1 odd rows with exposure<1 sample:
+      period_start  period_end  days  exposure
+1029   2021-01-01  2021-06-21   172    0.4778
+1560   2021-01-01  2021-08-21   233    0.6472
+2248   2021-04-07  2021-12-31   269    0.7472
+2598   2021-09-12  2021-12-31   111    0.3083
+4166   2021-01-01  2021-11-08   312    0.8667
+4404   2021-06-27  2021-12-31   188    0.5222
+6612   2021-12-05  2021-12-31    27    0.0750
+6723   2021-01-01  2021-07-28   209    0.5806
+Q1 leap year check: rows with days==366: 0  days>366: 0
+Q1 claim frequency per exposure-year, odd vs normal: 0.1338 0.1409
+
+######## buildings
+Q1 exposure - days/365 buckets:
+(-2.0, -0.01]             0
+(-0.01, -0.0001]          0
+(-0.0001, 0.0001]    703550
+(0.0001, 0.01]          811
+(0.01, 0.02]           2709
+(0.02, 1.0]               0
+(1.0, 400.0]            656
+Q1 odd rows: exposure value counts (top 8): {1.0139: 2383, 365.0: 443, 0.1139: 11, 0.1333: 9, 0.925: 9, 0.0611: 8, 0.8556: 8, 0.4944: 8}
+Q1 odd rows: days value counts (top 8): {365: 2826, 41: 11, 333: 11, 48: 10, 178: 10, 353: 9, 85: 9, 289: 8}
+Q1 odd rows by year: {2021: 945, 2022: 1067, 2023: 1087, 2024: 1077}
+Q1 odd rows with exposure<1 sample:
+      period_start  period_end  days  exposure
+2444   2021-01-01  2021-05-13   133    0.3694
+2906   2021-05-08  2021-12-14   221    0.6139
+3371   2021-05-19  2021-12-31   227    0.6306
+3561   2021-01-30  2021-12-31   336    0.9333
+5302   2021-01-01  2021-01-19    19    0.0528
+7710   2021-03-09  2021-12-31   298    0.8278
+9052   2021-10-27  2021-12-31    66    0.1833
+9183   2021-03-13  2021-12-31   294    0.8167
+Q1 leap year check: rows with days==366: 0  days>366: 0
+Q1 claim frequency per exposure-year, odd vs normal: 0.045 0.0447
+Q3 sum_insured > 5m: 1,395
+Q3 written_premium mean, big vs normal: 326.9 323.1
+Q3 big / 1000 quantiles: {0.0: 52000.0, 0.25: 165000.0, 0.5: 222000.0, 0.75: 280500.0, 1.0: 594000.0}
+Q3 normal quantiles: {0.0: 36000.0, 0.25: 167000.0, 0.5: 223000.0, 0.75: 288000.0, 0.99: 499000.0, 1.0: 953000.0}
+Q3 big rows divisible by 1000*1000: 1.0  normal rows divisible by 1000: 1.0
+Q3 big by year: {2021: 322, 2022: 357, 2023: 361, 2024: 355}
+Q3 same policy other years - sum_insured ratio (big/normal):
+   n policies with both: 1344  ratio quantiles: {0.0: 284.6, 0.5: 1000.0, 1.0: 3470.6}
+Q3 claim freq big vs normal: 0.0299 0.0447
+Q4 construction_type by year:
+ year                 2021    2022    2023    2024
+construction_type                                
+BRICK                3248    3811    3902    3748
+Brick              100491  118512  118589  118480
+NON_STANDARD          430     548     542     577
+STONE                 359     439     449     443
+T                   17798   21139       0       0
+W                       0       0   21227   21092
+brick                5404    6468    6421    6570
+non_standard        14976   17619   17686   17755
+stone               12101   14193   14190   14219
+t                     922    1135       0       0
+w                       0       0    1126    1117
+Q4 premium & claim frequency by code:
+                      rows    prem  freq       expo
+construction_type                                 
+BRICK               14709  319.06  0.04   12312.52
+Brick              456072  322.83  0.04  380514.20
+NON_STANDARD         2097  322.40  0.06    1726.59
+STONE                1690  336.86  0.04    1392.41
+T                   38937  307.65  0.05   33320.67
+W                   42319  340.72  0.05   34514.87
+brick               24863  323.12  0.04   20719.24
+non_standard        68036  326.10  0.06   56857.02
+stone               54703  320.42  0.04   45594.32
+t                    2057  300.29  0.04    1779.71
+w                    2243  322.81  0.04    1828.63
+Q4 codes seen together on the same policy (top 15):
+ construction_type
+(Brick, brick)                  19670
+(T, W)                          13250
+(BRICK, Brick)                  11368
+(Brick, non_standard)            2765
+(Brick, stone)                   2310
+(NON_STANDARD, non_standard)     1648
+(BRICK, Brick, brick)            1405
+(STONE, stone)                   1304
+(Brick, T, W)                    1268
+(T, W, t)                        1146
+(T, W, w)                        1139
+(Brick, W)                       1039
+(Brick, T)                        855
+(non_standard, stone)             311
+(Brick, brick, non_standard)      287
+
+######## contents
+Q1 exposure - days/365 buckets:
+(-2.0, -0.01]             0
+(-0.01, -0.0001]          0
+(-0.0001, 0.0001]    717312
+(0.0001, 0.01]          871
+(0.01, 0.02]           2705
+(0.02, 1.0]               1
+(1.0, 400.0]            728
+Q1 odd rows: exposure value counts (top 8): {1.0139: 2353, 365.0: 478, 0.4389: 11, 0.5667: 10, 0.0944: 9, 0.0056: 9, 0.9778: 8, 0.1194: 7}
+Q1 odd rows: days value counts (top 8): {365: 2831, 158: 13, 204: 10, 15: 10, 352: 10, 46: 9, 34: 9, 256: 9}
+Q1 odd rows by year: {2021: 952, 2022: 1166, 2023: 1080, 2024: 1107}
+Q1 odd rows with exposure<1 sample:
+      period_start  period_end  days  exposure
+548    2021-01-01  2021-09-22   265    0.7361
+1495   2021-01-01  2021-05-06   126    0.3500
+2450   2021-09-16  2021-10-28    43    0.1194
+3403   2021-12-09  2021-12-31    23    0.0639
+3818   2021-04-04  2021-12-31   272    0.7556
+5481   2021-08-16  2021-12-31   138    0.3833
+9189   2021-01-01  2021-05-09   129    0.3583
+9238   2021-02-05  2021-12-31   330    0.9167
+Q1 leap year check: rows with days==366: 0  days>366: 0
+Q1 claim frequency per exposure-year, odd vs normal: 0.0393 0.0402
+Q3 sum_insured > 5m: 1,402
+Q3 written_premium mean, big vs normal: 134.8 135.9
+Q3 big / 1000 quantiles: {0.0: 8200.0, 0.25: 26400.0, 0.5: 37900.0, 0.75: 52950.0, 1.0: 152600.0}
+Q3 normal quantiles: {0.0: 3800.0, 0.25: 26500.0, 0.5: 38900.0, 0.75: 54500.0, 0.99: 113300.0, 1.0: 346700.0}
+Q3 big rows divisible by 1000*1000: 0.108  normal rows divisible by 1000: 0.101
+Q3 big by year: {2021: 339, 2022: 349, 2023: 339, 2024: 375}
+Q3 same policy other years - sum_insured ratio (big/normal):
+   n policies with both: 1344  ratio quantiles: {0.0: 763.6, 0.5: 989.6, 1.0: 1623.5}
+Q3 claim freq big vs normal: 0.0391 0.0402

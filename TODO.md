@@ -10,16 +10,19 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 逐个体检 11 个文件 → `scripts/profile_data.py`、`docs/data_profile.txt` — 2026-10-21
 - [x] 核实数据质量问题 → `scripts/check_quality.py`、`docs/data_quality_checks.txt` — 2026-10-21
 - [x] 写数据说明与比赛说明 → `docs/DATA_GUIDE.md`、`docs/COMPETITION.md` — 2026-10-21
-- [ ] 初始化 git 仓库，配置 `.gitignore`（排除 `data/`、`.venv/`），做第一次提交
-- [ ] 建 `docs/AI_LOG.md`：每一步记录 AI 做了什么、人怎么核对、是否采纳（对应评分 25%）
+- [x] 初始化 git 仓库，配置 `.gitignore`（排除 `data/`、`.venv/`、`output/`），做第一次提交 — 2026-10-21
+- [x] 建 `docs/AI_LOG.md` 和修改日志 `docs/CHANGELOG.md` — 2026-10-21
+- [ ] 决定是否推送到 GitHub（私有仓库）
 
 ## 阶段 1：目标变量（第 1 天）
-- [ ] 清洗：exposure 重算（Q1）、customer_id 补零（Q2）、construction_type 统一大小写（Q4）
-- [ ] 确认 construction_type 里 W 和 T 的含义（Q4）
-- [ ] 确定 sum_insured 异常值的判定和修正规则（Q3）
-- [ ] 理赔对齐到保单行；去掉拒赔，计算 incurred − recoveries；记录对不上的理赔（Q5）
-- [ ] 发展调整：按险种做报案延迟和未决发展（链梯法或类似方法），把 2024 年调整到最终值
-- [ ] 为目标变量写自动化测试（每笔理赔最多对上一行、无负数、合计金额对得上）
+- [x] 清洗：exposure 重算（C001）、customer_id 补零（C002）、construction_type 统一（C004） — 2026-10-21，`src/aiiaa/clean.py`
+- [x] 确认 construction_type 里 W 和 T 的含义：同一类，T 用于 2021–22 年，W 用于 2023–24 年，都映射为 timber（C004） — 2026-10-21
+- [x] 确定 sum_insured 异常值规则：大于 500 万的除以 1000，并加标记列（C003） — 2026-10-21
+- [x] 理赔对齐到保单行，去掉拒赔，计算 incurred − recoveries，对不上的单独列出（C005） — 2026-10-21，`src/aiiaa/target.py`
+- [x] 发展调整：按险种用按金额加权的报案延迟曲线（C006） — 2026-10-21，`src/aiiaa/development.py`
+- [x] 自动化测试 18 个全部通过；全量合计核对差额为 0 — 2026-10-21，`tests/`、`docs/target_summary.txt`
+- [ ] 人工复核：C003 的阈值、C004 的映射、房屋 2024 年发展后水平（481，按趋势约 458）是否偏高
+- [ ] 按险种细分理赔原因的报案曲线（车险人伤报案慢），看是否改善 2024 年的估计
 
 ## 阶段 2：特征与验证（第 1 天）
 - [ ] 合并 customers、addresses、weather（按年份）
