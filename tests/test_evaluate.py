@@ -45,6 +45,25 @@ def test_rescale_trend_is_identity_for_equal_shares():
     assert evaluate.rescale_trend(pred, 1.3, 0.5, 0.5) == pytest.approx([5.0])
 
 
+def test_blend_weights_put_all_weight_on_the_perfect_model():
+    rng = np.random.default_rng(0)
+    actual = rng.gamma(0.3, 500.0, 2000)
+    folds = [{"actual": actual, "preds": {"good": actual + 1e-6, "bad": np.full(2000, actual.mean())}}]
+    w = evaluate.blend_weights(folds, step=0.25)
+    assert w == {"good": 1.0, "bad": 0.0}
+
+
+def test_blend_weights_are_non_negative_and_sum_to_one():
+    rng = np.random.default_rng(1)
+    mu = rng.gamma(2.0, 100.0, 3000)
+    actual = rng.gamma(0.5, mu / 0.5)
+    folds = [{"actual": actual, "preds": {"a": mu * rng.uniform(0.7, 1.3, 3000), "b": mu * rng.uniform(0.7, 1.3, 3000),
+                                          "c": np.full(3000, mu.mean())}}]
+    w = evaluate.blend_weights(folds, step=0.1)
+    assert all(v >= 0 for v in w.values()) and sum(w.values()) == pytest.approx(1.0)
+    assert w["c"] < max(w["a"], w["b"])
+
+
 def test_trend_factor_is_one_without_trend():
     years = np.array([2021, 2022, 2023])
     assert evaluate.trend_factor(years, np.array([5.0, 5.0, 5.0]), np.ones(3), 2025) == pytest.approx(1.0)

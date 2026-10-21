@@ -93,7 +93,7 @@ def run_line(line, names, shared):
         full = models.make(name, **{**tuned, **({"n_estimators": n_full} if n_full else {})})
         full.fit(x, y, w)
         pred_test = full.predict(x_test) * test["exposure"].to_numpy() * trend_test * load_test
-        pd.DataFrame({"row_id": test["row_id"], "prediction": pred_test}).to_parquet(
+        pd.DataFrame({"row_id": test["row_id"], "prediction": pred_test, "trend_share": TREND_SHARE}).to_parquet(
             os.path.join(OUT, f"pred_{line}_{name}.parquet"), index=False)
         log(f"{line}: {name} refit on all years in {time.time() - t0:.0f}s, test mean {pred_test.mean():.2f}")
 
@@ -104,16 +104,20 @@ def run_line(line, names, shared):
     return results, actual, val_preds
 
 
-def main(names):
+def main(names, lines=LINES):
     os.makedirs(os.path.join(OUT, "submissions"), exist_ok=True)
     shared = (clean.fix_customer_id(load("customers")), load("addresses"), load("weather"))
     all_results, actual_all, preds_all = [], [], {n: [] for n in names}
-    for line in LINES:
+    for line in lines:
         res, actual, val_preds = run_line(line, names, shared)
         all_results += res
         actual_all.append(actual)
         for n in names:
             preds_all[n].append(val_preds[n])
+    if list(lines) != LINES:
+        # Partial run: refresh only the per-line prediction files, keep the full results table and submissions
+        log("\n" + pd.DataFrame(all_results).round(4).to_string(index=False))
+        return
 
     actual = np.concatenate(actual_all)
     for n in names:
@@ -151,4 +155,5 @@ def main(names):
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    main(sys.argv[1].split(",") if len(sys.argv) > 1 else ["glm", "gam", "lgbm", "xgb"])
+    main(sys.argv[1].split(",") if len(sys.argv) > 1 else ["glm", "gam", "lgbm", "xgb"],
+         sys.argv[2].split(",") if len(sys.argv) > 2 else LINES)

@@ -10,6 +10,36 @@ def tweedie_d2(y, pred, weight=None):
     return d2_tweedie_score(y, pred, sample_weight=weight, power=POWER)
 
 
+def _simplex(n, steps):
+    if n == 1:
+        yield (steps,)
+        return
+    for k in range(steps + 1):
+        for rest in _simplex(n - 1, steps - k):
+            yield (k,) + rest
+
+
+def blend_weights(folds, step=0.05):
+    """C021: non-negative blend weights summing to 1, chosen on a grid to maximise mean level-calibrated D2.
+
+    folds: list of {"actual": array, "preds": {model: array}}; every fold has the same models.
+    Level calibration (rescaling the blend to the fold's actual total) keeps the choice about risk ranking;
+    the level is set separately by balancing, the large-loss load and the trend share.
+    """
+    names = list(folds[0]["preds"])
+    steps = round(1 / step)
+    best, best_w = -np.inf, None
+    for combo in _simplex(len(names), steps):
+        w = np.array(combo) / steps
+        score = 0.0
+        for f in folds:
+            pred = sum(wi * f["preds"][n] for wi, n in zip(w, names))
+            score += tweedie_d2(f["actual"], pred * f["actual"].sum() / pred.sum())
+        if score > best:
+            best, best_w = score, w
+    return {n: round(float(v), 10) for n, v in zip(names, best_w)}
+
+
 def rescale_trend(pred, full_factor, from_share, to_share):
     """C020: re-express a prediction made with full_factor ** from_share as full_factor ** to_share."""
     return np.asarray(pred) * full_factor ** (to_share - from_share)
