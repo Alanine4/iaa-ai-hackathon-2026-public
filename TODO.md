@@ -39,6 +39,9 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 第一次提交 Kaggle：融合模型，公开榜 0.12453，第 19 名 — 2026-10-21，`docs/SUBMISSIONS.md`
 - [ ] 上传两个趋势对照版本（`work/sub_blend_trend000.zip`、`work/sub_blend_trend050.zip`），把分数告诉我，用来决定趋势用多少（C016）
 
+- [x] 数据全览文档：11 个文件逐字段的中文含义、例子、类型、来源（官方 / 推断）和处理方式 — 2026-10-21，`docs/DATA_WALKTHROUGH.md`
+- [ ] 变量类型修正：branch_id 等"数字形式的编号"在 GLM/GAM 里应当按类别处理，不能按连续数字处理
+
 ## 阶段 3：改进与诊断（第 2 天）
 - [ ] 调参；比较 GLM 与 LightGBM，考虑两者融合
 - [ ] 诊断：实际 vs 预测（按分位）、lift 曲线、各特征的影响（SHAP / 部分依赖）
