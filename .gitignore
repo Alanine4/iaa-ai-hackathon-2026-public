@@ -1,0 +1,10 @@
+# Competition data must not be redistributed (Kaggle Rules 2.5.b)
+data/
+# Generated intermediate datasets
+output/
+# Local environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.claude/settings.local.json

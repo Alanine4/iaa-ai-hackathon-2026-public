@@ -1,0 +1,43 @@
+# 待办清单
+
+规则：每做完一项就把 `[ ]` 改成 `[x]`，并在行尾写上完成日期和产出文件。新发现的事项加到对应阶段的末尾。
+Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
+
+## 阶段 0：准备
+- [x] 下载 11 个数据文件到 `data/` — 2026-10-21
+- [x] 建立 Python 环境 `.venv`（pandas、pyarrow、lightgbm、sklearn、statsmodels、matplotlib） — 2026-10-21
+- [x] 存档 Overview、Data、Rules 三页原文到 `docs/references/` — 2026-10-21
+- [x] 逐个体检 11 个文件 → `scripts/profile_data.py`、`docs/data_profile.txt` — 2026-10-21
+- [x] 核实数据质量问题 → `scripts/check_quality.py`、`docs/data_quality_checks.txt` — 2026-10-21
+- [x] 写数据说明与比赛说明 → `docs/DATA_GUIDE.md`、`docs/COMPETITION.md` — 2026-10-21
+- [ ] 初始化 git 仓库，配置 `.gitignore`（排除 `data/`、`.venv/`），做第一次提交
+- [ ] 建 `docs/AI_LOG.md`：每一步记录 AI 做了什么、人怎么核对、是否采纳（对应评分 25%）
+
+## 阶段 1：目标变量（第 1 天）
+- [ ] 清洗：exposure 重算（Q1）、customer_id 补零（Q2）、construction_type 统一大小写（Q4）
+- [ ] 确认 construction_type 里 W 和 T 的含义（Q4）
+- [ ] 确定 sum_insured 异常值的判定和修正规则（Q3）
+- [ ] 理赔对齐到保单行；去掉拒赔，计算 incurred − recoveries；记录对不上的理赔（Q5）
+- [ ] 发展调整：按险种做报案延迟和未决发展（链梯法或类似方法），把 2024 年调整到最终值
+- [ ] 为目标变量写自动化测试（每笔理赔最多对上一行、无负数、合计金额对得上）
+
+## 阶段 2：特征与验证（第 1 天）
+- [ ] 合并 customers、addresses、weather（按年份）
+- [ ] 特征工程（年龄、房龄、历史理赔经验等）；删掉 renewal_decision（Q9）
+- [ ] 验证方案：2021–2023 训练、2024 验证，用 Tweedie D²（power 1.5）评分
+- [ ] 基准模型：每个险种一个 Tweedie GLM
+- [ ] LightGBM Tweedie 模型（以 exposure 作为 offset 或权重）
+- [ ] 第一次提交 Kaggle，确认格式正确、拿到分数
+
+## 阶段 3：改进与诊断（第 2 天）
+- [ ] 调参；比较 GLM 与 LightGBM，考虑两者融合
+- [ ] 诊断：实际 vs 预测（按分位）、lift 曲线、各特征的影响（SHAP / 部分依赖）
+- [ ] 检查训练/测试分布差异（Q10），写入报告
+- [ ] 用 2021–2024 全量数据重新训练，生成最终提交
+- [ ] 在 Kaggle 上选定 Final Submission
+
+## 阶段 4：为 Part 2 做准备
+- [ ] 把流程整理成一条命令就能重跑的脚本（换数据路径就能跑）
+- [ ] 写 README：环境、运行步骤、目录结构
+- [ ] 报告草稿：方法、决策、AI 使用、假设、局限、管控措施
+- [ ] Part 2 数据发布后：对比新旧市场差异，再拆新的待办
