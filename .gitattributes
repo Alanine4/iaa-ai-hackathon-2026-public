@@ -1,0 +1,3 @@
+# Keep raw data byte-identical: no line-ending conversion
+*.parquet binary
+MANIFEST.sha256 text eol=lf

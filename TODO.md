@@ -13,6 +13,7 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 初始化 git 仓库，配置 `.gitignore`（排除 `data/`、`.venv/`、`output/`），做第一次提交 — 2026-10-21
 - [x] 建 `docs/AI_LOG.md` 和修改日志 `docs/CHANGELOG.md` — 2026-10-21
 - [x] 推送到 GitHub 私有仓库 https://github.com/Alanine4/iaa-ai-hackathon-2026（不含 data/、output/） — 2026-10-21
+- [x] 原始数据作为只读备份提交到私有仓库，附 SHA256 清单和完整性测试（C007） — 2026-10-21
 - [ ] 邀请队友为 collaborator（要先拿到队友的 GitHub 用户名；队友也必须在 Kaggle 上合入同一个队伍）
 
 ## 阶段 1：目标变量（第 1 天）

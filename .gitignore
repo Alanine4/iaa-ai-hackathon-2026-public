@@ -1,6 +1,4 @@
-# Competition data must not be redistributed (Kaggle Rules 2.5.b)
-data/
-# Generated intermediate datasets
+# Raw data is versioned (private repo, team only; see data/README.md). Derived data is regenerated.
 output/
 # Local environment
 .venv/
