@@ -32,8 +32,9 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 全字段泄漏扫描 → `docs/scan_leakage.txt` — 2026-10-21
 - [x] 验证方案：2021–2023 训练、2024 验证，Tweedie D²（power 1.5），趋势调整（C009） — 2026-10-21，`src/aiiaa/evaluate.py`
 - [x] 模型代码：GLM、GAM（C011）、LightGBM、XGBoost，51 个测试全部通过 — 2026-10-21，`src/aiiaa/models.py`
-- [ ] 跑基准：GLM / LightGBM / XGBoost 验证 + 全量重训 + 提交文件（后台运行中）
-- [ ] 跑 GAM 的验证与提交文件
+- [x] 跑基准：GLM / GAM / LightGBM / XGBoost 验证 + 全量重训 + 5 个提交文件（含平均融合） — 2026-10-21，`docs/validation_results.md`、`output/submissions/`
+- [ ] 查验证集上整体偏高 7–11% 的原因（不含趋势时偏差较小，疑似 3 年数据外推的趋势系数偏高；房屋 2025 年趋势系数 1.199 需要复核）
+- [ ] 设置 Kaggle API 凭据（需要你本人操作），之后可以用 CLI 提交
 - [ ] 模型选择：按险种比较验证分数，决定用单个模型还是融合，写入 CHANGELOG
 - [ ] 第一次提交 Kaggle，确认格式正确、拿到分数（需要你本人上传）
 
