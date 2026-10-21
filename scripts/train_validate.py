@@ -16,12 +16,13 @@ import pandas as pd
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, os.path.join(ROOT, "src"))
-from aiiaa import clean, evaluate, features, models  # noqa: E402
+from aiiaa import clean, evaluate, features, models, params  # noqa: E402
 
 DATA = os.path.join(ROOT, "data", "iaa-ai-assisted-hackathon-2026-part-1")
 OUT = os.path.join(ROOT, "output")
 LINES = ["motor", "buildings", "contents"]
 VALID_YEAR, TEST_YEAR = 2024, 2025
+TREND_SHARE = 0.5  # C019: half of the log-linear trend (public board: none 0.12376, half 0.12464, full 0.12453)
 
 
 def load(name):
@@ -36,7 +37,8 @@ def line_trend(t, years, fit_years, target_year):
     """C009: trend from developed pure premium of fit_years."""
     s = t.assign(year=years).loc[lambda d: d["year"].isin(fit_years)].groupby("year").agg(
         ult=("claim_cost_ult", "sum"), exposure=("exposure", "sum"))
-    return evaluate.trend_factor(s.index, s["ult"] / s["exposure"], s["exposure"], target_year)
+    full = evaluate.trend_factor(s.index, s["ult"] / s["exposure"], s["exposure"], target_year)
+    return full ** TREND_SHARE
 
 
 def run_line(line, names, shared):
@@ -72,7 +74,8 @@ def run_line(line, names, shared):
     results, val_preds = [], {}
     for name in names:
         t0 = time.time()
-        m = models.make(name)
+        tuned = params.for_model(line, name)  # C018
+        m = models.make(name, **tuned)
         m.fit(x[fit_mask], y[fit_mask], w[fit_mask], valid=(x[val_mask], y[val_mask], w[val_mask]))
         rate = m.predict(x[val_mask])
         pred = rate * expo_val * comp_val * load_val  # expected reported cost at valuation date
@@ -87,7 +90,7 @@ def run_line(line, names, shared):
 
         t0 = time.time()
         n_full = int(m.best_iteration * 1.1) if getattr(m, "best_iteration", None) else None
-        full = models.make(name, **({"n_estimators": n_full} if n_full else {}))
+        full = models.make(name, **{**tuned, **({"n_estimators": n_full} if n_full else {})})
         full.fit(x, y, w)
         pred_test = full.predict(x_test) * test["exposure"].to_numpy() * trend_test * load_test
         pd.DataFrame({"row_id": test["row_id"], "prediction": pred_test}).to_parquet(
