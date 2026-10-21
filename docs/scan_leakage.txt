@@ -1,0 +1,60 @@
+﻿
+######## motor
+                      col  no_claim_mean  claim_mean  train_mean  test_mean  claim_vs_noclaim_%  test_closer_to_noclaim
+customer_service_contacts          0.405       3.280       0.693      0.401             709.804                    True
+      missed_payments_12m          0.100       0.134       0.104      0.102              33.955                   False
+             new_business          0.149       0.113       0.145      0.152             -24.066                    True
+                ncb_years          7.384       5.897       7.235      7.940             -20.141                    True
+          written_premium        550.851     653.050     561.080    600.554              18.553                   False
+         voluntary_excess        279.266     233.686     274.704    274.343             -16.321                   False
+           years_licensed         30.037      26.595      29.693     29.495             -11.460                   False
+         discount_applied          0.025       0.023       0.025      0.025              -8.623                    True
+           annual_mileage      11256.054   12195.617   11350.168  11373.675               8.347                   False
+               driver_age         50.868      47.169      50.498     50.278              -7.272                   False
+        telematics_opt_in          0.124       0.131       0.124      0.133               5.907                   False
+            driver_assist          0.302       0.290       0.301      0.301              -3.940                   False
+       named_young_driver          0.053       0.055       0.053      0.051               3.563                    True
+         telematics_score         60.167      58.200      59.960     60.064              -3.269                    True
+            renewal_count          6.585       6.692       6.596      5.869               1.626                    True
+  days_quote_to_inception         13.193      12.986      13.173     13.151              -1.570                   False
+      vehicle_value_group         11.046      10.892      11.030     10.974              -1.393                   False
+           engine_size_cc       2114.972    2097.964    2113.269   2107.216              -0.804                   False
+                    seats          4.900       4.903       4.901      4.900               0.046                    True
+              vehicle_age          7.801       7.803       7.801      9.278               0.031                   False
+        compulsory_excess        250.000     250.000     250.000    250.000               0.000                   False
+
+######## buildings
+                      col  no_claim_mean  claim_mean  train_mean  test_mean  claim_vs_noclaim_%  test_closer_to_noclaim
+customer_service_contacts          0.417       3.046       0.511      0.402             630.046                    True
+             new_business          0.148       0.092       0.146      0.151             -37.472                    True
+      missed_payments_12m          0.102       0.136       0.103      0.103              33.239                   False
+          written_premium        319.903     408.879     323.092    366.614              27.813                   False
+  accidental_damage_cover          0.397       0.473       0.399      0.400              19.268                   False
+              sum_insured     686409.838  582441.544  682684.187 757226.798             -15.147                    True
+         voluntary_excess        200.624     174.826     199.700    199.646             -12.859                   False
+         discount_applied          0.025       0.022       0.025      0.025             -12.575                    True
+          days_unoccupied         10.393      11.433      10.431     10.380              10.007                    True
+            renewal_count          6.563       6.983       6.578      5.871               6.399                    True
+  days_quote_to_inception         13.181      13.076      13.177     13.176              -0.798                   False
+         policyholder_age         50.470      50.803      50.482     50.259               0.661                    True
+                 mortgage          0.552       0.550       0.552      0.551              -0.336                   False
+        compulsory_excess        350.000     350.000     350.000    350.000               0.000                   False
+
+######## contents
+                      col  no_claim_mean  claim_mean  train_mean  test_mean  claim_vs_noclaim_%  test_closer_to_noclaim
+customer_service_contacts          0.412       3.049       0.495      0.401             640.769                    True
+  accidental_damage_cover          0.444       0.608       0.450      0.450              36.845                   False
+      missed_payments_12m          0.102       0.138       0.103      0.102              35.953                    True
+             new_business          0.147       0.098       0.146      0.152             -33.588                    True
+         voluntary_excess        201.750     158.762     200.385    200.306             -21.308                   False
+                  lodgers          0.050       0.055       0.050      0.049              11.416                    True
+         discount_applied          0.025       0.022       0.025      0.025             -11.191                    True
+          works_from_home          0.251       0.237       0.251      0.251              -5.634                    True
+            renewal_count          6.564       6.868       6.573      5.865               4.626                    True
+              sum_insured     124619.391  130326.551  124800.646 132535.547               4.580                   False
+          written_premium        135.778     140.784     135.937    154.435               3.687                   False
+            bicycle_cover          0.149       0.152       0.149      0.150               1.868                   False
+         policyholder_age         50.521      49.655      50.493     50.279              -1.714                   False
+         high_value_items          1.131       1.148       1.132      1.130               1.456                    True
+  days_quote_to_inception         13.190      13.029      13.185     13.179              -1.223                   False
+        compulsory_excess        350.000     350.000     350.000    350.000               0.000                   False

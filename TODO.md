@@ -27,12 +27,15 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [ ] 按险种细分理赔原因的报案曲线（车险人伤报案慢），看是否改善 2024 年的估计
 
 ## 阶段 2：特征与验证（第 1 天）
-- [ ] 合并 customers、addresses、weather（按年份）
-- [ ] 特征工程（年龄、房龄、历史理赔经验等）；删掉 renewal_decision（Q9）
-- [ ] 验证方案：2021–2023 训练、2024 验证，用 Tweedie D²（power 1.5）评分
-- [ ] 基准模型：每个险种一个 Tweedie GLM
-- [ ] LightGBM Tweedie 模型（以 exposure 作为 offset 或权重）
-- [ ] 第一次提交 Kaggle，确认格式正确、拿到分数
+- [x] 合并 customers、addresses、weather（按年份） — 2026-10-21，`src/aiiaa/features.py`
+- [x] 特征工程（客户年龄、入保年数、房龄、同一保单往年理赔经验）；删掉 renewal_decision（Q9）和 customer_service_contacts（C008） — 2026-10-21
+- [x] 全字段泄漏扫描 → `docs/scan_leakage.txt` — 2026-10-21
+- [x] 验证方案：2021–2023 训练、2024 验证，Tweedie D²（power 1.5），趋势调整（C009） — 2026-10-21，`src/aiiaa/evaluate.py`
+- [x] 模型代码：GLM、GAM（C011）、LightGBM、XGBoost，51 个测试全部通过 — 2026-10-21，`src/aiiaa/models.py`
+- [ ] 跑基准：GLM / LightGBM / XGBoost 验证 + 全量重训 + 提交文件（后台运行中）
+- [ ] 跑 GAM 的验证与提交文件
+- [ ] 模型选择：按险种比较验证分数，决定用单个模型还是融合，写入 CHANGELOG
+- [ ] 第一次提交 Kaggle，确认格式正确、拿到分数（需要你本人上传）
 
 ## 阶段 3：改进与诊断（第 2 天）
 - [ ] 调参；比较 GLM 与 LightGBM，考虑两者融合
