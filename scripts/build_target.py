@@ -1,6 +1,6 @@
 """Build the developed target for every training row and reconcile it against the claims file.
 
-Outputs: output/target_<line>.parquet (row_id, exposure, claim_count, claim_cost, completeness,
+Outputs (completeness mixes per-peril reporting CDFs by cost share, C022): output/target_<line>.parquet (row_id, exposure, claim_count, claim_cost, completeness,
 claim_cost_ult, exposure_eff) and a reconciliation report on stdout.
 
 Usage: .venv\\Scripts\\python.exe scripts\\build_target.py > docs\\target_summary.txt
@@ -36,13 +36,16 @@ def main():
         t = target.row_target(p, c, cap=cap)
         print(f"\n{line}: large-loss cap (q={CAP_QUANTILE}) = {cap:,.0f}; capped share of cost = "
               f"{1 - t['claim_cost_capped'].sum() / t['claim_cost'].sum():.4f}")
-        lag = (pd.to_datetime(valid["report_date"]) - pd.to_datetime(valid["loss_date"])).dt.days
-        base = pd.to_datetime(valid["loss_date"]).dt.year == CDF_ACCIDENT_YEAR
-        cdf = development.reporting_cdf(lag[base], target.net_cost(valid[base]))
-        t["completeness"] = development.row_completeness(p, cdf).to_numpy()
+        base = valid[pd.to_datetime(valid["loss_date"]).dt.year == CDF_ACCIDENT_YEAR]
+        cdfs = development.reporting_cdf_by_peril(base)  # C022: per-peril CDFs, mixed by cost share
+        shares = development.peril_cost_shares(base)
+        t["completeness"] = development.row_completeness_mixed(p, cdfs, shares).to_numpy()
         t["exposure"] = p["exposure"].to_numpy()
         t = development.develop(t)
-        t.to_parquet(os.path.join(OUT, f"target_{line}.parquet"), index=False)
+        final = os.path.join(OUT, f"target_{line}.parquet")
+        tmp = os.path.join(OUT, f"target_{line}.tmp.parquet")
+        t.to_parquet(tmp, index=False)
+        os.replace(tmp, final)  # atomic swap: other processes may be reading the old file
 
         # Reconciliation: every non-repudiated cost is either on a row or listed as unmatched (C005)
         m = target.match_claims(p, valid)
@@ -54,8 +57,10 @@ def main():
         print(f"rows={len(t):,}  claims(non-repudiated)={len(valid):,}  matched={len(m) - len(unmatched):,}  unmatched={len(unmatched):,}")
         print(f"net cost total={total:,.2f}  on rows={on_rows:,.2f}  unmatched={off_rows:,.2f}  difference={total - on_rows - off_rows:,.4f}")
         print(f"unmatched by loss year: {pd.to_datetime(unmatched['loss_date']).dt.year.value_counts().sort_index().to_dict()}")
-        print(f"reporting CDF (cost-weighted, AY{CDF_ACCIDENT_YEAR}) at 30/90/365/730 days: "
-              f"{[round(float(cdf[x]), 4) for x in (30, 90, 365, 730)]}")
+        print(f"per-peril reporting CDF (cost-weighted, AY{CDF_ACCIDENT_YEAR}) at 30/90/365 days, and cost share:")
+        for peril in sorted(shares, key=shares.get, reverse=True):
+            vals = [round(float(cdfs[peril][x]), 4) for x in (30, 90, 365)]
+            print(f"  {peril:<18} share={shares[peril]:.4f}  cdf30/90/365={vals}")
         y = pd.to_datetime(p["period_start"]).dt.year.to_numpy()
         s = t.assign(year=y).groupby("year").agg(
             exposure=("exposure", "sum"), completeness=("completeness", "mean"),

@@ -17,7 +17,8 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
-from train_validate import LINES, OUT, ROOT, clean, evaluate, features, load, log, models  # noqa: E402
+from train_validate import (LINES, OUT, ROOT, clean, cross_line_tables, evaluate, features, history_frame,  # noqa: E402
+                            load, log, models)
 
 FOLDS = [(2023, [2021, 2022]), (2024, [2021, 2022, 2023])]
 N_RANDOM = 12
@@ -55,9 +56,9 @@ def line_data(line, shared):
     p = clean.clean_policies(load(f"policies_{line}"))
     t = pd.read_parquet(os.path.join(OUT, f"target_{line}.parquet"))
     year = pd.to_datetime(p["period_start"]).dt.year.to_numpy()
-    history = pd.DataFrame({"policy_id": p["policy_id"], "year": year, "claim_count": t["claim_count"],
-                            "claim_cost": t["claim_cost"], "exposure": p["exposure"]}).groupby(["policy_id", "year"], as_index=False).sum()
-    x = features.build_features(p, *shared, history=history)
+    history = history_frame(p, t, year, "policy_id")
+    history_all, portfolio = cross_line_tables()
+    x = features.build_features(p, *shared, history=history, history_all=history_all, portfolio=portfolio)
     return x, t, year
 
 

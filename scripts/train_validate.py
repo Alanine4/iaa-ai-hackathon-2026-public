@@ -33,6 +33,34 @@ def log(msg):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def history_frame(p, t, year, key):
+    """Yearly claims per `key` (policy_id or customer_id) from a training policy table p and its target table t.
+    C024: cost is the developed `claim_cost_ult`, so 2025 rows see 2024 history on the same basis as training rows.
+    """
+    h = pd.DataFrame({key: p[key].to_numpy(), "year": year, "claim_count": t["claim_count"].to_numpy(),
+                      "claim_cost": t["claim_cost_ult"].to_numpy(), "exposure": p["exposure"].to_numpy()})
+    return h.groupby([key, "year"], as_index=False).sum()
+
+
+def cross_line_tables(lines=LINES):
+    """C024: (history_all, portfolio) over all lines for build_features.
+    history_all: yearly claims per customer from the training rows of every line.
+    portfolio: policy_id, customer_id, address_id, year of every training AND test row of every line.
+    """
+    hist, port = [], []
+    for line in lines:
+        p = clean.clean_policies(load(f"policies_{line}"))
+        test = clean.clean_policies(load(f"test_{line}"))
+        t = pd.read_parquet(os.path.join(OUT, f"target_{line}.parquet"))
+        year = pd.to_datetime(p["period_start"]).dt.year.to_numpy()
+        hist.append(history_frame(p, t, year, "customer_id"))
+        for rows in (p, test):
+            port.append(pd.DataFrame({c: rows[c].to_numpy() for c in ["policy_id", "customer_id", "address_id"]}
+                                     | {"year": pd.to_datetime(rows["period_start"]).dt.year.to_numpy()}))
+    history_all = pd.concat(hist, ignore_index=True).groupby(["customer_id", "year"], as_index=False).sum()
+    return history_all, pd.concat(port, ignore_index=True).drop_duplicates()
+
+
 def line_trend(t, years, fit_years, target_year):
     """C009: trend from developed pure premium of fit_years."""
     s = t.assign(year=years).loc[lambda d: d["year"].isin(fit_years)].groupby("year").agg(
@@ -48,11 +76,10 @@ def run_line(line, names, shared):
     assert (t["row_id"].to_numpy() == train["row_id"].to_numpy()).all()
     year = pd.to_datetime(train["period_start"]).dt.year.to_numpy()
 
-    history = pd.DataFrame({"policy_id": train["policy_id"], "year": year, "claim_count": t["claim_count"],
-                            "claim_cost": t["claim_cost"], "exposure": train["exposure"]})
-    history = history.groupby(["policy_id", "year"], as_index=False).sum()
+    history = history_frame(train, t, year, "policy_id")
+    history_all, portfolio = cross_line_tables()
     rows = pd.concat([train, test], ignore_index=True)
-    x_all = features.build_features(rows, *shared, history=history)
+    x_all = features.build_features(rows, *shared, history=history, history_all=history_all, portfolio=portfolio)
     x, x_test = x_all.iloc[:len(train)], x_all.iloc[len(train):]
     log(f"{line}: features {x.shape[1]} cols, train {len(x):,}, test {len(x_test):,}")
 

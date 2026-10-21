@@ -7,6 +7,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import xgboost as xgb
+from catboost import CatBoostRegressor, Pool
 from scipy import sparse
 from sklearn.linear_model import TweedieRegressor
 from sklearn.preprocessing import OneHotEncoder, SplineTransformer
@@ -146,5 +147,36 @@ class XGB(Balanced):
         return self.model.predict(_bools_to_int(x))
 
 
+class CAT(Balanced):
+    """C025: CatBoost Tweedie; category columns go to CatBoost natively (ordered target statistics)."""
+
+    def __init__(self, n_estimators=5000, learning_rate=0.05, **params):
+        defaults = dict(
+            loss_function=f"Tweedie:variance_power={POWER}", iterations=n_estimators, learning_rate=learning_rate,
+            depth=4, l2_leaf_reg=3, random_seed=SEED, verbose=False, thread_count=-1, allow_writing_files=False)
+        self.params = {**defaults, **params}
+
+    def _pool(self, x, y=None, w=None):
+        x = _bools_to_int(x).copy()
+        for c in self.cat_:
+            x[c] = x[c].astype(object).where(x[c].notna(), "NA").astype(str)
+        return Pool(x, label=y, weight=w, cat_features=self.cat_)
+
+    def _fit(self, x, y, w, valid=None):
+        self.cat_ = [c for c in x.columns if isinstance(x[c].dtype, pd.CategoricalDtype)]
+        params = dict(self.params)
+        kw = {}
+        if valid is not None:
+            xv, yv, wv = valid
+            params.update(od_type="Iter", od_wait=100)
+            kw = dict(eval_set=self._pool(xv, yv, wv))
+        self.model = CatBoostRegressor(**params)
+        self.model.fit(self._pool(x, y, w), **kw)
+        self.best_iteration = (self.model.get_best_iteration() + 1) if valid is not None else params["iterations"]
+
+    def _raw(self, x):
+        return self.model.predict(self._pool(x))
+
+
 def make(name, **kw):
-    return {"glm": GLM, "gam": GAM, "lgbm": LGBM, "xgb": XGB}[name](**kw)
+    return {"glm": GLM, "gam": GAM, "lgbm": LGBM, "xgb": XGB, "cat": CAT}[name](**kw)

@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from train_validate import OUT, clean, evaluate, load, log, models, params  # noqa: E402
 from tune_cv import FOLDS, line_data  # noqa: E402
 
-MODELS = ["glm", "gam", "lgbm", "xgb"]
+MODELS = ["glm", "gam", "lgbm", "xgb", "cat"]  # C025: CatBoost added
 
 
 def main(line):

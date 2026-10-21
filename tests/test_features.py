@@ -24,14 +24,15 @@ ROWS = pd.DataFrame({
 })
 CUSTOMERS = pd.DataFrame({
     "customer_id": ["00000001", "00000002"], "date_of_birth": [d("1980-07-01"), d("2000-01-01")],
-    "customer_since_year": [2015, 2024], "surname": ["S1", "S2"], "credit_band": ["A", "C"]})
+    "customer_since_year": [2015, 2024], "surname": ["S1", "S2"], "credit_band": ["A", "C"],
+    "branch_id": [7, 12], "campaign_code": ["CMP01", None]})
 ADDRESSES = pd.DataFrame({"address_id": ["A1", "A2"], "year_built": [1950, 2010], "region": ["R01", "R02"]})
 WEATHER = pd.DataFrame({
     "address_id": ["A1", "A1", "A2"], "year": [2022, 2023, 2025], "hail_days": [3.0, 9.0, 5.0]})
 
 
-def build(rows=ROWS, history=None):
-    return features.build_features(rows, CUSTOMERS, ADDRESSES, WEATHER, history)
+def build(rows=ROWS, history=None, history_all=None, portfolio=None):
+    return features.build_features(rows, CUSTOMERS, ADDRESSES, WEATHER, history, history_all, portfolio)
 
 
 def test_weather_joined_on_row_start_year():
@@ -84,3 +85,56 @@ def test_prior_experience_zero_when_no_history():
     x = build(history=None)
     assert x["prior_claims"].tolist() == [0, 0, 0]
     assert x["prior_exposure"].tolist() == [0.0, 0.0, 0.0]
+
+
+def test_cross_line_prior_experience_sums_all_lines_of_same_customer_in_earlier_years():
+    history_all = pd.DataFrame({
+        "customer_id": ["00000001", "00000001", "00000001", "00000001", "00000002"],
+        "year": [2021, 2021, 2022, 2023, 2024],
+        "claim_count": [1, 2, 4, 9, 1], "claim_cost": [10.0, 5.0, 20.0, 900.0, 7.0],
+        "exposure": [1.0, 0.5, 1.0, 1.0, 0.5]})
+    x = build(history_all=history_all)
+    # M1 (cust 1, 2022) sees 2021 of two lines; M2 (cust 1, 2023) sees 2021-2022; M3 (cust 2, 2025) sees 2024
+    assert x["prior_claims_cust"].tolist() == [3, 7, 1]
+    assert x["prior_cost_cust"].tolist() == [15.0, 35.0, 7.0]
+    assert x["prior_exposure_cust"].tolist() == [1.5, 2.5, 0.5]
+
+
+def test_cross_line_prior_experience_zero_when_no_history_all():
+    x = build(history_all=None)
+    assert x["prior_claims_cust"].tolist() == [0, 0, 0]
+    assert x["prior_cost_cust"].tolist() == [0.0, 0.0, 0.0]
+    assert x["prior_exposure_cust"].tolist() == [0.0, 0.0, 0.0]
+
+
+PORTFOLIO = pd.DataFrame({
+    "policy_id": ["P1", "P1", "P1b", "P3", "P1", "P2", "P2b"],
+    "customer_id": ["00000001", "00000001", "00000001", "00000003", "00000001", "00000002", "00000002"],
+    "address_id": ["A1", "A1", "A1", "A1", "A1", "A2", "A2"],
+    "year": [2022, 2022, 2022, 2022, 2023, 2025, 2025]})
+
+
+def test_household_counts_use_distinct_policies_and_customers_in_row_start_year():
+    x = build(portfolio=PORTFOLIO)
+    # 2022: cust 1 holds P1 (listed twice) + P1b; A1 hosts customers 1 and 3. 2023: only P1. 2025: cust 2 holds P2 + P2b at A2
+    assert x["n_policies_customer"].tolist() == [2, 1, 2]
+    assert x["n_customers_address"].tolist() == [2, 1, 1]
+
+
+def test_household_counts_zero_when_no_portfolio():
+    x = build(portfolio=None)
+    assert x["n_policies_customer"].tolist() == [0, 0, 0]
+    assert x["n_customers_address"].tolist() == [0, 0, 0]
+
+
+def test_branch_id_is_category_not_number():
+    x = build()
+    assert isinstance(x["branch_id"].dtype, pd.CategoricalDtype)
+    assert set(x["branch_id"].astype(int)) == {7, 12}
+
+
+def test_missing_campaign_code_becomes_explicit_none_level():
+    x = build()
+    assert isinstance(x["campaign_code"].dtype, pd.CategoricalDtype)
+    assert x["campaign_code"].astype(str).tolist() == ["CMP01", "CMP01", "none"]
+    assert not x["campaign_code"].isna().any()

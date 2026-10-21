@@ -22,7 +22,7 @@ def data():
     return x, cost / exposure, exposure, rate
 
 
-@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb"])
+@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb", "cat"])
 def test_model_predicts_positive_rates_and_ranks_risky_group_higher(name, data):
     x, y, w, _ = data
     model = models.make(name, n_estimators=150)
@@ -41,6 +41,9 @@ def test_tree_hyperparameters_can_be_overridden():
     assert lg.model.get_params()["learning_rate"] == 0.03
     xg = models.make("xgb", max_depth=5, min_child_weight=10)
     assert xg.params["max_depth"] == 5 and xg.params["min_child_weight"] == 10
+    ct = models.make("cat", depth=6, l2_leaf_reg=10, n_estimators=200)
+    assert ct.params["depth"] == 6 and ct.params["l2_leaf_reg"] == 10
+    assert ct.params["iterations"] == 200 and "n_estimators" not in ct.params
 
 
 def test_gam_recovers_smooth_u_shaped_effect():
@@ -56,7 +59,7 @@ def test_gam_recovers_smooth_u_shaped_effect():
     assert young > 1.8 * middle and old > 1.8 * middle
 
 
-@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb"])
+@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb", "cat"])
 def test_model_mean_prediction_close_to_weighted_mean_rate(name, data):
     x, y, w, _ = data
     model = models.make(name, n_estimators=150)
@@ -64,7 +67,7 @@ def test_model_mean_prediction_close_to_weighted_mean_rate(name, data):
     assert np.average(model.predict(x), weights=w) == pytest.approx(np.average(y, weights=w), rel=0.05)
 
 
-@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb"])
+@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb", "cat"])
 def test_model_is_exactly_balanced_on_training_data(name, data):
     # C013: log-link Tweedie fits are not balance-preserving; a training-data correction restores it
     x, y, w, _ = data

@@ -1,0 +1,45 @@
+﻿
+motor: large-loss cap (q=0.995) = 51,585; capped share of cost = 0.0883
+
+######## motor
+rows=979,968  claims(non-repudiated)=111,195  matched=110,901  unmatched=294
+net cost total=431,724,224.25  on rows=430,595,512.14  unmatched=1,128,712.11  difference=0.0000
+unmatched by loss year: {2020: 196, 2021: 34, 2022: 34, 2023: 30}
+reporting CDF (cost-weighted, AY2021) at 30/90/365/730 days: [0.5555, 0.7226, 0.9217, 0.9909]
+         exposure  completeness      reported      ultimate  pp_reported  pp_ultimate
+year                                                                                 
+2021  187991.5397        0.9994  1.058976e+08  1.059601e+08     563.3107     563.6431
+2022  199698.5014        0.9958  1.167232e+08  1.172126e+08     584.4971     586.9479
+2023  199681.8521        0.9697  1.173077e+08  1.209261e+08     587.4730     605.5936
+2024  199785.6301        0.7670  9.066698e+07  1.168946e+08     453.8213     585.0999
+min completeness=0.0734  rows with completeness<0.5: 8,802
+
+buildings: large-loss cap (q=0.995) = 147,445; capped share of cost = 0.0420
+
+######## buildings
+rows=707,726  claims(non-repudiated)=26,442  matched=26,375  unmatched=67
+net cost total=248,199,474.78  on rows=247,768,586.05  unmatched=430,888.73  difference=0.0000
+unmatched by loss year: {2020: 46, 2021: 9, 2022: 5, 2023: 7}
+reporting CDF (cost-weighted, AY2021) at 30/90/365/730 days: [0.8573, 0.9327, 0.9921, 1.0]
+         exposure  completeness     reported      ultimate  pp_reported  pp_ultimate
+year                                                                                
+2021  140782.9288        1.0000  54052834.19  5.405283e+07     383.9445     383.9445
+2022  149872.4329        1.0000  61529331.08  6.152933e+07     410.5447     410.5447
+2023  149987.2959        0.9972  64832471.23  6.500672e+07     432.2531     433.4148
+2024  149917.5233        0.9250  67353949.55  7.210964e+07     449.2734     480.9954
+min completeness=0.1653  rows with completeness<0.5: 1,425
+
+contents: large-loss cap (q=0.995) = 28,449; capped share of cost = 0.0212
+
+######## contents
+rows=721,617  claims(non-repudiated)=23,802  matched=23,753  unmatched=49
+net cost total=66,128,796.73  on rows=65,966,578.85  unmatched=162,217.88  difference=-0.0000
+unmatched by loss year: {2020: 29, 2021: 5, 2022: 8, 2023: 7}
+reporting CDF (cost-weighted, AY2021) at 30/90/365/730 days: [0.9493, 0.9888, 0.9895, 1.0]
+         exposure  completeness     reported      ultimate  pp_reported  pp_ultimate
+year                                                                                
+2021  140931.3808        1.0000  14870108.25  1.487011e+07     105.5131     105.5131
+2022  149986.1918        1.0000  16040968.62  1.604097e+07     106.9496     106.9496
+2023  149974.9479        0.9969  17539466.93  1.759170e+07     116.9493     117.2976
+2024  149966.7644        0.9579  17516035.05  1.810305e+07     116.7994     120.7138
+min completeness=0.1880  rows with completeness<0.5: 1,104
