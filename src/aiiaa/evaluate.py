@@ -10,6 +10,11 @@ def tweedie_d2(y, pred, weight=None):
     return d2_tweedie_score(y, pred, sample_weight=weight, power=POWER)
 
 
+def rescale_trend(pred, full_factor, from_share, to_share):
+    """C020: re-express a prediction made with full_factor ** from_share as full_factor ** to_share."""
+    return np.asarray(pred) * full_factor ** (to_share - from_share)
+
+
 def trend_factor(years, pure_premium, exposure, target_year):
     """C009: exposure-weighted log-linear trend, extrapolated from the weighted mean training year.
 

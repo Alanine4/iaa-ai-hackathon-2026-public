@@ -4,23 +4,15 @@ Metric: Tweedie D2 (power 1.5) of reported 2024 cost vs prediction x completenes
 
 | line      | model   |   d2_no_trend |     d2 |   pred/actual |   iterations |   fit_sec |
 |:----------|:--------|--------------:|-------:|--------------:|-------------:|----------:|
-| motor     | glm     |        0.0843 | 0.0848 |        1.0373 |          nan |       305 |
-| motor     | gam     |        0.0883 | 0.0889 |        1.0503 |          nan |       410 |
-| motor     | lgbm    |        0.0817 | 0.0812 |        1.081  |          223 |        34 |
-| motor     | xgb     |        0.0824 | 0.0818 |        1.0833 |          274 |       200 |
-| motor     | blend   |      nan      | 0.0877 |        1.063  |          nan |       nan |
-| buildings | glm     |        0.0975 | 0.0947 |        1.197  |          nan |       170 |
-| buildings | gam     |        0.108  | 0.1049 |        1.2055 |          nan |       124 |
-| buildings | lgbm    |        0.1117 | 0.111  |        1.0522 |          138 |        15 |
-| buildings | xgb     |        0.1114 | 0.1106 |        1.0638 |          191 |        64 |
-| buildings | blend   |      nan      | 0.1101 |        1.1296 |          nan |       nan |
-| contents  | glm     |        0.0834 | 0.084  |        1.0788 |          nan |       107 |
-| contents  | gam     |        0.0899 | 0.0907 |        1.0792 |          nan |       149 |
-| contents  | lgbm    |        0.0908 | 0.0902 |        1.0844 |          212 |        16 |
-| contents  | xgb     |        0.0902 | 0.0894 |        1.0853 |          183 |        59 |
-| contents  | blend   |      nan      | 0.0934 |        1.0819 |          nan |       nan |
-| ALL       | glm     |      nan      | 0.1252 |        1.1027 |          nan |       nan |
-| ALL       | gam     |      nan      | 0.1318 |        1.1127 |          nan |       nan |
-| ALL       | lgbm    |      nan      | 0.1306 |        1.0703 |          nan |       nan |
-| ALL       | xgb     |      nan      | 0.1305 |        1.076  |          nan |       nan |
-| ALL       | blend   |      nan      | 0.1336 |        1.0904 |          nan |       nan |
+| motor     | lgbm    |        0.0849 | 0.0848 |        1.0473 |          258 |        51 |
+| motor     | xgb     |        0.0862 | 0.0862 |        1.0394 |          982 |       303 |
+| motor     | blend   |      nan      | 0.0861 |        1.0433 |          nan |       nan |
+| buildings | lgbm    |        0.1117 | 0.1118 |        0.991  |          138 |        11 |
+| buildings | xgb     |        0.1114 | 0.1115 |        1.002  |          191 |        62 |
+| buildings | blend   |      nan      | 0.1123 |        0.9965 |          nan |       nan |
+| contents  | lgbm    |        0.0908 | 0.0909 |        1.0286 |          212 |        18 |
+| contents  | xgb     |        0.0926 | 0.0927 |        1.0323 |          681 |       151 |
+| contents  | blend   |      nan      | 0.0922 |        1.0304 |          nan |       nan |
+| ALL       | lgbm    |      nan      | 0.1325 |        1.0238 |          nan |       nan |
+| ALL       | xgb     |      nan      | 0.1333 |        1.0243 |          nan |       nan |
+| ALL       | blend   |      nan      | 0.1335 |        1.0241 |          nan |       nan |

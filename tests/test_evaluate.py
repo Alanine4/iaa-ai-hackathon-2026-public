@@ -33,6 +33,18 @@ def test_trend_factor_extrapolates_log_linear_trend_from_exposure_weighted_mean_
     assert evaluate.trend_factor(years, pure_premium, exposure, 2024) == pytest.approx(4.0)
 
 
+def test_rescale_trend_moves_prediction_from_one_trend_share_to_another():
+    # C020: prediction made with the full factor 1.21 -> half share uses sqrt(1.21) = 1.1
+    pred = np.array([121.0, 242.0])
+    out = evaluate.rescale_trend(pred, full_factor=1.21, from_share=1.0, to_share=0.5)
+    assert out == pytest.approx([110.0, 220.0])
+
+
+def test_rescale_trend_is_identity_for_equal_shares():
+    pred = np.array([5.0])
+    assert evaluate.rescale_trend(pred, 1.3, 0.5, 0.5) == pytest.approx([5.0])
+
+
 def test_trend_factor_is_one_without_trend():
     years = np.array([2021, 2022, 2023])
     assert evaluate.trend_factor(years, np.array([5.0, 5.0, 5.0]), np.ones(3), 2025) == pytest.approx(1.0)
