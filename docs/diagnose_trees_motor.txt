@@ -1,0 +1,7 @@
+﻿motor: claim net cost quantiles {0.9: 8214.0, 0.99: 35698.0, 0.999: 117133.0, 0.9999: 380342.0, 1.0: 11894277.0}
+share of total cost above 100k: 0.092, above 250k: 0.046
+exposure_eff < 0.01 rows: 5,629, their share of cost: 0.0000
+cap=      inf: best_iter=  50  train balance=0.825  load=1.0000  val D2=0.06613  val pred/actual=0.826  val D2 rebalanced=0.07289
+cap=   250000: best_iter=  41  train balance=0.866  load=1.0444  val D2=0.06780  val pred/actual=0.868  val D2 rebalanced=0.07147
+cap=   100000: best_iter=  48  train balance=0.866  load=1.0694  val D2=0.06968  val pred/actual=0.870  val D2 rebalanced=0.07338
+cap=    50000: best_iter=  48  train balance=0.876  load=1.1154  val D2=0.07124  val pred/actual=0.876  val D2 rebalanced=0.07446

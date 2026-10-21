@@ -17,6 +17,7 @@ from aiiaa import clean, development, target  # noqa: E402
 DATA = os.path.join(ROOT, "data", "iaa-ai-assisted-hackathon-2026-part-1")
 OUT = os.path.join(ROOT, "output")
 CDF_ACCIDENT_YEAR = 2021  # C006: oldest full year, observed for >= 3 years at valuation
+CAP_QUANTILE = 0.995  # C014: per-claim large-loss cap; motor sweep favoured ~50k (99.5th percentile)
 
 
 def load(name):
@@ -31,7 +32,10 @@ def main():
         c = claims[claims["line"] == line]
         valid = c[c["status"] != "repudiated"]
 
-        t = target.row_target(p, c)
+        cap = target.large_loss_cap(c, CAP_QUANTILE)
+        t = target.row_target(p, c, cap=cap)
+        print(f"\n{line}: large-loss cap (q={CAP_QUANTILE}) = {cap:,.0f}; capped share of cost = "
+              f"{1 - t['claim_cost_capped'].sum() / t['claim_cost'].sum():.4f}")
         lag = (pd.to_datetime(valid["report_date"]) - pd.to_datetime(valid["loss_date"])).dt.days
         base = pd.to_datetime(valid["loss_date"]).dt.year == CDF_ACCIDENT_YEAR
         cdf = development.reporting_cdf(lag[base], target.net_cost(valid[base]))

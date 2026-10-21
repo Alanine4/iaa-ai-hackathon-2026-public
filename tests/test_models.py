@@ -53,3 +53,13 @@ def test_model_mean_prediction_close_to_weighted_mean_rate(name, data):
     model = models.make(name, n_estimators=150)
     model.fit(x, y, w)
     assert np.average(model.predict(x), weights=w) == pytest.approx(np.average(y, weights=w), rel=0.05)
+
+
+@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb"])
+def test_model_is_exactly_balanced_on_training_data(name, data):
+    # C013: log-link Tweedie fits are not balance-preserving; a training-data correction restores it
+    x, y, w, _ = data
+    model = models.make(name, n_estimators=150)
+    model.fit(x, y, w)
+    # XGBoost predicts in float32, so totals agree to ~1e-8 rather than to double precision
+    assert np.sum(model.predict(x) * w) == pytest.approx(np.sum(y * w), rel=1e-6)

@@ -1,0 +1,12 @@
+﻿cap=    inf lr=0.05 n=1 {}: iters=    1 train balance=0.988 val D2 (rebalanced)=0.03486 pred/actual=1.004
+cap=    inf lr=0.05 n=5000 {'num_leaves': 63, 'min_child_samples': 200}: iters=   50 train balance=0.825 val D2 (rebalanced)=0.07289 pred/actual=1.000
+cap=    inf lr=0.05 n=5000 {'num_leaves': 15, 'min_child_samples': 1000}: iters=  122 train balance=0.870 val D2 (rebalanced)=0.07645 pred/actual=1.000
+cap=    inf lr=0.05 n=5000 {'num_leaves': 7, 'min_child_samples': 3000}: iters=  205 train balance=0.896 val D2 (rebalanced)=0.07627 pred/actual=0.999
+cap=    inf lr=0.02 n=5000 {'num_leaves': 15, 'min_child_samples': 1000}: iters=  325 train balance=0.867 val D2 (rebalanced)=0.07769 pred/actual=0.999
+cap=    inf lr=0.02 n=5000 {'num_leaves': 31, 'min_child_samples': 2000, 'reg_lambda': 10.0}: iters=  220 train balance=0.839 val D2 (rebalanced)=0.07660 pred/actual=1.001
+cap=  50000 lr=0.05 n=1 {}: iters=    1 train balance=0.991 val D2 (rebalanced)=0.03468 pred/actual=1.005
+cap=  50000 lr=0.05 n=5000 {'num_leaves': 63, 'min_child_samples': 200}: iters=   48 train balance=0.876 val D2 (rebalanced)=0.07446 pred/actual=1.001
+cap=  50000 lr=0.05 n=5000 {'num_leaves': 15, 'min_child_samples': 1000}: iters=  121 train balance=0.918 val D2 (rebalanced)=0.08042 pred/actual=1.006
+cap=  50000 lr=0.05 n=5000 {'num_leaves': 7, 'min_child_samples': 3000}: iters=  221 train balance=0.939 val D2 (rebalanced)=0.08121 pred/actual=1.007
+cap=  50000 lr=0.02 n=5000 {'num_leaves': 15, 'min_child_samples': 1000}: iters=  335 train balance=0.913 val D2 (rebalanced)=0.08099 pred/actual=1.007
+cap=  50000 lr=0.02 n=5000 {'num_leaves': 31, 'min_child_samples': 2000, 'reg_lambda': 10.0}: iters=  205 train balance=0.891 val D2 (rebalanced)=0.07835 pred/actual=1.007

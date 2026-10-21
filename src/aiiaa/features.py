@@ -45,6 +45,8 @@ def build_features(rows, customers, addresses, weather, history=None):
 
     x = x.drop(columns=[c for c in DROP + ["year"] if c in x])
     for col in x.columns:
-        if x[col].dtype == object or pd.api.types.is_string_dtype(x[col]):
+        if x[col].dtype == object and x[col].dropna().map(type).eq(bool).all():
+            x[col] = x[col].map({True: 1.0, False: 0.0}).astype(float)  # C012: boolean with missing values
+        elif x[col].dtype == object or pd.api.types.is_string_dtype(x[col]):
             x[col] = x[col].astype("category")
     return x

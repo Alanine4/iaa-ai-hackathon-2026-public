@@ -1,4 +1,6 @@
 ﻿
+motor: large-loss cap (q=0.995) = 51,585; capped share of cost = 0.0883
+
 ######## motor
 rows=979,968  claims(non-repudiated)=111,195  matched=110,901  unmatched=294
 net cost total=431,724,224.25  on rows=430,595,512.14  unmatched=1,128,712.11  difference=0.0000
@@ -12,6 +14,8 @@ year
 2024  199785.6301        0.7670  9.066698e+07  1.168946e+08     453.8213     585.0999
 min completeness=0.0734  rows with completeness<0.5: 8,802
 
+buildings: large-loss cap (q=0.995) = 147,445; capped share of cost = 0.0420
+
 ######## buildings
 rows=707,726  claims(non-repudiated)=26,442  matched=26,375  unmatched=67
 net cost total=248,199,474.78  on rows=247,768,586.05  unmatched=430,888.73  difference=0.0000
@@ -24,6 +28,8 @@ year
 2023  149987.2959        0.9972  64832471.23  6.500672e+07     432.2531     433.4148
 2024  149917.5233        0.9250  67353949.55  7.210964e+07     449.2734     480.9954
 min completeness=0.1653  rows with completeness<0.5: 1,425
+
+contents: large-loss cap (q=0.995) = 28,449; capped share of cost = 0.0212
 
 ######## contents
 rows=721,617  claims(non-repudiated)=23,802  matched=23,753  unmatched=49

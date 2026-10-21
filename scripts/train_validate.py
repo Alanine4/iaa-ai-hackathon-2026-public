@@ -55,9 +55,13 @@ def run_line(line, names, shared):
     log(f"{line}: features {x.shape[1]} cols, train {len(x):,}, test {len(x_test):,}")
 
     # C010: rate target on completeness-weighted exposure (equivalent to developed cost / exposure)
+    # C014: models learn capped cost; the capped excess is spread back with a per-line load factor
     w = t["exposure_eff"].to_numpy()
-    y = t["claim_cost"].to_numpy() / w
+    y = t["claim_cost_capped"].to_numpy() / w
     fit_mask, val_mask = year < VALID_YEAR, year == VALID_YEAR
+    load_val = t.loc[fit_mask, "claim_cost"].sum() / t.loc[fit_mask, "claim_cost_capped"].sum()
+    load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
+    log(f"{line}: large-loss load factor validation {load_val:.4f}, test {load_test:.4f}")
     trend_val = line_trend(t, year, [2021, 2022, 2023], VALID_YEAR)
     trend_test = line_trend(t, year, [2021, 2022, 2023, 2024], TEST_YEAR)
     log(f"{line}: trend factor validation {trend_val:.4f}, test {trend_test:.4f}")
@@ -71,7 +75,7 @@ def run_line(line, names, shared):
         m = models.make(name)
         m.fit(x[fit_mask], y[fit_mask], w[fit_mask], valid=(x[val_mask], y[val_mask], w[val_mask]))
         rate = m.predict(x[val_mask])
-        pred = rate * expo_val * comp_val  # expected reported cost at valuation date
+        pred = rate * expo_val * comp_val * load_val  # expected reported cost at valuation date
         val_preds[name] = pred * trend_val
         res = {"line": line, "model": name,
                "d2_no_trend": evaluate.tweedie_d2(actual, pred),
@@ -85,7 +89,7 @@ def run_line(line, names, shared):
         n_full = int(m.best_iteration * 1.1) if getattr(m, "best_iteration", None) else None
         full = models.make(name, **({"n_estimators": n_full} if n_full else {}))
         full.fit(x, y, w)
-        pred_test = full.predict(x_test) * test["exposure"].to_numpy() * trend_test
+        pred_test = full.predict(x_test) * test["exposure"].to_numpy() * trend_test * load_test
         pd.DataFrame({"row_id": test["row_id"], "prediction": pred_test}).to_parquet(
             os.path.join(OUT, f"pred_{line}_{name}.parquet"), index=False)
         log(f"{line}: {name} refit on all years in {time.time() - t0:.0f}s, test mean {pred_test.mean():.2f}")
@@ -144,4 +148,4 @@ def main(names):
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    main(sys.argv[1].split(",") if len(sys.argv) > 1 else ["glm", "lgbm", "xgb"])
+    main(sys.argv[1].split(",") if len(sys.argv) > 1 else ["glm", "gam", "lgbm", "xgb"])

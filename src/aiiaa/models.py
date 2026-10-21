@@ -7,8 +7,8 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from sklearn.linear_model import TweedieRegressor
 from scipy import sparse
+from sklearn.linear_model import TweedieRegressor
 from sklearn.preprocessing import OneHotEncoder, SplineTransformer
 
 POWER = 1.5
@@ -19,7 +19,23 @@ def _bools_to_int(x):
     return x.astype({c: "int8" for c in x.columns if x[c].dtype == bool})
 
 
-class GLM:
+class Balanced:
+    """C013: rescale predictions so total predicted cost equals total actual cost on the training data.
+
+    Log-link Tweedie fits with power 1.5 do not preserve this balance; boosting drifts below it
+    (motor LightGBM: 0.83 of actual on its own training rows). The factor uses training data only.
+    """
+
+    def fit(self, x, y, w, valid=None):
+        self._fit(x, y, w, valid)
+        self.balance_ = float(np.sum(y * w) / np.sum(self._raw(x) * w))
+        return self
+
+    def predict(self, x):
+        return self._raw(x) * self.balance_
+
+
+class GLM(Balanced):
     """Actuarial-style GLM: numeric columns banded into deciles (missing = own band), all one-hot, log link."""
 
     def __init__(self, n_bins=10, alpha=1e-4, max_iter=400, **_):
@@ -35,7 +51,7 @@ class GLM:
                 out[col] = x[col].astype(str)
         return out
 
-    def fit(self, x, y, w, valid=None):
+    def _fit(self, x, y, w, valid=None):
         num = [c for c in x.columns if pd.api.types.is_numeric_dtype(x[c]) and x[c].dtype != bool]
         self.edges_ = {c: np.unique(np.nanquantile(x[c].astype(float), np.linspace(0, 1, self.n_bins + 1)[1:-1]))
                        for c in num}
@@ -43,13 +59,12 @@ class GLM:
         xb = self.enc_.fit_transform(self._band(x))
         self.model_ = TweedieRegressor(power=POWER, link="log", alpha=self.alpha, max_iter=self.max_iter)
         self.model_.fit(xb, y, sample_weight=w)
-        return self
 
-    def predict(self, x):
+    def _raw(self, x):
         return self.model_.predict(self.enc_.transform(self._band(x)))
 
 
-class GAM:
+class GAM(Balanced):
     """C011: GAM-style Tweedie model: cubic B-splines (quantile knots) on numeric columns, one-hot categories.
 
     Smoothness is controlled by a single L2 penalty (alpha) rather than per-term smoothing selection.
@@ -72,7 +87,7 @@ class GAM:
             s, c = self.spline_.transform(num), self.enc_.transform(x[self.cat_].astype(str))
         return sparse.hstack([s, c, sparse.csr_matrix(missing)]).tocsr()
 
-    def fit(self, x, y, w, valid=None):
+    def _fit(self, x, y, w, valid=None):
         self.num_ = [c for c in x.columns if pd.api.types.is_numeric_dtype(x[c]) and x[c].dtype != bool
                      and x[c].nunique() > self.n_knots]
         self.cat_ = [c for c in x.columns if c not in self.num_]
@@ -80,20 +95,20 @@ class GAM:
         self.has_missing_ = x[self.num_].isna().any().to_numpy()
         self.model_ = TweedieRegressor(power=POWER, link="log", alpha=self.alpha, max_iter=self.max_iter)
         self.model_.fit(self._design(x, fit=True), y, sample_weight=w)
-        return self
 
-    def predict(self, x):
+    def _raw(self, x):
         return self.model_.predict(self._design(x))
 
 
-class LGBM:
-    def __init__(self, n_estimators=3000, learning_rate=0.05, **params):
+class LGBM(Balanced):
+    # C015: shallow trees (7 leaves, >= 3000 rows per leaf); deeper trees early-stopped after ~50 rounds
+    def __init__(self, n_estimators=5000, learning_rate=0.05, **params):
         self.model = lgb.LGBMRegressor(
             objective="tweedie", tweedie_variance_power=POWER, n_estimators=n_estimators,
-            learning_rate=learning_rate, num_leaves=63, min_child_samples=200, subsample=0.8, subsample_freq=1,
+            learning_rate=learning_rate, num_leaves=7, min_child_samples=3000, subsample=0.8, subsample_freq=1,
             colsample_bytree=0.8, reg_lambda=1.0, random_state=SEED, verbose=-1, **params)
 
-    def fit(self, x, y, w, valid=None):
+    def _fit(self, x, y, w, valid=None):
         kw = {}
         if valid is not None:
             xv, yv, wv = valid
@@ -101,21 +116,21 @@ class LGBM:
                       callbacks=[lgb.early_stopping(100, verbose=False)])
         self.model.fit(_bools_to_int(x), y, sample_weight=w, **kw)
         self.best_iteration = self.model.best_iteration_ or self.model.n_estimators
-        return self
 
-    def predict(self, x):
+    def _raw(self, x):
         return self.model.predict(_bools_to_int(x))
 
 
-class XGB:
-    def __init__(self, n_estimators=3000, learning_rate=0.05, **params):
+class XGB(Balanced):
+    # C015: depth 3 (up to 8 leaves) to match the shallow LightGBM setting
+    def __init__(self, n_estimators=5000, learning_rate=0.05, **params):
         self.params = dict(
             objective="reg:tweedie", tweedie_variance_power=POWER, n_estimators=n_estimators,
-            learning_rate=learning_rate, max_depth=6, min_child_weight=50, subsample=0.8, colsample_bytree=0.8,
+            learning_rate=learning_rate, max_depth=3, min_child_weight=50, subsample=0.8, colsample_bytree=0.8,
             reg_lambda=1.0, tree_method="hist", enable_categorical=True, max_cat_to_onehot=1, random_state=SEED,
             **params)
 
-    def fit(self, x, y, w, valid=None):
+    def _fit(self, x, y, w, valid=None):
         kw = {}
         params = dict(self.params)
         if valid is not None:
@@ -125,9 +140,8 @@ class XGB:
         self.model = xgb.XGBRegressor(**params)
         self.model.fit(_bools_to_int(x), y, sample_weight=w, **kw)
         self.best_iteration = (self.model.best_iteration + 1) if valid is not None else params["n_estimators"]
-        return self
 
-    def predict(self, x):
+    def _raw(self, x):
         return self.model.predict(_bools_to_int(x))
 
 

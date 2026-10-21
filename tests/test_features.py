@@ -61,6 +61,14 @@ def test_text_columns_become_categories():
     assert isinstance(x["region"].dtype, pd.CategoricalDtype)
 
 
+def test_boolean_column_with_missing_values_becomes_numeric_not_category():
+    # C012: smoke_alarms holds True/False/None (object dtype); XGBoost rejects boolean category levels
+    rows = ROWS.assign(smoke_alarms=pd.Series([True, None, False], dtype=object))
+    x = build(rows)
+    assert pd.api.types.is_float_dtype(x["smoke_alarms"])
+    assert x["smoke_alarms"].tolist()[0::2] == [1.0, 0.0] and pd.isna(x["smoke_alarms"].iloc[1])
+
+
 def test_prior_experience_uses_only_earlier_years_of_same_policy():
     history = pd.DataFrame({
         "policy_id": ["P1", "P1", "P1", "P2"], "year": [2021, 2022, 2023, 2024],
