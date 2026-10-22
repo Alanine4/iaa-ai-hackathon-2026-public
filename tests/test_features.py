@@ -1,5 +1,6 @@
 import datetime as dt
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -167,3 +168,54 @@ def test_no_line_keeps_every_column():
     x = build(MOTOR_ROWS)
     for col in ["make_model", "branch_id", "previous_insurer", "email_domain", "document_preference"] + CROSS_LINE:
         assert col in x
+
+
+# C031: target encoding of a code column (log relativity with credibility constant k)
+TE_KEY = pd.Series(["A", "A", "B", "C"])
+TE_Y = np.array([1.0, 3.0, 4.0, 8.0])  # weighted sums: A 4, B 8, C 8; exposure A 2, B 2, C 1; global mean 20 / 5 = 4
+TE_W = np.array([1.0, 1.0, 2.0, 1.0])
+
+
+def test_target_encode_log_relativity_without_credibility():
+    enc = features.target_encode(TE_KEY, TE_Y, TE_W, pd.Series(["A", "B", "C", "D"]), k=0.0)
+    np.testing.assert_allclose(enc, [np.log(0.5), 0.0, np.log(2.0), 0.0])
+
+
+def test_target_encode_shrinks_toward_global_mean_with_credibility():
+    enc = features.target_encode(TE_KEY, TE_Y, TE_W, pd.Series(["C", "A", "B"]), k=1.0)
+    # (sum y*w + k*ybar) / (sum w + k) / ybar: A (4+4)/3/4, B (8+4)/3/4, C (8+4)/2/4
+    np.testing.assert_allclose(enc, [np.log(1.5), np.log(2 / 3), 0.0])
+
+
+def test_target_encode_unseen_and_missing_codes_are_zero():
+    enc = features.target_encode(TE_KEY, TE_Y, TE_W, pd.Series(["Z", None, "Q"]), k=5.0)
+    np.testing.assert_array_equal(enc, [0.0, 0.0, 0.0])
+
+
+def test_target_encode_oof_never_uses_a_rows_own_target():
+    rng = np.random.default_rng(0)
+    key = pd.Series(rng.choice(["A", "B", "C"], 200).tolist() + ["ONCE"])
+    w = np.ones(201)
+    encs = []
+    for y_once in [1.0, 1e6]:
+        y = np.append(rng.gamma(1.0, 1.0, 200), y_once)
+        encs.append(features.target_encode_oof(key, y, w, k=0.0, n_folds=5, seed=1))
+    assert encs[0][-1] == 0.0 and encs[1][-1] == 0.0  # the only row of its code sees no other row of that code
+
+
+def test_target_encode_oof_row_encoding_depends_only_on_other_folds():
+    key = pd.Series(["A"] * 50 + ["B"] * 50)
+    y = np.linspace(0.5, 2.0, 100)
+    w = np.full(100, 0.5)
+    base = features.target_encode_oof(key, y, w, k=10.0, n_folds=5, seed=3)
+    for i in [0, 37, 99]:
+        y2 = y.copy()
+        y2[i] *= 100.0
+        assert features.target_encode_oof(key, y2, w, k=10.0, n_folds=5, seed=3)[i] == base[i]
+
+
+def test_target_encode_tends_to_zero_with_huge_credibility_constant():
+    enc = features.target_encode(TE_KEY, TE_Y, TE_W, TE_KEY, k=1e12)
+    oof = features.target_encode_oof(pd.concat([TE_KEY] * 5, ignore_index=True), np.tile(TE_Y, 5), np.tile(TE_W, 5),
+                                     k=1e12, n_folds=5, seed=0)
+    assert np.abs(enc).max() < 1e-9 and np.abs(oof).max() < 1e-9

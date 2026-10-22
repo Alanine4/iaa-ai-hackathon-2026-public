@@ -12,9 +12,12 @@ blend_weights_<line>.json; `--seeds N` averages N seeds (SEED .. SEED+N-1) of ea
 C030: the both-folds guard is applied here (`evaluate.guarded_weights`): `weights` are the searched weights only if they
 beat equal weights on every fold, otherwise equal weights; the grid result is kept as `weights_searched` and the reason
 as `rule`. With `--refit-only` the stored searched weights are re-guarded from `cv_d2_cal_both_folds`.
+C031: `--te <column>` adds `<column>_te`, the smoothed log risk relativity of the raw code (features.target_encode):
+fit rows get the 5-fold out-of-fold encoding within the fit rows, validation / test rows the encoding fitted on all fit
+rows. Off by default; the json records the column in `target_encoding` and `--refit-only` requires the same `--te`.
 
 Usage: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> [--models glm,gam,lgbm,xgb,cat] [--skip-refit]
-                                                               [--refit-only] [--seeds N]
+                                                               [--refit-only] [--seeds N] [--te make_model]
 Writes: output/oof_<line>.parquet, output/blend_weights_<line>.json, output/pred_<line>_<model>.parquet
 """
 import argparse
@@ -43,6 +46,17 @@ def train_test_features(line, shared, t, train):
     rows = pd.concat([train, test], ignore_index=True)
     x_all = features.build_features(rows, *shared, history=history, line=line)  # C026
     return x_all.iloc[:len(train)], x_all.iloc[len(train):], test
+
+
+def with_target_encoding(x_fit, x_apply, key_fit, key_apply, y_fit, w_fit, col):
+    """C031: copies of x_fit / x_apply with `<col>_te` (out-of-fold for the fit rows, fitted on all fit rows for the
+    apply rows), plus the spread of the encoding across the codes seen in the fit rows."""
+    te = f"{col}_te"
+    codes = pd.Series(key_fit).dropna().unique()
+    enc = features.target_encode(key_fit, y_fit, w_fit, codes)
+    spread = {"n_codes": int(len(codes)), "min": float(enc.min()), "max": float(enc.max()), "std": float(enc.std())}
+    return (x_fit.assign(**{te: features.target_encode_oof(key_fit, y_fit, w_fit)}),
+            x_apply.assign(**{te: features.target_encode(key_fit, y_fit, w_fit, key_apply)}), spread)
 
 
 def seed_param(name, seed):
@@ -76,7 +90,7 @@ def refit_all(line, names, n_est, x, y, w, x_test, test, t, year, seeds):
             f"{time.time() - t0:.0f}s, test mean {pred_test.mean():.2f}")
 
 
-def main(line, names, refit=True, refit_only=False, seeds=1):
+def main(line, names, refit=True, refit_only=False, seeds=1, te=None):
     shared = (clean.fix_customer_id(load("customers")), load("addresses"), load("weather"))
     train = clean.clean_policies(load(f"policies_{line}"))
     t = pd.read_parquet(os.path.join(OUT, f"target_{line}.parquet"))
@@ -86,10 +100,13 @@ def main(line, names, refit=True, refit_only=False, seeds=1):
     log(f"{line}: features {x.shape[1]} cols, train {len(x):,}, test {len(x_test):,}")
     w = t["exposure_eff"].to_numpy()
     y = t["claim_cost_capped"].to_numpy() / w
+    if te:  # C031: raw code column of the cleaned policy tables, positionally aligned with x / x_test
+        key, key_test = train[te].to_numpy(dtype=object), test[te].to_numpy(dtype=object)
 
     if refit_only:
         with open(os.path.join(OUT, f"blend_weights_{line}.json"), encoding="utf-8") as f:
             result = json.load(f)
+        assert result.get("target_encoding", {}).get("column") == te, "C031: --te must match the stored OOF run"
         n_est = {n: result["refit_n_estimators"][n] for n in names}
         both = result["cv_d2_cal_both_folds"]  # C030: re-apply the guard to the stored searched weights
         searched = result.get("weights_searched", result["weights"])
@@ -99,17 +116,23 @@ def main(line, names, refit=True, refit_only=False, seeds=1):
     else:
         frames, folds = [], []
         best_its = {n: [] for n in names}
+        te_spread = []
         for val_year, fit_years in FOLDS:
             fit, val = np.isin(year, fit_years), year == val_year
             load_f = t.loc[fit, "claim_cost"].sum() / t.loc[fit, "claim_cost_capped"].sum()
             actual = t.loc[val, "claim_cost"].to_numpy()
             scale = (t["exposure"] * t["completeness"]).to_numpy()[val] * load_f
             frame = pd.DataFrame({"row_id": t.loc[val, "row_id"].to_numpy(), "val_year": val_year, "actual": actual})
+            x_fit, x_val = x[fit], x[val]
+            if te:
+                x_fit, x_val, spread = with_target_encoding(x_fit, x_val, key[fit], key[val], y[fit], w[fit], te)
+                te_spread.append(spread)
+                log(f"{line} {val_year} {te}_te across fit codes: {spread}")
             for name in names:
                 t0 = time.time()
                 m = models.make(name, **params.for_model(line, name))
-                m.fit(x[fit], y[fit], w[fit], valid="inner")  # C027: inner split; GLM/GAM ignore it
-                frame[name] = m.predict(x[val]) * scale
+                m.fit(x_fit, y[fit], w[fit], valid="inner")  # C027: inner split; GLM/GAM ignore it
+                frame[name] = m.predict(x_val) * scale
                 best_its[name].append(getattr(m, "best_iteration", None))
                 log(f"{line} {val_year} {name}: d2={evaluate.tweedie_d2(actual, frame[name]):.5f} "
                     f"it={best_its[name][-1]} {time.time() - t0:.0f}s")
@@ -127,11 +150,17 @@ def main(line, names, refit=True, refit_only=False, seeds=1):
                   "cv_d2_cal_both_folds": {**report["single"], "blend_weighted": report["weighted"],
                                            "blend_equal": report["equal"]},
                   "best_iteration": best_its}
+        if te:
+            result["target_encoding"] = {"column": te, "spread_by_fold": te_spread}  # C031
 
     if refit or refit_only:
         if not refit_only:
             n_est = {n: int(np.mean(best_its[n]) * 1.1) if all(best_its[n]) else None for n in names}
-        refit_all(line, names, n_est, x, y, w, x_test, test, t, year, seeds)
+        x_ref, x_test_ref = x, x_test
+        if te:
+            x_ref, x_test_ref, spread = with_target_encoding(x, x_test, key, key_test, y, w, te)
+            log(f"{line} refit {te}_te across training codes: {spread}")
+        refit_all(line, names, n_est, x_ref, y, w, x_test_ref, test, t, year, seeds)
         result["refit_n_estimators"] = {**result.get("refit_n_estimators", {}), **n_est}
         result["refit_seeds"] = seeds
 
@@ -149,6 +178,7 @@ if __name__ == "__main__":
     ap.add_argument("--refit-only", action="store_true",
                     help="skip the folds; take refit_n_estimators and weights from the existing blend_weights json")
     ap.add_argument("--seeds", type=int, default=1, help="seeds averaged per tree model in the refit (default 1)")
+    ap.add_argument("--te", default=None, help="C031: raw code column to target-encode, e.g. make_model (default off)")
     a = ap.parse_args()
     assert a.seeds >= 1 and not (a.refit_only and a.skip_refit)
-    main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds)
+    main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds, te=a.te)

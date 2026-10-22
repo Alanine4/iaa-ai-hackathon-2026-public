@@ -2,6 +2,7 @@
 
 Run on train and test rows together so categorical levels are identical in both.
 """
+import numpy as np
 import pandas as pd
 
 # Never used as features: identifiers, dates, the exposure itself (used as weight), and leakage columns
@@ -93,3 +94,31 @@ def build_features(rows, customers, addresses, weather, history=None, history_al
     if line is not None:
         x = x.drop(columns=[c for c in DROP_BY_LINE["all"] + DROP_BY_LINE[line] if c in x])
     return x
+
+
+def target_encode(key_fit, y_fit, w_fit, key_apply, k=2000.0):
+    """C031: smoothed log risk relativity of each code, fitted on the fit rows and applied to other rows.
+
+    For code c: log((sum_c y*w + k*ybar) / (sum_c w + k) / ybar), with ybar the w-weighted mean of y over the fit rows
+    and k a credibility constant in units of w (exposure-years). Unseen or missing codes get 0 (the global mean).
+    Use only for rows that are NOT in the fit set; fit rows take `target_encode_oof`.
+    """
+    w_fit = np.asarray(w_fit, dtype=float)
+    yw = np.asarray(y_fit, dtype=float) * w_fit
+    ybar = yw.sum() / w_fit.sum()
+    sums = pd.DataFrame({"key": np.asarray(key_fit, dtype=object), "yw": yw, "w": w_fit}).groupby("key").sum()
+    rel = np.log((sums["yw"] + k * ybar) / (sums["w"] + k) / ybar)
+    return pd.Series(np.asarray(key_apply, dtype=object)).map(rel).fillna(0.0).to_numpy(dtype=float)
+
+
+def target_encode_oof(key, y, w, k=2000.0, n_folds=5, seed=42):
+    """C031: out-of-fold `target_encode` within the given rows: a seeded random split into n_folds folds, and each
+    row is encoded from the other folds only, so no row sees its own target."""
+    key, y, w = np.asarray(key, dtype=object), np.asarray(y, dtype=float), np.asarray(w, dtype=float)
+    fold = np.empty(len(key), dtype=int)
+    fold[np.random.default_rng(seed).permutation(len(key))] = np.arange(len(key)) % n_folds
+    out = np.zeros(len(key))
+    for f in range(n_folds):
+        rows = fold == f
+        out[rows] = target_encode(key[~rows], y[~rows], w[~rows], key[rows], k=k)
+    return out
