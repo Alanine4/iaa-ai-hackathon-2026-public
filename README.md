@@ -74,11 +74,8 @@ train 2021-23 and predict 2024), writes per-line blend weights to `output\blend_
 all training years and writes the 2025 predictions to `output\pred_<line>_<model>.parquet`. `blend.py` combines those
 files with the per-line weights and writes `work\<name>.csv` and `work\<name>.zip`, the file to upload to Kaggle.
 
-One manual step is not in the script. The weights file is written with the searched weights. For motor, the
-searched weights did not beat equal weights on both folds, so the submitted blend (S07) used equal weights of 0.2 per model, edited
-into `blend_weights_motor.json` by hand (C021, `docs/SUBMISSIONS.md`). A fresh run will therefore give a motor blend
-that differs from S07 unless that file is edited the same way. Compare `cv_d2_cal_both_folds` in each weights file
-before trusting `--weighted`. Exact numbers will also differ slightly between runs if library versions or thread counts differ.
+The script applies the both-folds guard itself (C030): the weights file holds the guarded `weights`, the grid result in
+`weights_searched` and the reason in `rule`. The final refit averages 3 seeds for the tree models (C029), so numbers differ slightly between runs.
 
 ## Modelling pipeline
 
@@ -122,7 +119,7 @@ trend (0.12464 against 0.12376 and 0.12453), so predictions use the square root 
 ## Governance
 
 Every change to data handling, code behaviour or modelling assumptions has a row in `docs/CHANGELOG.md` with its reason,
-evidence and code location (C000 to C028). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
+evidence and code location (C000 to C030). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
 the AI assistant did, how a person or a test checked it, and whether it was accepted, modified or rejected. The test suite in
 `tests/` covers cleaning, target matching, development, features, models, tuned parameters and scoring, and was written before the
 code it tests. `tests/test_raw_data_integrity.py` checks the raw files against the manifest. On 2026-10-22 an
@@ -134,7 +131,8 @@ the remaining ones are listed below. Run the tests with `.venv\Scripts\python.ex
 The trend may be counted twice (audit B4). `written_premium` and `sum_insured` already rise with the year, and they enter
 the models, yet the trend is fitted on raw pure premium. The residual trend the audit measured is about 1.017 for motor,
 1.048 for buildings and 1.004 for contents, against 1.018, 1.095 and 1.064 applied. The public board still preferred a trend
-over none, so the level was kept. The large-loss load for the test year includes under-reported 2024 bodily injury claims and
+over none, so the level was kept. A probe submission with buildings and contents at a quarter of the trend (S08) scored 0.12820
+against 0.12851 for half trend (S07), so the public board does not support the double-counting hypothesis and half trend was kept. The large-loss load for the test year includes under-reported 2024 bodily injury claims and
 may be about 1.4% low for motor (B5). Recoveries appear only on closed claims, so open 2024 motor own-damage cost is overstated by
 roughly 1.4% (B6). The prior-claims history is only partly put on a developed basis: cost is developed but claim counts are
 not, and training history is not cut at the policy's inception date (B7). The audit could not verify the
@@ -152,5 +150,5 @@ public leaderboard uses about a third of the test rows, so the final ranking may
 
 ## Submissions
 
-`docs/SUBMISSIONS.md` lists each upload with its date, file, blend recipe, validation score and public score. The latest, S07
-(2026-10-22, per-line weighted blend of GLM, GAM, LightGBM, XGBoost and CatBoost), scored 0.12851 on the public board.
+`docs/SUBMISSIONS.md` lists each upload with its date, file, blend recipe, validation score and public score. The latest
+submissions and their public scores are listed there.

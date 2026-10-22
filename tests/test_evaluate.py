@@ -87,3 +87,18 @@ def test_blend_report_gives_per_fold_calibrated_d2_for_weighted_equal_and_single
     assert rep["weighted"] == pytest.approx(rep["single"]["good"])  # all weight on "good"; scale does not matter
     assert rep["equal"] == pytest.approx([cal(f, 0.5 * f["preds"]["good"] + 0.5 * f["preds"]["flat"]) for f in folds])
     assert len(rep["equal"]) == 2
+
+
+def test_guarded_weights_keep_searched_weights_when_they_beat_equal_on_all_folds():
+    report = {"weighted": [0.10, 0.09], "equal": [0.09, 0.08]}
+    searched = {"a": 0.7, "b": 0.3}
+    weights, rule = evaluate.guarded_weights(report, searched, ["a", "b"])
+    assert weights == searched
+    assert rule == "searched weights beat equal weights on all folds"
+
+
+def test_guarded_weights_fall_back_to_equal_and_quote_the_failing_fold():
+    report = {"weighted": [0.09610, 0.09031], "equal": [0.09315, 0.09071]}
+    weights, rule = evaluate.guarded_weights(report, {"a": 0.7, "b": 0.3}, ["a", "b"])
+    assert weights == {"a": 0.5, "b": 0.5}
+    assert rule == "equal weights: searched weights lost on fold index 1 (0.09031 vs 0.09071)"

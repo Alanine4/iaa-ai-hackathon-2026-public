@@ -56,6 +56,19 @@ def blend_report(folds, weights, names):
             "single": {n: per_fold({m: float(m == n) for m in names}) for n in names}}
 
 
+def guarded_weights(report, searched, names):
+    """C030: the both-folds guard. Searched blend weights are adopted only if the weighted blend beats the equal-weight
+    blend on every fold of `report` (from `blend_report`); otherwise equal weights are used.
+
+    Returns (weights, rule_text); the text quotes the losing folds (fold index, weighted vs equal) on a fallback.
+    """
+    losses = [f"fold index {i} ({w:.5f} vs {e:.5f})"
+              for i, (w, e) in enumerate(zip(report["weighted"], report["equal"])) if not w > e]
+    if not losses:
+        return dict(searched), "searched weights beat equal weights on all folds"
+    return {n: 1 / len(names) for n in names}, "equal weights: searched weights lost on " + ", ".join(losses)
+
+
 def rescale_trend(pred, full_factor, from_share, to_share):
     """C020: re-express a prediction made with full_factor ** from_share as full_factor ** to_share."""
     return np.asarray(pred) * full_factor ** (to_share - from_share)

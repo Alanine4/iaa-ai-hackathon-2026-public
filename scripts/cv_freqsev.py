@@ -4,10 +4,15 @@ Same folds and scoring as `oof_predictions.py`: train 2021-22 -> validate 2023, 
 Tweedie D2 of reported cost vs prediction on the reported-cost scale, and `d2_cal` after rescaling the
 prediction to the fold's actual total.
 
-Usage: .venv\\Scripts\\python.exe -I scripts\\cv_freqsev.py <line> [<line> ...]
-Writes: output/oof_freqsev_<line>.parquet (row_id, val_year, actual, freqsev; same rows and order as
-output/oof_<line>.parquet), output/cv_freqsev_<line>.csv, output/cv_freqsev_perils_<line>.csv,
-docs/cv_freqsev.md (rebuilt from every line's csv files)
+Exposure of the count models: by default the line's completeness-weighted exposure (exposure_eff) for every
+peril. With --peril-completeness each peril gets exposure x its own reporting completeness (cost-weighted
+reporting CDF of accident-year 2021 claims of that peril, as build_target.py does for the line); severity is
+unchanged. Output files of that variant carry the tag "_peril".
+
+Usage: .venv\\Scripts\\python.exe -I scripts\\cv_freqsev.py [--peril-completeness] <line> [<line> ...]
+Writes: output/oof_freqsev[_peril]_<line>.parquet (row_id, val_year, actual, freqsev; same rows and order as
+output/oof_<line>.parquet), output/cv_freqsev[_peril]_<line>.csv, output/cv_freqsev_perils[_peril]_<line>.csv,
+docs/cv_freqsev.md (rebuilt from every available csv file)
 """
 import os
 import sys
@@ -17,42 +22,61 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
+from build_target import CDF_ACCIDENT_YEAR  # noqa: E402
 from train_validate import OUT, ROOT, clean, evaluate, load, log  # noqa: E402
 from tune_cv import FOLDS, line_data  # noqa: E402
 
-from aiiaa import freqsev  # noqa: E402  (src/ is on sys.path via train_validate)
+from aiiaa import development, freqsev  # noqa: E402  (src/ is on sys.path via train_validate)
 
 # Best single model per line, mean CV d2_cal over the same two folds (C021, output/blend_weights_<line>.json)
 BEST_SINGLE = {"motor": ("gam", 0.0893), "buildings": ("lgbm", 0.1094), "contents": ("xgb", 0.0911)}
+VARIANTS = {"line_completeness": "", "peril_completeness": "_peril"}  # variant -> file tag
+N_JOBS = 8  # LightGBM threads; other jobs share the 18 cores and oversubscription stalls every run
 
 
-def run_line(line, shared, claims):
+def peril_exposure(p, t, claims_line, perils, by_peril):
+    """Completeness-weighted exposure per peril (DataFrame, one column per peril)."""
+    if not by_peril:
+        return pd.DataFrame({q: t["exposure_eff"].to_numpy() for q in perils})
+    base = claims_line[pd.to_datetime(claims_line["loss_date"]).dt.year == CDF_ACCIDENT_YEAR]
+    cdfs = development.reporting_cdf_by_peril(base)
+    return pd.DataFrame({q: t["exposure"].to_numpy() * development.row_completeness(p, cdfs[q]).to_numpy()
+                         for q in perils})
+
+
+def run_line(line, shared, claims, variant):
     x, t, year = line_data(line, shared)
     p = clean.clean_policies(load(f"policies_{line}"))
     assert (p["row_id"].to_numpy() == t["row_id"].to_numpy()).all()
-    pt = freqsev.peril_targets(p, claims[claims["line"] == line])
+    claims_line = claims[claims["line"] == line]
+    pt = freqsev.peril_targets(p, claims_line)
     perils = [c[2:] for c in pt.columns if c.startswith("n_")]
     # Peril targets reconcile with the line target table (same matching rules and the same C014 cap)
     assert (pt[[f"n_{q}" for q in perils]].sum(axis=1).to_numpy() == t["claim_count"].to_numpy()).all()
     assert np.allclose(pt[[f"cost_{q}" for q in perils]].sum(axis=1), t["claim_cost_capped"])
     assert np.allclose(pt[[f"cost_{q}_uncapped" for q in perils]].sum(axis=1), t["claim_cost"])
-    log(f"{line}: {len(x):,} rows, {x.shape[1]} features, perils {perils}")
+    log(f"{line}: {len(x):,} rows, {x.shape[1]} features, perils {perils}, {variant}")
 
-    w = t["exposure_eff"].to_numpy()
+    expo = peril_exposure(p, t, claims_line, perils, variant == "peril_completeness")
+    comp = expo.div(t["exposure"].to_numpy(), axis=0).groupby(year).mean()
+    log(f"{line}: mean completeness by period year and peril\n{comp.round(3).to_string()}")
+
     frames, fold_rows, peril_rows = [], [], []
     for val_year, fit_years in FOLDS:
         t0 = time.time()
         fit, val = np.isin(year, fit_years), year == val_year
-        m = freqsev.FreqSev().fit(x[fit], pt[fit], w[fit], valid=(x[val], pt[val], w[val]))
+        m = freqsev.FreqSev(freq_params=dict(n_jobs=N_JOBS), sev_params=dict(n_jobs=N_JOBS))
+        m.fit(x[fit], pt[fit], expo[fit], valid=(x[val], pt[val], expo[val]))
         # Scoring as oof_predictions.py: rate x exposure x completeness x load_f. exposure x completeness is
-        # exposure_eff, so the expected reported cost is predict(x, exposure_eff). No per-line load_f: predict
-        # already applies a load per peril, and on the fit rows sum_p load_p * capped_p = sum_p uncapped_p =
-        # the line's uncapped total, i.e. the per-peril loads reproduce load_f in total while letting the
-        # large-loss share differ by peril. Applying load_f as well would count the capped excess twice.
-        pred = m.predict(x[val], w[val])
+        # exposure_eff, so the expected reported cost is predict(x, exposure_eff) (with --peril-completeness
+        # each peril uses its own completeness). No per-line load_f: predict already applies a load per
+        # peril, and on the fit rows sum_p load_p * capped_p = sum_p uncapped_p = the line's uncapped total,
+        # i.e. the per-peril loads reproduce load_f in total while letting the large-loss share differ by
+        # peril. Applying load_f as well would count the capped excess twice.
+        pred = m.predict(x[val], expo[val])
         actual = t.loc[val, "claim_cost"].to_numpy()
         sec = time.time() - t0
-        fold = dict(line=line, val_year=val_year, d2=evaluate.tweedie_d2(actual, pred),
+        fold = dict(line=line, variant=variant, val_year=val_year, d2=evaluate.tweedie_d2(actual, pred),
                     d2_cal=evaluate.tweedie_d2(actual, pred * actual.sum() / pred.sum()),
                     pred_actual=pred.sum() / actual.sum(), sec=round(sec))
         fold_rows.append(fold)
@@ -67,22 +91,23 @@ def run_line(line, shared, claims):
             unc_v = pt.loc[val, f"cost_{q}_uncapped"].to_numpy()
             f_f, s_f = r_fit[f"freq_{q}"].to_numpy(), r_fit[f"sev_{q}"].to_numpy()
             f_v, s_v = r_val[f"freq_{q}"].to_numpy(), r_val[f"sev_{q}"].to_numpy()
-            pred_q = f_v * w[val] * s_v * c["load"]
+            e_f, e_v = expo.loc[fit, q].to_numpy(), expo.loc[val, q].to_numpy()
+            pred_q = f_v * e_v * s_v * c["load"]
             row = dict(
-                line=line, val_year=val_year, peril=q, fit_claims=c["n_claims"],
+                line=line, variant=variant, val_year=val_year, peril=q, fit_claims=c["n_claims"],
                 severity="constant" if isinstance(c["sev"], float) else "gamma",
                 freq_it=c["freq_iterations"], sev_it=c["sev_iterations"], load=c["load"],
                 # predicted / actual on the training rows (1 by construction for count and cost)
-                fit_count=(f_f * w[fit]).sum() / n_f.sum(), fit_cost=(f_f * w[fit] * s_f).sum() / cost_f.sum(),
+                fit_count=(f_f * e_f).sum() / n_f.sum(), fit_cost=(f_f * e_f * s_f).sum() / cost_f.sum(),
                 fit_sev_given_n=(n_f * s_f).sum() / cost_f.sum(),
                 # predicted / actual on the validation rows
-                val_count=(f_v * w[val]).sum() / n_v.sum(), val_sev_given_n=(n_v * s_v).sum() / cost_v.sum(),
+                val_count=(f_v * e_v).sum() / n_v.sum(), val_sev_given_n=(n_v * s_v).sum() / cost_v.sum(),
                 val_cost=(pred_q / c["load"]).sum() / cost_v.sum(),
                 val_cost_share=unc_v.sum() / actual.sum(),
                 val_d2_cal=evaluate.tweedie_d2(unc_v, pred_q * unc_v.sum() / pred_q.sum()))
             peril_rows.append(row)
             log(f"  {q}: " + " ".join(f"{k}={v:.3f}" if isinstance(v, float) else f"{k}={v}"
-                                       for k, v in row.items() if k not in ("line", "val_year", "peril")))
+                                       for k, v in row.items() if k not in ("line", "variant", "val_year", "peril")))
         frames.append(pd.DataFrame({"row_id": t.loc[val, "row_id"].to_numpy(), "val_year": val_year,
                                     "actual": actual, "freqsev": pred}))
 
@@ -94,18 +119,28 @@ def run_line(line, shared, claims):
         assert (ref["val_year"].to_numpy() == oof["val_year"].to_numpy()).all()
         assert np.allclose(ref["actual"], oof["actual"])
         log(f"{line}: row set and order match {ref_path}")
-    oof.to_parquet(os.path.join(OUT, f"oof_freqsev_{line}.parquet"), index=False)
-    pd.DataFrame(fold_rows).to_csv(os.path.join(OUT, f"cv_freqsev_{line}.csv"), index=False)
-    pd.DataFrame(peril_rows).to_csv(os.path.join(OUT, f"cv_freqsev_perils_{line}.csv"), index=False)
+    tag = VARIANTS[variant]
+    oof.to_parquet(os.path.join(OUT, f"oof_freqsev{tag}_{line}.parquet"), index=False)
+    pd.DataFrame(fold_rows).to_csv(os.path.join(OUT, f"cv_freqsev{tag}_{line}.csv"), index=False)
+    pd.DataFrame(peril_rows).to_csv(os.path.join(OUT, f"cv_freqsev_perils{tag}_{line}.csv"), index=False)
+
+
+def read_all(stem):
+    paths = [os.path.join(OUT, f"{stem}{tag}_{ln}.csv") for tag in VARIANTS.values() for ln in BEST_SINGLE]
+    frames = []
+    for path in paths:
+        if os.path.exists(path):
+            df = pd.read_csv(path)
+            if "variant" not in df:  # files from the first motor run, written before the variant column existed
+                df.insert(1, "variant", "line_completeness")
+            frames.append(df)
+    return pd.concat(frames, ignore_index=True)
 
 
 def write_doc():
-    folds = [pd.read_csv(os.path.join(OUT, f"cv_freqsev_{ln}.csv")) for ln in BEST_SINGLE
-             if os.path.exists(os.path.join(OUT, f"cv_freqsev_{ln}.csv"))]
-    perils = [pd.read_csv(os.path.join(OUT, f"cv_freqsev_perils_{ln}.csv")) for ln in BEST_SINGLE
-              if os.path.exists(os.path.join(OUT, f"cv_freqsev_perils_{ln}.csv"))]
-    folds, perils = pd.concat(folds), pd.concat(perils)
-    summary = folds.groupby("line", sort=False).agg(d2=("d2", "mean"), d2_cal=("d2_cal", "mean")).reset_index()
+    folds, perils = read_all("cv_freqsev"), read_all("cv_freqsev_perils")
+    summary = (folds.groupby(["line", "variant"], sort=False).agg(d2=("d2", "mean"), d2_cal=("d2_cal", "mean"))
+               .reset_index())
     summary["best_single"] = summary["line"].map(lambda ln: BEST_SINGLE[ln][0])
     summary["best_single_d2_cal"] = summary["line"].map(lambda ln: BEST_SINGLE[ln][1])
     summary["difference"] = summary["d2_cal"] - summary["best_single_d2_cal"]
@@ -113,6 +148,8 @@ def write_doc():
         f.write("# Time-based CV: per-peril frequency x severity (C023)\n\n"
                 "Folds: 2021-22 -> 2023, 2021-23 -> 2024. Scored like `scripts/oof_predictions.py`: Tweedie D2 "
                 "(power 1.5) of reported cost; `d2_cal` rescales predictions to the fold's actual total. "
+                "`line_completeness`: count models use the line's completeness-weighted exposure; "
+                "`peril_completeness`: each peril's own reporting completeness. "
                 "Generated by `scripts/cv_freqsev.py`.\n\n## Per fold\n\n")
         f.write(folds.round(5).to_markdown(index=False))
         f.write("\n\n## Mean over folds vs best single model (C021 out-of-fold runs)\n\n")
@@ -125,16 +162,18 @@ def write_doc():
         f.write("\n")
 
 
-def main(lines):
+def main(lines, variant):
     shared = (clean.fix_customer_id(load("customers")), load("addresses"), load("weather"))
     claims = load("claims")
     for line in lines:
         t0 = time.time()
-        run_line(line, shared, claims)
-        log(f"{line}: done in {time.time() - t0:.0f}s")
+        run_line(line, shared, claims, variant)
+        log(f"{line} {variant}: done in {time.time() - t0:.0f}s")
     write_doc()
 
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    main(sys.argv[1:])
+    args = sys.argv[1:]
+    by_peril = "--peril-completeness" in args
+    main([a for a in args if not a.startswith("--")], "peril_completeness" if by_peril else "line_completeness")
