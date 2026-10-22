@@ -25,14 +25,15 @@ ROWS = pd.DataFrame({
 CUSTOMERS = pd.DataFrame({
     "customer_id": ["00000001", "00000002"], "date_of_birth": [d("1980-07-01"), d("2000-01-01")],
     "customer_since_year": [2015, 2024], "surname": ["S1", "S2"], "credit_band": ["A", "C"],
-    "branch_id": [7, 12], "campaign_code": ["CMP01", None]})
+    "branch_id": [7, 12], "campaign_code": ["CMP01", None],
+    "document_preference": ["email", "post"], "previous_insurer": ["X", "Y"], "email_domain": ["a.com", "b.com"]})
 ADDRESSES = pd.DataFrame({"address_id": ["A1", "A2"], "year_built": [1950, 2010], "region": ["R01", "R02"]})
 WEATHER = pd.DataFrame({
     "address_id": ["A1", "A1", "A2"], "year": [2022, 2023, 2025], "hail_days": [3.0, 9.0, 5.0]})
 
 
-def build(rows=ROWS, history=None, history_all=None, portfolio=None):
-    return features.build_features(rows, CUSTOMERS, ADDRESSES, WEATHER, history, history_all, portfolio)
+def build(rows=ROWS, history=None, history_all=None, portfolio=None, line=None):
+    return features.build_features(rows, CUSTOMERS, ADDRESSES, WEATHER, history, history_all, portfolio, line)
 
 
 def test_weather_joined_on_row_start_year():
@@ -138,3 +139,31 @@ def test_missing_campaign_code_becomes_explicit_none_level():
     assert isinstance(x["campaign_code"].dtype, pd.CategoricalDtype)
     assert x["campaign_code"].astype(str).tolist() == ["CMP01", "CMP01", "none"]
     assert not x["campaign_code"].isna().any()
+
+
+MOTOR_ROWS = ROWS.assign(make_model=["Ford Fiesta", "Ford Fiesta", "VW Golf"])
+CROSS_LINE = ["prior_claims_cust", "prior_cost_cust", "prior_exposure_cust", "n_policies_customer",
+              "n_customers_address"]
+
+
+def test_motor_line_drops_overfitted_columns_and_keeps_risk_columns():
+    # C026
+    x = build(MOTOR_ROWS, line="motor")
+    for col in ["make_model", "branch_id", "previous_insurer", "email_domain"] + CROSS_LINE:
+        assert col not in x
+    assert "fuel_type" in x and "credit_band" in x and "prior_claims" in x
+
+
+def test_line_specific_drops_apply_only_to_that_line():
+    # C026: document_preference is dropped for buildings and contents, kept for motor (and make_model only dropped for motor)
+    assert "document_preference" not in build(line="buildings")
+    assert "document_preference" not in build(line="contents")
+    assert "document_preference" in build(MOTOR_ROWS, line="motor")
+    assert "make_model" in build(MOTOR_ROWS, line="buildings")
+
+
+def test_no_line_keeps_every_column():
+    # C026: line=None is the unchanged behaviour
+    x = build(MOTOR_ROWS)
+    for col in ["make_model", "branch_id", "previous_insurer", "email_domain", "document_preference"] + CROSS_LINE:
+        assert col in x

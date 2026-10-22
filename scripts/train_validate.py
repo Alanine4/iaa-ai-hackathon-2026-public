@@ -77,9 +77,8 @@ def run_line(line, names, shared):
     year = pd.to_datetime(train["period_start"]).dt.year.to_numpy()
 
     history = history_frame(train, t, year, "policy_id")
-    history_all, portfolio = cross_line_tables()
     rows = pd.concat([train, test], ignore_index=True)
-    x_all = features.build_features(rows, *shared, history=history, history_all=history_all, portfolio=portfolio)
+    x_all = features.build_features(rows, *shared, history=history, line=line)  # C026: per-line drop list
     x, x_test = x_all.iloc[:len(train)], x_all.iloc[len(train):]
     log(f"{line}: features {x.shape[1]} cols, train {len(x):,}, test {len(x_test):,}")
 

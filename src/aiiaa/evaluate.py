@@ -40,6 +40,22 @@ def blend_weights(folds, step=0.05):
     return {n: round(float(v), 10) for n, v in zip(names, best_w)}
 
 
+def blend_report(folds, weights, names):
+    """C028: level-calibrated D2 per fold (list in fold order) for the weighted blend, the equal-weight blend and
+    every single model. Same scoring as `blend_weights`; lets the "weighted must beat equal on both folds" rule be
+    checked without recomputing predictions.
+    """
+    def per_fold(wts):
+        out = []
+        for f in folds:
+            pred = sum(wts[n] * f["preds"][n] for n in names)
+            out.append(float(tweedie_d2(f["actual"], pred * f["actual"].sum() / pred.sum())))
+        return out
+
+    return {"weighted": per_fold(weights), "equal": per_fold({n: 1 / len(names) for n in names}),
+            "single": {n: per_fold({m: float(m == n) for m in names}) for n in names}}
+
+
 def rescale_trend(pred, full_factor, from_share, to_share):
     """C020: re-express a prediction made with full_factor ** from_share as full_factor ** to_share."""
     return np.asarray(pred) * full_factor ** (to_share - from_share)

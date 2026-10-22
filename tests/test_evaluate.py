@@ -67,3 +67,23 @@ def test_blend_weights_are_non_negative_and_sum_to_one():
 def test_trend_factor_is_one_without_trend():
     years = np.array([2021, 2022, 2023])
     assert evaluate.trend_factor(years, np.array([5.0, 5.0, 5.0]), np.ones(3), 2025) == pytest.approx(1.0)
+
+
+def test_blend_report_gives_per_fold_calibrated_d2_for_weighted_equal_and_single_models():
+    # C028
+    rng = np.random.default_rng(2)
+    folds = []
+    for _ in range(2):
+        mu = rng.gamma(2.0, 100.0, 2000)
+        actual = rng.gamma(0.5, mu / 0.5)
+        folds.append({"actual": actual, "preds": {"good": mu * 3.0, "flat": np.full(2000, mu.mean())}})
+    rep = evaluate.blend_report(folds, {"good": 1.0, "flat": 0.0}, ["good", "flat"])
+
+    def cal(f, p):
+        return evaluate.tweedie_d2(f["actual"], p * f["actual"].sum() / p.sum())
+
+    assert rep["single"]["good"] == pytest.approx([cal(f, f["preds"]["good"]) for f in folds])
+    assert rep["single"]["flat"] == pytest.approx([0.0, 0.0], abs=1e-9)  # constant prediction has no ranking power
+    assert rep["weighted"] == pytest.approx(rep["single"]["good"])  # all weight on "good"; scale does not matter
+    assert rep["equal"] == pytest.approx([cal(f, 0.5 * f["preds"]["good"] + 0.5 * f["preds"]["flat"]) for f in folds])
+    assert len(rep["equal"]) == 2

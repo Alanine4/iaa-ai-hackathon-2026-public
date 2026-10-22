@@ -12,6 +12,16 @@ DROP = [
     "customer_service_contacts",  # C008: training values include contacts caused by in-period claims
 ]
 
+# C026: columns dropped per line. Ablation (LightGBM, folds 2021-22 -> 2023 and 2021-23 -> 2024): categorical columns
+# without risk signal were overfitted, and the C024 cross-line / household columns carried no signal.
+DROP_BY_LINE = {
+    "all": ["branch_id", "previous_insurer", "email_domain", "prior_claims_cust", "prior_cost_cust",
+            "prior_exposure_cust", "n_policies_customer", "n_customers_address"],
+    "motor": ["make_model"],
+    "buildings": ["document_preference", "marital_status", "occupation"],
+    "contents": ["document_preference", "marital_status", "occupation"],
+}
+
 
 def prior_experience(rows, history, by="policy_id", suffix=""):
     """Claims, cost and exposure held under the same `by` id in years strictly before each row's start year.
@@ -48,10 +58,11 @@ def household_counts(rows, portfolio):
     return key[["n_policies_customer", "n_customers_address"]].fillna(0).astype(int)
 
 
-def build_features(rows, customers, addresses, weather, history=None, history_all=None, portfolio=None):
+def build_features(rows, customers, addresses, weather, history=None, history_all=None, portfolio=None, line=None):
     """history: this line's per-policy yearly claims. history_all: all lines' yearly claims per customer
     (customer_id, year, claim_count, claim_cost, exposure). portfolio: all lines, train and test rows, one row per
     (policy_id, customer_id, address_id, year) occurrence, used for the household counts.
+    line: when given, the C026 per-line drop list (DROP_BY_LINE) is removed from the result.
     """
     start = pd.to_datetime(rows["period_start"])
     year = start.dt.year
@@ -79,4 +90,6 @@ def build_features(rows, customers, addresses, weather, history=None, history_al
             x[col] = x[col].map({True: 1.0, False: 0.0}).astype(float)  # C012: boolean with missing values
         elif x[col].dtype == object or pd.api.types.is_string_dtype(x[col]):
             x[col] = x[col].astype("category")
+    if line is not None:
+        x = x.drop(columns=[c for c in DROP_BY_LINE["all"] + DROP_BY_LINE[line] if c in x])
     return x
