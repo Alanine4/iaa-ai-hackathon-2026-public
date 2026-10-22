@@ -1,7 +1,8 @@
 """Tweedie (power 1.5) models of claim cost per unit exposure, all with the same fit/predict interface.
 
 fit(x, rate, weight, valid=None): rate = cost / exposure, weight = exposure (C010).
-valid = (x, rate, weight) enables early stopping for the tree models.
+valid = (x, rate, weight) enables early stopping for the tree models on that set.
+valid = "inner" (C027) early-stops on a seeded 10% of the training rows instead, so a scored fold is never seen.
 """
 import lightgbm as lgb
 import numpy as np
@@ -27,8 +28,23 @@ class Balanced:
     (motor LightGBM: 0.83 of actual on its own training rows). The factor uses training data only.
     """
 
+    early_stops = True  # False for models without early stopping: valid is ignored, no rows are held out
+
     def fit(self, x, y, w, valid=None):
-        self._fit(x, y, w, valid)
+        if isinstance(valid, str):
+            if valid != "inner":
+                raise ValueError(f"valid must be None, a (x, y, w) tuple or 'inner', got {valid!r}")
+            if self.early_stops:
+                # C027: hold out 10% of the training rows for early stopping; the balance factor below still uses all rows
+                holdout = np.zeros(len(x), dtype=bool)
+                holdout[np.random.default_rng(SEED).permutation(len(x))[:len(x) // 10]] = True
+                y_arr, w_arr = np.asarray(y), np.asarray(w)
+                self._fit(x[~holdout], y_arr[~holdout], w_arr[~holdout],
+                          (x[holdout], y_arr[holdout], w_arr[holdout]))
+            else:
+                self._fit(x, y, w, None)
+        else:
+            self._fit(x, y, w, valid)
         self.balance_ = float(np.sum(y * w) / np.sum(self._raw(x) * w))
         return self
 
@@ -38,6 +54,8 @@ class Balanced:
 
 class GLM(Balanced):
     """Actuarial-style GLM: numeric columns banded into deciles (missing = own band), all one-hot, log link."""
+
+    early_stops = False
 
     def __init__(self, n_bins=10, alpha=1e-4, max_iter=400, **_):
         self.n_bins, self.alpha, self.max_iter = n_bins, alpha, max_iter
@@ -71,6 +89,8 @@ class GAM(Balanced):
     Smoothness is controlled by a single L2 penalty (alpha) rather than per-term smoothing selection.
     Missing numeric values are imputed with the median and flagged by an indicator column.
     """
+
+    early_stops = False
 
     def __init__(self, n_knots=8, alpha=1e-4, max_iter=400, **_):
         self.n_knots, self.alpha, self.max_iter = n_knots, alpha, max_iter

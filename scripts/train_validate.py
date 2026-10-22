@@ -103,7 +103,7 @@ def run_line(line, names, shared):
         t0 = time.time()
         tuned = params.for_model(line, name)  # C018
         m = models.make(name, **tuned)
-        m.fit(x[fit_mask], y[fit_mask], w[fit_mask], valid=(x[val_mask], y[val_mask], w[val_mask]))
+        m.fit(x[fit_mask], y[fit_mask], w[fit_mask], valid="inner")  # C027
         rate = m.predict(x[val_mask])
         pred = rate * expo_val * comp_val * load_val  # expected reported cost at valuation date
         val_preds[name] = pred * trend_val

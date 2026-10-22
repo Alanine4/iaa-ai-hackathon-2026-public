@@ -36,7 +36,7 @@ def main(line):
         for name in MODELS:
             t0 = time.time()
             m = models.make(name, **params.for_model(line, name))
-            m.fit(x[fit], y[fit], w[fit], valid=(x[val], y[val], w[val]) if name in ("lgbm", "xgb") else None)
+            m.fit(x[fit], y[fit], w[fit], valid="inner")  # C027: inner split; GLM/GAM ignore it
             frame[name] = m.predict(x[val]) * scale
             log(f"{line} {val_year} {name}: d2={evaluate.tweedie_d2(actual, frame[name]):.5f} {time.time() - t0:.0f}s")
         frames.append(frame)
@@ -44,7 +44,7 @@ def main(line):
     pd.concat(frames).to_parquet(os.path.join(OUT, f"oof_{line}.parquet"), index=False)
 
     weights = evaluate.blend_weights(folds, step=0.05)
-    equal = {n: 0.25 for n in MODELS}
+    equal = {n: 1 / len(MODELS) for n in MODELS}
 
     def score(wts):
         return np.mean([evaluate.tweedie_d2(f["actual"], p * f["actual"].sum() / p.sum())

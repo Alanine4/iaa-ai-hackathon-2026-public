@@ -78,7 +78,7 @@ def main(family, lines):
                 scale = (t["exposure"] * t["completeness"]).to_numpy()[val] * load_f
                 t0 = time.time()
                 m = models.make(name, **cfg)
-                m.fit(x[fit], y[fit], w[fit], valid=(x[val], y[val], w[val]) if name in ("lgbm", "xgb") else None)
+                m.fit(x[fit], y[fit], w[fit], valid="inner")  # C027: inner split; GLM/GAM ignore it
                 pred = m.predict(x[val]) * scale
                 row = dict(line=line, model=name, config=str(cfg), val_year=val_year,
                            d2=evaluate.tweedie_d2(actual, pred),

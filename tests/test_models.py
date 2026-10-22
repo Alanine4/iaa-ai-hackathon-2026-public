@@ -75,3 +75,32 @@ def test_model_is_exactly_balanced_on_training_data(name, data):
     model.fit(x, y, w)
     # XGBoost predicts in float32, so totals agree to ~1e-8 rather than to double precision
     assert np.sum(model.predict(x) * w) == pytest.approx(np.sum(y * w), rel=1e-6)
+
+
+@pytest.mark.parametrize("name", ["lgbm", "xgb", "cat"])
+def test_inner_validation_early_stops_on_training_rows_and_stays_balanced(name, data):
+    # C027: valid="inner" carves the early-stopping set from the training rows, never from the scored fold
+    x, y, w, _ = data
+    model = models.make(name, n_estimators=150)
+    model.fit(x, y, w, valid="inner")
+    assert isinstance(model.best_iteration, int)
+    assert 1 <= model.best_iteration <= 150
+    pred = model.predict(x)
+    assert (pred > 0).all()
+    assert np.sum(pred * w) == pytest.approx(np.sum(y * w), rel=1e-6)
+
+
+@pytest.mark.parametrize("name", ["glm", "gam"])
+def test_linear_models_ignore_inner_validation(name, data):
+    x, y, w, _ = data
+    inner = models.make(name).fit(x, y, w, valid="inner").predict(x)
+    plain = models.make(name).fit(x, y, w, valid=None).predict(x)
+    assert np.allclose(inner, plain)
+
+
+@pytest.mark.parametrize("name", ["lgbm", "xgb", "cat"])
+def test_inner_validation_split_is_deterministic(name, data):
+    x, y, w, _ = data
+    first = models.make(name, n_estimators=150).fit(x, y, w, valid="inner").predict(x)
+    second = models.make(name, n_estimators=150).fit(x, y, w, valid="inner").predict(x)
+    assert np.array_equal(first, second)
