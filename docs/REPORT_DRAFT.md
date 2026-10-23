@@ -33,7 +33,7 @@ Every model fits capped cost per unit of completeness-weighted exposure with a T
 - Shallow trees beat deep ones. Per-line tuning was adopted only where the mean cross-validated gain was at least 0.002, a threshold fixed beforehand: motor LightGBM gained 0.0075, motor XGBoost 0.0031, contents XGBoost 0.0024 (C015, C018).
 - Developed pure premium rises over 2021 to 2024 (buildings 384 to 481), so a per-line log-linear trend scales predictions to 2025. We apply half the fitted trend (motor 1.018, buildings 1.095, contents 1.064) because the public board preferred half to none or full (C009, C019).
 
-Validation uses two expanding-window folds (train 2021-22, score 2023; train 2021-23, score 2024) on reported cost against prediction times completeness. `d2_cal` rescales each fold to its actual total, so it measures ranking, not level. The feature policy (C026) removed columns without frequency signal and raised mean LightGBM `d2_cal` from 0.0832 to 0.0887 on motor, 0.1094 to 0.1134 on buildings and 0.0891 to 0.0936 on contents. Final predictions blend the five models with per-line weights found on out-of-fold predictions (non-negative, 0.05 grid, sum 1). Searched weights are used only if they beat equal weights on both folds (C021, C030); motor falls back to equal weights (0.09031 against 0.09071 on 2024). The tree refit averages three seeds (C029). The final blends score a mean two-fold `d2_cal` of 0.0919 for motor, 0.1144 for buildings and 0.0945 for contents.
+Validation uses two expanding-window folds (train 2021-22, score 2023; train 2021-23, score 2024) on reported cost against prediction times completeness. `d2_cal` rescales each fold to its actual total, so it measures ranking, not level. The feature policy (C026) removed columns without frequency signal and raised mean LightGBM `d2_cal` from 0.0832 to 0.0887 on motor, 0.1094 to 0.1134 on buildings and 0.0891 to 0.0936 on contents. Final predictions blend the five models with per-line weights found on out-of-fold predictions (non-negative, 0.05 grid, sum 1). Searched weights are used only if they beat equal weights on both folds (C021, C030); motor falls back to equal weights (0.09031 against 0.09071 on 2024). The tree refit averages three seeds (C029). The final blends score a mean two-fold `d2_cal` of 0.0919 for motor, 0.1144 for buildings and 0.0945 for contents. Two further changes tried after S09, a target encoding of `make_model` (C031) and a re-tuning of the trees (C032), did not pass the adoption rule, so S09 is the Part 1 submission.
 
 | ID | Recipe | Public score |
 |---|---|---|
@@ -51,14 +51,14 @@ The leader's score at S07 was 0.12996. Validation and leaderboard scores sit on 
 
 ## 4. AI-assisted workflow
 
-We worked with Claude Code throughout (`docs/AI_LOG.md`, A01 to A17). The assistant produced a first version at each stage, and a person or an automated check decided whether to keep it.
+We worked with Claude Code throughout (`docs/AI_LOG.md`, A01 to A19). The assistant produced a first version at each stage, and a person or an automated check decided whether to keep it.
 
 - Exploration and data quality: profiling of all 11 files, and flagging Q1 to Q10 with counts. Cleaning rules such as T/W = timber were inferred from the year split and policy transitions, then written as failing tests before implementation (A02 to A04).
 - Target and leakage: claim matching and development were designed with AI and checked by full-data reconciliation (difference 0). A scan of every column for leakage found only `customer_service_contacts` (A05, A06).
 - Modelling and debugging: models, the D² scorer and the trend factor were written test-first. A crash on a boolean column (C012) and a 9% to 18% under-prediction of tree models (C013) were each diagnosed by experiment before any fix (A07, A08).
 - Independent review: a separate read-only AI audit produced findings B1 to B8, each backed by script output (A13).
 
-Verification relied on tests written before the code (122 pass), ablations on time-based folds, and the audit. These cases show AI output being corrected or rejected:
+Verification relied on tests written before the code (129 pass), ablations on time-based folds, and the audit. These cases show AI output being corrected or rejected:
 
 - **C022 caught as a no-op.** The per-peril reporting curves were designed to correct the mix of slow and fast perils. The implementing assistant showed numerically that a cost-share mix of per-peril curves equals the pooled curve (maximum difference 5e-16), so row completeness could not change. The code stays as an input, with no accuracy claim (A09).
 - **C023 rejected on evidence.** A per-peril frequency by severity model scored a mean `d2_cal` of 0.0801 on motor against 0.0893 for the best single model, 0.1045 against 0.1094 on buildings and 0.0879 against 0.0911 on contents. The main error was the peril mix: 2024 bodily injury counts were over-predicted by 1.43. It stayed out of the blend (A10, `docs/cv_freqsev.md`).
@@ -66,10 +66,12 @@ Verification relied on tests written before the code (122 pass), ablations on ti
 - **Audit B1 and B2 fixed.** Motor trees overfit the 300-level `make_model`: without it, LightGBM on the 2023 fold went from 0.08082 to 0.08868. `branch_id` lowered every model on the 2023 fold (buildings LightGBM 0.1071 to 0.1051). Both led to the C026 drop policy (A13, A14).
 - **Audit B4 probed, not adopted.** The audit argued that the trend counts the year level twice. A probe with a lower trend on buildings and contents (S08) scored 0.12820 against 0.12851, so half trend was kept.
 - **Audit B8 fixed.** Tree models stopped early on the fold being scored while GLM and GAM did not. Early stopping now uses a random 10% of the fitting rows (C027).
+- **C031 target encoding not adopted.** An out-of-fold target encoding of `make_model` (log relativity with credibility constant 2,000 exposure-years, 5-fold within the fitting rows so no row sees its own target) was built to recover the signal lost when the raw code was dropped. The codes carry real but weak signal (cross-year correlation of code relativities 0.18 against −0.05 after shuffling). The equal blend improved by 0.0003 on the mean and fell on the 2024 fold, below the 0.002 rule, so it was not adopted and the S09 files were restored (C031, A18).
+- **C032 re-tuning not adopted.** The tree hyper-parameter search was repeated on the final feature set with inner early stopping. The best motor LightGBM setting gained 0.0027 on the mean but lost 0.0008 on the 2024 fold; the other lines gained 0.0005 to 0.0018. Nothing met the rule, so the parameters stayed (C032, A19).
 
 ## 5. Guardrails and governance
 
-- **Change control.** Every change to data handling, code or assumptions has a row in `docs/CHANGELOG.md` (C000 to C030) with reason, evidence and code location. Code comments cite the same ID.
+- **Change control.** Every change to data handling, code or assumptions has a row in `docs/CHANGELOG.md` (C000 to C032) with reason, evidence and code location. Code comments cite the same ID.
 - **AI log.** `docs/AI_LOG.md` records what the assistant did, how it was checked and whether it was accepted, modified or rejected.
 - **Raw-data protection.** A SHA256 manifest, read-only attributes and an integrity test fail if any raw byte changes (C007).
 - **Tests before code.** The suite covers cleaning, matching, development, features, models, scoring and the blend guard.
@@ -90,7 +92,7 @@ Limitations, taken from the audit:
 - Open-claim reserving for bodily injury cannot be verified from one snapshot. Quickly reported severity falls from 20.7k to 16.6k across accident years while other motor perils rise, which could be under-reserving or a mix change.
 - The customer snapshot date is unknown, so early training rows may see later information.
 - The large-loss load is uniform within a line, while buildings and contents excess concentrates in the top risk decile.
-- Tuning and blend decisions made before the early-stopping fix (C018, C021) were not fully re-run (C027). The GAM uses a single penalty (C011).
+- Blend weights were re-estimated after the early-stopping fix (C028); the hyper-parameter search was repeated on the final feature set and changed nothing (C032). The GAM uses a single penalty (C011).
 - The public score covers about 33% of the test rows. The final ranking uses the other 67% and may move.
 
 ## 7. Adaptation to the new market (Part 2)
