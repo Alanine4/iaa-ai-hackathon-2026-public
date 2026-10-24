@@ -6,3 +6,5 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .claude/settings.local.json
+# Part 2 developed/ is a byte-identical copy of the Part 1 folder (verified by SHA256, C033); not stored twice
+data/iaa-ai-assisted-hackathon-2026-part-2/developed/*.parquet

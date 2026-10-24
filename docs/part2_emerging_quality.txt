@@ -1,0 +1,414 @@
+
+####################################################################################################
+# Q1 exposure vs period days (365 or 360 basis?)
+####################################################################################################
+
+policies_motor: rows=47,283; exposure > 1: 189 rows; top values {1.0139: 141, 365.0: 38, 301.0: 1, 90.0: 1, 1.0028: 1}
+  of these, exposure == period days: 47; exposure == 365/360 (1.0139): 141; exposure == 366/365 (1.0027): 0
+  good rows: max |exposure - days/365| = 0.0137; max |exposure - days/360| = 0.0139
+  good rows within 0.0006 of days/365: 99.86%; within 0.0006 of days/360: 1.87%
+  rows matching days/365: 47,030 (99.46%); rows matching days/360 only (360-day basis): 206 (0.44%); rows matching neither: 47 (0.10%) of which exposure == days: 47
+  days per row: min 1, max 365; rows with days > 365: 0; last period_end by start year: {'2023': '2023-12-31', '2024': '2024-12-30'}
+  rows per policy-year > 1: 3,477
+  rows whose period crosses a calendar year: 0
+
+test_motor: rows=90,521; exposure > 1: 0 rows; top values {}
+  good rows: max |exposure - days/365| = 0.0000; max |exposure - days/360| = 0.0139
+  good rows within 0.0006 of days/365: 100.00%; within 0.0006 of days/360: 1.06%
+  rows matching days/365: 90,521 (100.00%); rows matching days/360 only (360-day basis): 0 (0.00%); rows matching neither: 0 (0.00%) of which exposure == days: 0
+  days per row: min 1, max 365; rows with days > 365: 0; last period_end by start year: {'2025': '2025-12-31'}
+  rows per policy-year > 1: 6,614
+  rows whose period crosses a calendar year: 0
+
+policies_buildings: rows=27,447; exposure > 1: 117 rows; top values {1.0139: 84, 365.0: 24, 284.0: 1, 171.0: 1, 81.0: 1}
+  of these, exposure == period days: 33; exposure == 365/360 (1.0139): 84; exposure == 366/365 (1.0027): 0
+  good rows: max |exposure - days/365| = 0.0135; max |exposure - days/360| = 0.0139
+  good rows within 0.0006 of days/365: 99.87%; within 0.0006 of days/360: 1.39%
+  rows matching days/365: 27,294 (99.44%); rows matching days/360 only (360-day basis): 120 (0.44%); rows matching neither: 33 (0.12%) of which exposure == days: 33
+  days per row: min 1, max 365; rows with days > 365: 0; last period_end by start year: {'2023': '2023-12-31', '2024': '2024-12-30'}
+  rows per policy-year > 1: 1,041
+  rows whose period crosses a calendar year: 0
+
+test_buildings: rows=52,295; exposure > 1: 0 rows; top values {}
+  good rows: max |exposure - days/365| = 0.0000; max |exposure - days/360| = 0.0139
+  good rows within 0.0006 of days/365: 100.00%; within 0.0006 of days/360: 0.72%
+  rows matching days/365: 52,295 (100.00%); rows matching days/360 only (360-day basis): 0 (0.00%); rows matching neither: 0 (0.00%) of which exposure == days: 0
+  days per row: min 1, max 365; rows with days > 365: 0; last period_end by start year: {'2025': '2025-12-31'}
+  rows per policy-year > 1: 1,995
+  rows whose period crosses a calendar year: 0
+
+policies_contents: rows=34,566; exposure > 1: 146 rows; top values {1.0139: 112, 365.0: 21, 186.0: 1, 188.0: 1, 96.0: 1}
+  of these, exposure == period days: 34; exposure == 365/360 (1.0139): 112; exposure == 366/365 (1.0027): 0
+  good rows: max |exposure - days/365| = 0.0134; max |exposure - days/360| = 0.0139
+  good rows within 0.0006 of days/365: 99.85%; within 0.0006 of days/360: 1.59%
+  rows matching days/365: 34,368 (99.43%); rows matching days/360 only (360-day basis): 164 (0.47%); rows matching neither: 34 (0.10%) of which exposure == days: 34
+  days per row: min 1, max 365; rows with days > 365: 0; last period_end by start year: {'2023': '2023-12-31', '2024': '2024-12-30'}
+  rows per policy-year > 1: 1,895
+  rows whose period crosses a calendar year: 0
+
+test_contents: rows=66,247; exposure > 1: 0 rows; top values {}
+  good rows: max |exposure - days/365| = 0.0000; max |exposure - days/360| = 0.0139
+  good rows within 0.0006 of days/365: 100.00%; within 0.0006 of days/360: 0.87%
+  rows matching days/365: 66,247 (100.00%); rows matching days/360 only (360-day basis): 0 (0.00%); rows matching neither: 0 (0.00%) of which exposure == days: 0
+  days per row: min 1, max 365; rows with days > 365: 0; last period_end by start year: {'2025': '2025-12-31'}
+  rows per policy-year > 1: 3,611
+  rows whose period crosses a calendar year: 0
+
+####################################################################################################
+# Q2 customer_id leading zeros / joins
+####################################################################################################
+policies_motor: customer_id length counts {8: 47283}; not in customers: 0; ids starting with '0': 4,629; address_id not in addresses: 0
+test_motor: customer_id length counts {8: 90521}; not in customers: 0; ids starting with '0': 8,942; address_id not in addresses: 0
+policies_buildings: customer_id length counts {8: 27447}; not in customers: 0; ids starting with '0': 2,729; address_id not in addresses: 0
+test_buildings: customer_id length counts {8: 52295}; not in customers: 0; ids starting with '0': 5,264; address_id not in addresses: 0
+policies_contents: customer_id length counts {8: 34566}; not in customers: 0; ids starting with '0': 3,543; address_id not in addresses: 0
+test_contents: customer_id length counts {8: 66247}; not in customers: 0; ids starting with '0': 6,651; address_id not in addresses: 0
+customers: customer_id length counts {8: 135856}; ids starting with '0': 13,490
+customers never on a policy row: 0 of 135,856; addresses never on a policy row: 0 of 136,914
+weather: addresses not in addresses table: 0; years [np.int64(2023), np.int64(2024), np.int64(2025)]; rows per year {2023: 136914, 2024: 136914, 2025: 136914}; duplicated (address, year): 0
+
+####################################################################################################
+# Q3 sum_insured outliers (x1000?)
+####################################################################################################
+
+policies_buildings: quantiles {0.01: 73000.0, 0.5: 229000.0, 0.99: 525000.0, 0.999: 224432000.0}; max 470,000,000
+  rows > 1,000,000: 53  rows > 2,000,000: 53  rows > 5,000,000: 53
+  largest value <= 5m: 813,000; smallest value > 5m: 73,000,000; after dividing by 1000 the scaled values lie in 73,000 .. 470,000
+  largest gap in log10 sorted values: between 813,000 and 73,000,000
+  rows with sum_insured <= 0: 0; scaled share of rows: 0.19%
+
+test_buildings: quantiles {0.01: 74000.0, 0.5: 241000.0, 0.99: 549000.0, 0.999: 234412000.0}; max 568,000,000
+  rows > 1,000,000: 104  rows > 2,000,000: 104  rows > 5,000,000: 104
+  largest value <= 5m: 894,000; smallest value > 5m: 60,000,000; after dividing by 1000 the scaled values lie in 60,000 .. 568,000
+  largest gap in log10 sorted values: between 894,000 and 60,000,000
+  rows with sum_insured <= 0: 0; scaled share of rows: 0.20%
+
+policies_contents: quantiles {0.01: 10300.0, 0.5: 35800.0, 0.99: 114735.0, 0.999: 34396000.0}; max 131,600,000
+  rows > 1,000,000: 57  rows > 2,000,000: 57  rows > 5,000,000: 57
+  largest value <= 5m: 235,000; smallest value > 5m: 7,600,000; after dividing by 1000 the scaled values lie in 7,600 .. 131,600
+  largest gap in log10 sorted values: between 235,000 and 7,600,000
+  rows with sum_insured <= 0: 0; scaled share of rows: 0.16%
+
+test_contents: quantiles {0.01: 10700.0, 0.5: 36300.0, 0.99: 117600.0, 0.999: 33678600.0}; max 98,100,000
+  rows > 1,000,000: 135  rows > 2,000,000: 135  rows > 5,000,000: 135
+  largest value <= 5m: 283,200; smallest value > 5m: 9,200,000; after dividing by 1000 the scaled values lie in 9,200 .. 98,100
+  largest gap in log10 sorted values: between 283,200 and 9,200,000
+  rows with sum_insured <= 0: 0; scaled share of rows: 0.20%
+
+####################################################################################################
+# Q4 construction_type codes / case
+####################################################################################################
+policies_buildings: {'BRK': 19194, 'WOD': 3302, 'MIX': 2781, 'STN': 2170}
+test_buildings: {'BRK': 36709, 'WOD': 6255, 'MIX': 5214, 'STN': 4117}
+reference_policies: {nan: 13, 'BRK': 4, 'MIX': 2, 'WOD': 1}
+written_premium mean by construction_type (training):
+                    count   mean
+construction_type              
+BRK                19194  356.0
+MIX                 2781  357.2
+STN                 2170  362.2
+WOD                 3302  363.5
+
+####################################################################################################
+# Q5 claims -> policy rows (aiiaa.target.match_claims logic)
+####################################################################################################
+claim_id unique: True; claims by line: {'motor': 7183, 'buildings': 1059, 'contents': 1016}
+claims whose policy_id prefix (M/B/C) disagrees with line: 0
+
+motor: claims 7,183; matched to exactly 1 row 7,155; >1 rows 0; unmatched 28 (0.39%); policy_id not in policies_motor: 0
+  unmatched by loss year: {'2021': 4, '2022': 22, '2023': 2}
+  unmatched net cost (non-repudiated): 63,257 of total 15,919,145
+  all claims by loss year: {'2021': 4, '2022': 22, '2023': 3608, '2024': 3549}
+  unmatched claims with loss_date before the policy's first row: 28; after its last row: 0
+
+buildings: claims 1,059; matched to exactly 1 row 1,056; >1 rows 0; unmatched 3 (0.28%); policy_id not in policies_buildings: 0
+  unmatched by loss year: {'2021': 1, '2022': 2}
+  unmatched net cost (non-repudiated): 19,427 of total 9,578,176
+  all claims by loss year: {'2021': 1, '2022': 2, '2023': 519, '2024': 537}
+  unmatched claims with loss_date before the policy's first row: 3; after its last row: 0
+
+contents: claims 1,016; matched to exactly 1 row 1,011; >1 rows 0; unmatched 5 (0.49%); policy_id not in policies_contents: 0
+  unmatched by loss year: {'2021': 1, '2022': 4}
+  unmatched net cost (non-repudiated): 9,584 of total 2,592,938
+  all claims by loss year: {'2021': 1, '2022': 4, '2023': 499, '2024': 512}
+  unmatched claims with loss_date before the policy's first row: 5; after its last row: 0
+
+####################################################################################################
+# Q6 customer_service_contacts, Q8 telematics, Q9 renewal_decision
+####################################################################################################
+motor: customer_service_contacts max train 20 / test 5; train rows > 10: 61; renewal_decision in train: True, in test: False
+buildings: customer_service_contacts max train 11 / test 6; train rows > 10: 2; renewal_decision in train: True, in test: False
+contents: customer_service_contacts max train 11 / test 5; train rows > 10: 1; renewal_decision in train: True, in test: False
+policies_motor: telematics_opt_in present=False, telematics_score present=False, annual_mileage present=False, driver_age present=False
+test_motor: telematics_opt_in present=False, telematics_score present=False, annual_mileage present=False, driver_age present=False
+customers: credit_band present = False ; date_of_birth present = False ; gender present = True
+policies_motor renewal_decision: {'renewed': 39968, 'mid_term_change': 3477, 'lapsed_by_customer': 2369, 'cancelled': 1250, 'declined_by_insurer': 219}
+policies_buildings renewal_decision: {'renewed': 24102, 'lapsed_by_customer': 1460, 'mid_term_change': 1041, 'cancelled': 731, 'declined_by_insurer': 113}
+policies_contents renewal_decision: {'renewed': 29877, 'mid_term_change': 1895, 'lapsed_by_customer': 1828, 'cancelled': 936, 'declined_by_insurer': 30}
+
+####################################################################################################
+# Q7 missing-value rates (columns with any missing; developed Part 1 rate was about 2.5%)
+####################################################################################################
+addresses: flood_zone 2.95%, distance_to_river_km 11.99%, soil_type 12.04%, roof_type 11.93%, energy_rating 12.06%
+customers: occupation 12.16%, marital_status 12.03%, household_size 11.8%, years_at_address 11.94%, campaign_code 20.19%
+policies_motor: vehicle_age 11.85%, engine_size_cc 12.15%, overnight_parking 12.05%
+policies_buildings: days_unoccupied 11.99%, smoke_alarms 11.9%
+policies_contents: security_level 12.26%, high_value_items 11.77%
+test_motor: vehicle_age 12.23%, engine_size_cc 12.16%, overnight_parking 12.0%
+test_buildings: days_unoccupied 11.93%, smoke_alarms 12.13%
+test_contents: security_level 12.15%, high_value_items 12.01%
+claims: repairer_id 46.26%, third_party_id 70.7%
+
+####################################################################################################
+# occupation (free text), gender, age bands, region, case/whitespace variants in every text column
+####################################################################################################
+occupation: 80 distinct raw strings of 119,339 non-missing values
+top 20 raw values (repr shows hidden whitespace):
+  'Retired': 9,218
+  'Student': 6,445
+  'retired': 4,431
+  'student': 3,236
+  'Retired ': 2,736
+  'Care worker': 2,694
+  'Nurse': 2,648
+  'Teacher': 2,638
+  'Administrator': 2,636
+  'Hairdresser': 2,606
+  'Retail assistant': 2,587
+  'Accountant': 2,432
+  'Doctor': 2,430
+  'Sales representative': 2,416
+  'Unemployed': 2,413
+  'Software developer': 2,408
+  'Manager': 2,387
+  'Chef': 2,384
+  'Driver': 2,267
+  'Engineer': 2,230
+after strip + collapse spaces + lower-case: 40 distinct; self-employed prefix on 11,975 values (10.0%); distinct base occupations after removing the prefix: 20
+base occupations: ['accountant', 'administrator', 'builder', 'care worker', 'chef', 'doctor', 'driver', 'electrician', 'engineer', 'hairdresser', 'manager', 'mechanic', 'nurse', 'retail assistant', 'retired', 'sales representative', 'software developer', 'student', 'teacher', 'unemployed']
+values with leading/trailing/double whitespace: 17,982; all-lower-case values: 29,942
+raw strings that are whitespace/case variants of another raw string: 40 extra strings
+gender levels: {'F': 67973, 'M': 67883}
+marital_status levels: {'single': 54935, 'married': 51481, nan: 16348, 'divorced': 8858, 'widowed': 4234}
+region levels (addresses): {'E01': 17235, 'E02': 24481, 'E03': 40212, 'E04': 5874, 'E05': 22479, 'E06': 26633}
+policies_motor driver_age_band: {'65+': 13311, '17-24': 9419, '25-34': 9040, '50-64': 7908, '35-49': 7605}
+test_motor driver_age_band: {'25-34': 22945, '17-24': 22473, '65+': 21353, '50-64': 11942, '35-49': 11808}
+policies_buildings policyholder_age_band: {'65+': 7845, '17-24': 5468, '25-34': 5156, '50-64': 4566, '35-49': 4412}
+test_buildings policyholder_age_band: {'25-34': 13214, '17-24': 12907, '65+': 12343, '50-64': 6961, '35-49': 6870}
+policies_contents policyholder_age_band: {'65+': 9770, '17-24': 6997, '25-34': 6504, '50-64': 5721, '35-49': 5574}
+test_contents policyholder_age_band: {'25-34': 16805, '17-24': 16346, '65+': 15679, '50-64': 8774, '35-49': 8643}
+
+Text columns whose number of levels drops after strip + lower-case (hidden variants):
+  customers.occupation: 80 raw levels -> 40 after normalising
+
+identifier format checks (regex):
+  (no line printed above = all identifiers match their format)
+
+####################################################################################################
+# duplicated ids, overlapping rows, id overlap train/test/reference
+####################################################################################################
+policies_motor: row_id duplicated 0; fully duplicated rows (ignoring row_id) 0; rows overlapping the previous row of the same policy 0
+test_motor: row_id duplicated 0; fully duplicated rows (ignoring row_id) 0; rows overlapping the previous row of the same policy 0
+policies_buildings: row_id duplicated 0; fully duplicated rows (ignoring row_id) 0; rows overlapping the previous row of the same policy 0
+test_buildings: row_id duplicated 0; fully duplicated rows (ignoring row_id) 0; rows overlapping the previous row of the same policy 0
+policies_contents: row_id duplicated 0; fully duplicated rows (ignoring row_id) 0; rows overlapping the previous row of the same policy 0
+test_contents: row_id duplicated 0; fully duplicated rows (ignoring row_id) 0; rows overlapping the previous row of the same policy 0
+row_id duplicated across all six policy tables: 0
+reference_policies row_id found in test files: 20 of 20; in sample_submission: 20
+  written_premium equal to test file: 20 of 20; exposure equal: 20
+
+####################################################################################################
+# date ranges (period_start / period_end), per table
+####################################################################################################
+policies_motor: period_start 2023-01-01 .. 2024-12-29; period_end 2023-01-01 .. 2024-12-30
+test_motor: period_start 2025-01-01 .. 2025-12-30; period_end 2025-01-01 .. 2025-12-31
+policies_buildings: period_start 2023-01-01 .. 2024-12-29; period_end 2023-01-02 .. 2024-12-30
+test_buildings: period_start 2025-01-01 .. 2025-12-30; period_end 2025-01-01 .. 2025-12-31
+policies_contents: period_start 2023-01-01 .. 2024-12-29; period_end 2023-01-01 .. 2024-12-30
+test_contents: period_start 2025-01-01 .. 2025-12-30; period_end 2025-01-01 .. 2025-12-31
+claims: loss_date 2021-10-27 .. 2024-12-29; report_date 2023-01-02 .. 2024-12-30
+
+####################################################################################################
+# training vs test: exposure, new business, seen policies, region mix
+####################################################################################################
+
+motor
+  test exposure quantiles {0.0: 0.0027, 0.05: 0.2055, 0.25: 0.9616, 0.5: 0.9781, 0.75: 0.9945, 0.95: 1.0, 1.0: 1.0}; mean 0.8728; sum 79,006.9
+  test rows with exposure == 1: 16.8%; exposure < 0.5: 11.6%; < 0.1: 2.5%
+  train mean exposure by year {'2023': 1.224, '2024': 1.0895} (raw, before fixing exposure>1); median {'2023': 1.0, '2024': 1.0}
+  new_business share: train by year {'2023': 0.1208, '2024': 0.1529}; test 0.7603; by exposure: test 0.7685
+  test rows whose policy_id is in training: 24.0%; of these new_business=True: 0.0%; of unseen rows new_business=True: 100.0%
+  renewal_count: train median 7.0, max 16; test median 0.0, max 17; test new_business=True & renewal_count>0: 0; train new_business=True & renewal_count>0: 0; train new_business=False & renewal_count==0: 0
+  train rows flagged new_business in a later year than the policy's first row: 0
+  region mix by exposure:
+        train_share  test_share
+  region                         
+  E01          0.1111      0.1259
+  E02          0.1995      0.1792
+  E03          0.2901      0.2945
+  E04          0.0581      0.0435
+  E05          0.1545      0.1639
+  E06          0.1867      0.1930
+  channel mix by rows:
+                  train    test
+  channel                        
+  broker           0.7013  0.6995
+  direct           0.2497  0.2505
+  comparison_site  0.0490  0.0500
+  test addresses not on any training row: 75.0%
+
+buildings
+  test exposure quantiles {0.0: 0.0027, 0.05: 0.2959, 0.25: 0.9671, 0.5: 0.9808, 0.75: 0.9945, 0.95: 1.0, 1.0: 1.0}; mean 0.9059; sum 47,376.3
+  test rows with exposure == 1: 18.3%; exposure < 0.5: 8.1%; < 0.1: 1.7%
+  train mean exposure by year {'2023': 1.4899, '2024': 1.0116} (raw, before fixing exposure>1); median {'2023': 1.0, '2024': 1.0}
+  new_business share: train by year {'2023': 0.1198, '2024': 0.1533}; test 0.7595; by exposure: test 0.7676
+  test rows whose policy_id is in training: 24.1%; of these new_business=True: 0.0%; of unseen rows new_business=True: 100.0%
+  renewal_count: train median 7.0, max 16; test median 0.0, max 17; test new_business=True & renewal_count>0: 0; train new_business=True & renewal_count>0: 0; train new_business=False & renewal_count==0: 0
+  train rows flagged new_business in a later year than the policy's first row: 0
+  region mix by exposure:
+        train_share  test_share
+  region                         
+  E01          0.1218      0.1251
+  E02          0.1893      0.1786
+  E03          0.2912      0.2932
+  E04          0.0303      0.0425
+  E05          0.1554      0.1640
+  E06          0.2120      0.1966
+  channel mix by rows:
+                  train    test
+  channel                        
+  broker           0.7026  0.6988
+  direct           0.2460  0.2510
+  comparison_site  0.0514  0.0502
+  test addresses not on any training row: 76.9%
+
+contents
+  test exposure quantiles {0.0: 0.0027, 0.05: 0.2466, 0.25: 0.9644, 0.5: 0.9781, 0.75: 0.9945, 0.95: 1.0, 1.0: 1.0}; mean 0.8909; sum 59,016.4
+  test rows with exposure == 1: 17.3%; exposure < 0.5: 9.7%; < 0.1: 2.1%
+  train mean exposure by year {'2023': 1.1603, '2024': 1.0955} (raw, before fixing exposure>1); median {'2023': 1.0, '2024': 1.0}
+  new_business share: train by year {'2023': 0.1166, '2024': 0.1532}; test 0.7614; by exposure: test 0.7702
+  test rows whose policy_id is in training: 23.9%; of these new_business=True: 0.0%; of unseen rows new_business=True: 100.0%
+  renewal_count: train median 7.0, max 16; test median 0.0, max 17; test new_business=True & renewal_count>0: 0; train new_business=True & renewal_count>0: 0; train new_business=False & renewal_count==0: 0
+  train rows flagged new_business in a later year than the policy's first row: 0
+  region mix by exposure:
+        train_share  test_share
+  region                         
+  E01          0.1306      0.1267
+  E02          0.1874      0.1797
+  E03          0.2868      0.2929
+  E04          0.0380      0.0423
+  E05          0.1489      0.1645
+  E06          0.2082      0.1939
+  channel mix by rows:
+                  train    test
+  channel                        
+  broker           0.7031  0.6991
+  direct           0.2464  0.2510
+  comparison_site  0.0505  0.0499
+  test addresses not on any training row: 76.7%
+
+####################################################################################################
+# consistency between columns (new checks)
+####################################################################################################
+policies_motor: years_licensed > (band max age - 17): 0 rows (0.00%); ncb_years > years_licensed: 7,756; band 17-24 with years_licensed >= 8: 0; named_young_driver True with band 17-24: 0
+  vehicle_age min 3.0, max 26.0; years_licensed by band median: {'17-24': 1.0, '25-34': 7.0, '35-49': 21.0, '50-64': 36.0, '65+': 56.0}
+test_motor: years_licensed > (band max age - 17): 0 rows (0.00%); ncb_years > years_licensed: 20,051; band 17-24 with years_licensed >= 8: 0; named_young_driver True with band 17-24: 0
+  vehicle_age min 3.0, max 27.0; years_licensed by band median: {'17-24': 1.0, '25-34': 7.0, '35-49': 21.0, '50-64': 36.0, '65+': 57.0}
+customers: customer_since_year range 2008 .. 2025 (market started writing in 2023); customers with customer_since_year < 2023: 20.2%
+customers: years_at_address max 53.0; licence_points levels [np.int64(0), np.int64(3), np.int64(6), np.int64(9)]; surname distinct 600
+addresses: year_built range 1862 .. 2021; weather rows per address-year unique: True
+policies_motor: written_premium <= 0: 0; discount_applied levels [np.float64(0.0), np.float64(0.05), np.float64(0.1)]; discount 0.05 iff channel direct: 100.0% of rows
+test_motor: written_premium <= 0: 0; discount_applied levels [np.float64(0.0), np.float64(0.05), np.float64(0.1)]; discount 0.05 iff channel direct: 100.0% of rows
+policies_buildings: written_premium <= 0: 0; discount_applied levels [np.float64(0.0), np.float64(0.05), np.float64(0.1)]; discount 0.05 iff channel direct: 100.0% of rows
+test_buildings: written_premium <= 0: 0; discount_applied levels [np.float64(0.0), np.float64(0.05), np.float64(0.1)]; discount 0.05 iff channel direct: 100.0% of rows
+policies_contents: written_premium <= 0: 0; discount_applied levels [np.float64(0.0), np.float64(0.05), np.float64(0.1)]; discount 0.05 iff channel direct: 100.0% of rows
+test_contents: written_premium <= 0: 0; discount_applied levels [np.float64(0.0), np.float64(0.05), np.float64(0.1)]; discount 0.05 iff channel direct: 100.0% of rows
+
+####################################################################################################
+# claims: perils, status, lags, open share, recoveries, net cost and cap
+####################################################################################################
+claims by line x peril:
+ line               buildings  contents  motor
+peril                                        
+accidental_damage        122       340      0
+bodily_injury              0         0    450
+escape_of_water          268       172      0
+fire                      70         0      0
+flood                     81        86      0
+glass_hail                 0         0   1350
+own_damage                 0         0   2712
+storm                    466         0      0
+subsidence                52         0      0
+theft                      0       418    408
+third_party_prop           0         0   2263
+status share by line:
+ status     closed    open  repudiated
+line                                 
+buildings  0.8517  0.1483      0.0000
+contents   0.9291  0.0581      0.0128
+motor      0.8682  0.1169      0.0149
+status counts by line:
+ status     closed  open  repudiated
+line                               
+buildings     902   157           0
+contents      944    59          13
+motor        6236   840         107
+report_date before loss_date: 0; report_date after 2024-12-31: 0; loss_date after 2024-12-31: 0
+report lag days quantiles by line:
+            0.50  0.90   0.99   1.00
+line                               
+buildings   8.0  31.0  181.9  493.0
+contents    6.0  22.0   71.7  542.0
+motor       9.0  41.0  330.5  653.0
+report lag days quantiles by line x loss year (2023, 2024 only):
+                 0.50  0.90   0.99   1.00
+line      year                          
+buildings 2023   8.0  33.0  188.8  422.0
+          2024   8.0  30.0  110.0  224.0
+contents  2023   6.0  23.2   73.1  520.0
+          2024   6.0  19.0   42.0   64.0
+motor     2023   9.0  46.0  344.0  653.0
+          2024   8.0  36.0  136.5  330.0
+open share by line x loss year:
+ year       2021  2022   2023   2024
+line                               
+buildings   0.0   0.0  0.040  0.253
+contents    0.0   0.0  0.000  0.115
+motor       0.0   0.0  0.036  0.200
+claim counts by line x loss year:
+ year       2021  2022  2023  2024
+line                             
+buildings     1     2   519   537
+contents      1     4   499   512
+motor         4    22  3608  3549
+closed claims with incurred != paid: 0
+repudiated: n=120, paid sum=0, incurred sum=0, recoveries sum=0
+incurred - recoveries < 0: 0; paid > incurred: 0
+recoveries > 0 share and total by line:
+            share_with_recovery  total_recoveries  claims
+line                                                    
+buildings                0.000              0.00    1059
+contents                 0.000              0.00    1016
+motor                    0.105         904844.34    7183
+repairer_id / third_party_id missing share by line:
+            repairer_id  third_party_id
+line                                  
+buildings        1.000           1.000
+contents         1.000           1.000
+motor            0.307           0.622
+net cost quantiles by line (non-repudiated):
+             0.500    0.900     0.990     0.995     0.999     1.000
+line                                                              
+buildings  2331.0  17906.0  138510.0  220808.0  337871.0  361093.0
+contents   1177.0   6352.0   19960.0   28312.0   44253.0   50885.0
+motor       992.0   4923.0   18537.0   27578.0   59818.0  155655.0
+net cost mean and sum by line x loss year:
+              mean                               sum                               
+year         2021    2022     2023    2024     2021     2022       2023       2024
+line                                                                              
+buildings  5656.0  6885.0  11269.0  6909.0   5656.0  13771.0  5848688.0  3710061.0
+contents     98.0  2371.0   2618.0  2560.0     98.0   9485.0  1285655.0  1297700.0
+motor      3969.0  2047.0   2294.0  2204.0  15875.0  45033.0  8165109.0  7693127.0
+motor: cap at 99.5th percentile = 27,578; claims above cap 36 of 7076; share of net cost above the cap 5.01%
+buildings: cap at 99.5th percentile = 220,808; claims above cap 6 of 1059; share of net cost above the cap 4.85%
+contents: cap at 99.5th percentile = 28,312; claims above cap 6 of 1003; share of net cost above the cap 2.09%

@@ -1,0 +1,659 @@
+
+====================================================================================================
+addresses  rows=136,914  cols=16
+====================================================================================================
+                 col   dtype  missing%  nunique     min     p50     mean    max
+          address_id     str      0.00   136914     NaN     NaN      NaN    NaN
+              region     str      0.00        6     NaN     NaN      NaN    NaN
+       urban_density     str      0.00        4     NaN     NaN      NaN    NaN
+          flood_zone float64      2.95        5    1.00    1.00    1.513    5.0
+distance_to_river_km float64     11.99     1756    0.01    2.37    3.123   30.0
+         elevation_m float64      0.00      580    0.00    7.50    9.714   60.0
+           soil_type     str     12.04        5     NaN     NaN      NaN    NaN
+          year_built   int64      0.00      160 1862.00 1964.00 1958.908 2021.0
+       property_type     str      0.00        4     NaN     NaN      NaN    NaN
+           roof_type     str     11.93        2     NaN     NaN      NaN    NaN
+            basement    bool      0.00        2     NaN     NaN      NaN    NaN
+     trees_within_5m    bool      0.00        2     NaN     NaN      NaN    NaN
+     listed_building    bool      0.00        2     NaN     NaN      NaN    NaN
+            bedrooms   int64      0.00        7    1.00    3.00    3.027    7.0
+       energy_rating     str     12.06        7     NaN     NaN      NaN    NaN
+        solar_panels    bool      0.00        2     NaN     NaN      NaN    NaN
+  [address_id] 136,914 distinct, e.g. ['A9736411', 'A6546739', 'A1065263', 'A5881586', 'A0550616']
+  [region] E03: 40,212, E06: 26,633, E02: 24,481, E05: 22,479, E01: 17,235, E04: 5,874
+  [urban_density] suburban: 61,895, urban: 33,735, rural: 27,519, dense_urban: 13,765
+  [flood_zone] 1.0: 93,961, 2.0: 20,150, 3.0: 10,586, 4.0: 5,875, nan: 4,037, 5.0: 2,305
+  [soil_type] clay: 42,529, chalk: 19,499, loam: 19,491, rock: 19,476, sand: 19,439, nan: 16,480
+  [property_type] semi_detached: 40,812, detached: 34,496, terraced: 34,410, flat: 27,196
+  [roof_type] pitched: 108,677, nan: 16,337, flat: 11,900
+  [basement] False: 116,410, True: 20,504
+  [trees_within_5m] False: 120,551, True: 16,363
+  [listed_building] False: 132,860, True: 4,054
+  [bedrooms] 3: 47,799, 4: 34,533, 2: 31,010, 1: 12,027, 5: 10,394, 6: 1,116, 7: 35
+  [energy_rating] C: 24,213, B: 23,733, D: 20,576, A: 19,265, nan: 16,515, E: 13,892, F: 9,688, G: 9,032
+  [solar_panels] False: 123,182, True: 13,732
+
+====================================================================================================
+claims  rows=9,258  cols=12
+====================================================================================================
+             col   dtype  missing%  nunique  min      p50     mean       max
+        claim_id     str      0.00     9258  NaN      NaN      NaN       NaN
+       policy_id     str      0.00     7416  NaN      NaN      NaN       NaN
+            line     str      0.00        3  NaN      NaN      NaN       NaN
+           peril     str      0.00       11  NaN      NaN      NaN       NaN
+       loss_date  object      0.00      760  NaN      NaN      NaN       NaN
+     report_date  object      0.00      729  NaN      NaN      NaN       NaN
+          status     str      0.00        3  NaN      NaN      NaN       NaN
+    paid_to_date float64      0.00     9021  0.0 1029.005 2592.160 361092.64
+incurred_to_date float64      0.00     9043  0.0 1214.625 3131.897 361092.64
+      recoveries float64      0.00      753  0.0    0.000   97.736  10255.83
+     repairer_id     str     46.26      987  NaN      NaN      NaN       NaN
+  third_party_id     str     70.70     2713  NaN      NaN      NaN       NaN
+  [claim_id] 9,258 distinct, e.g. ['CL32268026', 'CL28349650', 'CL40256686', 'CL02220435', 'CL75733240']
+  [policy_id] 7,416 distinct, e.g. ['M08458533', 'M11120135', 'M87757694', 'M03298829', 'M18566567']
+  [line] motor: 7,183, buildings: 1,059, contents: 1,016
+  [peril] own_damage: 2,712, third_party_prop: 2,263, glass_hail: 1,350, theft: 826, storm: 466, accidental_damage: 462, bodily_injury: 450, escape_of_water: 440, flood: 167, fire: 70, subsidence: 52
+  [loss_date] 760 distinct, e.g. [datetime.date(2023, 3, 24), datetime.date(2023, 9, 10), datetime.date(2023, 5, 11), datetime.date(2023, 7, 3), datetime.date(2023, 12, 26)]
+  [report_date] 729 distinct, e.g. [datetime.date(2023, 4, 3), datetime.date(2023, 9, 18), datetime.date(2023, 5, 18), datetime.date(2023, 7, 6), datetime.date(2024, 2, 3)]
+  [status] closed: 8,082, open: 1,056, repudiated: 120
+  [repairer_id] 987 distinct, e.g. ['RP0120', 'RP0418', 'RP0281', 'RP0771', 'RP0305']
+  [third_party_id] 2,713 distinct, e.g. ['TP6024392', 'TP6057218', 'TP0834574', 'TP8002966', 'TP8905674']
+
+====================================================================================================
+customers  rows=135,856  cols=17
+====================================================================================================
+                col   dtype  missing%  nunique    min    p50     mean    max
+        customer_id     str      0.00   135856    NaN    NaN      NaN    NaN
+            surname     str      0.00      600    NaN    NaN      NaN    NaN
+             gender     str      0.00        2    NaN    NaN      NaN    NaN
+         occupation     str     12.16       80    NaN    NaN      NaN    NaN
+     marital_status     str     12.03        4    NaN    NaN      NaN    NaN
+     household_size float64     11.80        7    1.0    2.0    2.229    7.0
+    prior_claims_5y   int64      0.00        6    0.0    0.0    0.266    5.0
+     licence_points   int64      0.00        4    0.0    0.0    0.901    9.0
+   years_at_address float64     11.94       46    0.0    6.0    6.852   53.0
+customer_since_year   int64      0.00       18 2008.0 2025.0 2022.888 2025.0
+       email_domain     str      0.00        5    NaN    NaN      NaN    NaN
+  marketing_consent    bool      0.00        2    NaN    NaN      NaN    NaN
+document_preference     str      0.00        3    NaN    NaN      NaN    NaN
+   previous_insurer     str      0.00       40    NaN    NaN      NaN    NaN
+      campaign_code     str     20.19       15    NaN    NaN      NaN    NaN
+          branch_id   int64      0.00       25    1.0   13.0   12.971   25.0
+  marketing_segment     str      0.00       12    NaN    NaN      NaN    NaN
+  [customer_id] 135,856 distinct, e.g. ['38613727', '88219131', '25030155', '95537081', '70892415']
+  [surname] 600 distinct, e.g. ['Surname011', 'Surname207', 'Surname186', 'Surname476', 'Surname176']
+  [gender] F: 67,973, M: 67,883
+  [occupation] 80 distinct, e.g. ['Self-employed retail assistant', 'Self-employed software developer', 'Accountant', 'software developer', 'Self-employed builder']
+  [marital_status] single: 54,935, married: 51,481, nan: 16,348, divorced: 8,858, widowed: 4,234
+  [household_size] 1.0: 47,061, 2.0: 33,198, 3.0: 19,175, nan: 16,037, 4.0: 10,863, 5.0: 5,787, 6.0: 2,479, 7.0: 1,256
+  [prior_claims_5y] 0: 104,644, 1: 26,817, 2: 3,928, 3: 416, 4: 48, 5: 3
+  [licence_points] 0: 108,488, 3: 16,581, 6: 8,143, 9: 2,644
+  [email_domain] other: 27,324, inboxly: 27,295, posthub: 27,119, netbox: 27,082, mailone: 27,036
+  [marketing_consent] True: 75,092, False: 60,764
+  [document_preference] email: 81,586, app: 33,818, post: 20,452
+  [previous_insurer] 40 distinct, e.g. ['INS18', 'INS09', 'INS33', 'INS03', 'INS30']
+  [campaign_code] nan: 27,433, CMP10: 7,357, CMP02: 7,330, CMP13: 7,309, CMP07: 7,277, CMP08: 7,274, CMP14: 7,242, CMP01: 7,233, CMP09: 7,222, CMP12: 7,213, CMP05: 7,209, CMP11: 7,206, CMP00: 7,206, CMP03: 7,178, CMP06: 7,091, CMP04: 7,076
+  [marketing_segment] young_affluent: 34,870, young_mainstream: 16,106, mature_affluent: 13,310, midlife_affluent: 13,225, senior_affluent: 13,224, young_budget: 12,857, senior_mainstream: 6,063, midlife_mainstream: 5,999, mature_mainstream: 5,903, mature_budget: 4,906, senior_budget: 4,747, midlife_budget: 4,646
+
+====================================================================================================
+expenses  rows=8  cols=4
+====================================================================================================
+      col   dtype  missing%  nunique  min  p50   mean  max
+     item     str       0.0        8  NaN  NaN    NaN  NaN
+developed float64       0.0        7  0.0 0.11  5.700 45.0
+ emerging float64      12.5        6  0.0 0.12 12.233 85.0
+     unit     str       0.0        3  NaN  NaN    NaN  NaN
+  [item] fixed_expense_per_policy: 1, variable_expense: 1, commission_direct: 1, commission_comparison_site: 1, commission_broker: 1, premium_tax: 1, cat_reinsurance: 1, target_profit_margin: 1
+  [developed] 0.12: 2, 45.0: 1, 0.0: 1, 0.1: 1, 0.15: 1, 0.06: 1, 0.05: 1
+  [emerging] 0.08: 2, 85.0: 1, 0.15: 1, 0.0: 1, nan: 1, 0.2: 1, 0.12: 1
+  [unit] share of premium: 6, CU: 1, share of property risk premium: 1
+
+--- expenses in full ---
+                         item  developed  emerging                            unit
+0    fixed_expense_per_policy      45.00     85.00                              CU
+1            variable_expense       0.12      0.15                share of premium
+2           commission_direct       0.00      0.00                share of premium
+3  commission_comparison_site       0.10       NaN                share of premium
+4           commission_broker       0.15      0.20                share of premium
+5                 premium_tax       0.12      0.08                share of premium
+6             cat_reinsurance       0.06      0.12  share of property risk premium
+7        target_profit_margin       0.05      0.08                share of premium
+
+====================================================================================================
+policies_buildings  rows=27,447  cols=27
+====================================================================================================
+                      col   dtype  missing%  nunique        min       p50       mean          max
+                   row_id     str      0.00    27447        NaN       NaN        NaN          NaN
+                policy_id     str      0.00    14299        NaN       NaN        NaN          NaN
+              customer_id     str      0.00    14299        NaN       NaN        NaN          NaN
+               address_id     str      0.00    15340        NaN       NaN        NaN          NaN
+             period_start  object      0.00      727        NaN       NaN        NaN          NaN
+               period_end  object      0.00      623        NaN       NaN        NaN          NaN
+                 exposure float64      0.00      414     0.0027      1.00      1.231       365.00
+    policyholder_age_band     str      0.00        5        NaN       NaN        NaN          NaN
+              sum_insured float64      0.00      632 44000.0000 229000.00 679774.037 470000000.00
+        construction_type     str      0.00        4        NaN       NaN        NaN          NaN
+                occupancy     str      0.00        2        NaN       NaN        NaN          NaN
+          days_unoccupied float64     11.99      104     0.0000      7.00     10.469       119.00
+             smoke_alarms  object     11.90        2        NaN       NaN        NaN          NaN
+  accidental_damage_cover    bool      0.00        2        NaN       NaN        NaN          NaN
+                 mortgage    bool      0.00        2        NaN       NaN        NaN          NaN
+         voluntary_excess   int64      0.00        4     0.0000    250.00    201.598      1000.00
+        compulsory_excess   int64      0.00        1   350.0000    350.00    350.000       350.00
+                  channel     str      0.00        3        NaN       NaN        NaN          NaN
+           payment_method     str      0.00        2        NaN       NaN        NaN          NaN
+      missed_payments_12m   int64      0.00        6     0.0000      0.00      0.101         5.00
+             new_business    bool      0.00        2        NaN       NaN        NaN          NaN
+            renewal_count   int64      0.00       17     0.0000      7.00      6.896        16.00
+  days_quote_to_inception   int64      0.00       31     0.0000     13.00     13.132        30.00
+         discount_applied float64      0.00        3     0.0000      0.00      0.013         0.10
+          written_premium float64      0.00    19221    63.4500    237.56    357.522      4629.86
+customer_service_contacts   int64      0.00       12     0.0000      0.00      0.533        11.00
+         renewal_decision     str      0.00        5        NaN       NaN        NaN          NaN
+  [row_id] 27,447 distinct, e.g. ['B00021680', 'B00021681', 'B00021682', 'B00021683', 'B00021684']
+  [policy_id] 14,299 distinct, e.g. ['B16449179', 'B33008293', 'B91046784', 'B60586963', 'B31186449']
+  [customer_id] 14,299 distinct, e.g. ['88219131', '14469298', '92486477', '21008507', '75843908']
+  [address_id] 15,340 distinct, e.g. ['A6546739', 'A1190346', 'A6944531', 'A7385385', 'A1371358']
+  [period_start] 727 distinct, e.g. [datetime.date(2023, 11, 17), datetime.date(2023, 1, 1), datetime.date(2023, 5, 11), datetime.date(2023, 3, 23), datetime.date(2023, 3, 24)]
+  [period_end] 623 distinct, e.g. [datetime.date(2023, 12, 31), datetime.date(2023, 2, 5), datetime.date(2023, 12, 21), datetime.date(2023, 10, 7), datetime.date(2023, 11, 12)]
+  [policyholder_age_band] 65+: 7,845, 17-24: 5,468, 25-34: 5,156, 50-64: 4,566, 35-49: 4,412
+  [construction_type] BRK: 19,194, WOD: 3,302, MIX: 2,781, STN: 2,170
+  [occupancy] owner_occupied: 24,676, let: 2,771
+  [smoke_alarms] True: 20,536, False: 3,645, None: 3,266
+  [accidental_damage_cover] False: 16,475, True: 10,972
+  [mortgage] True: 15,145, False: 12,302
+  [voluntary_excess] 0: 13,635, 250: 8,263, 500: 4,163, 1000: 1,386
+  [compulsory_excess] 350: 27,447
+  [channel] broker: 19,284, direct: 6,753, comparison_site: 1,410
+  [payment_method] annual: 15,199, monthly: 12,248
+  [missed_payments_12m] 0: 25,221, 1: 1,767, 2: 379, 3: 67, 4: 11, 5: 2
+  [new_business] False: 23,661, True: 3,786
+  [discount_applied] 0.0: 20,507, 0.05: 6,753, 0.1: 187
+  [customer_service_contacts] 0: 17,367, 1: 7,203, 2: 1,932, 3: 528, 4: 236, 5: 105, 6: 54, 7: 8, 8: 7, 9: 3, 10: 2, 11: 2
+  [renewal_decision] renewed: 24,102, lapsed_by_customer: 1,460, mid_term_change: 1,041, cancelled: 731, declined_by_insurer: 113
+
+====================================================================================================
+policies_contents  rows=34,566  cols=28
+====================================================================================================
+                      col   dtype  missing%  nunique       min      p50       mean          max
+                   row_id     str      0.00    34566       NaN      NaN        NaN          NaN
+                policy_id     str      0.00    17689       NaN      NaN        NaN          NaN
+              customer_id     str      0.00    17689       NaN      NaN        NaN          NaN
+               address_id     str      0.00    18935       NaN      NaN        NaN          NaN
+             period_start  object      0.00      726       NaN      NaN        NaN          NaN
+               period_end  object      0.00      688       NaN      NaN        NaN          NaN
+                 exposure float64      0.00      431    0.0027     1.00      1.125       365.00
+    policyholder_age_band     str      0.00        5       NaN      NaN        NaN          NaN
+              sum_insured float64      0.00     1316 5200.0000 35800.00 113378.528 131600000.00
+                   tenure     str      0.00        2       NaN      NaN        NaN          NaN
+           security_level     str     12.26        3       NaN      NaN        NaN          NaN
+         high_value_items float64     11.77        6    0.0000     0.00      1.115         5.00
+  accidental_damage_cover    bool      0.00        2       NaN      NaN        NaN          NaN
+          works_from_home    bool      0.00        2       NaN      NaN        NaN          NaN
+                  lodgers    bool      0.00        2       NaN      NaN        NaN          NaN
+            bicycle_cover    bool      0.00        2       NaN      NaN        NaN          NaN
+         voluntary_excess   int64      0.00        4    0.0000     0.00    194.483      1000.00
+        compulsory_excess   int64      0.00        1  350.0000   350.00    350.000       350.00
+                  channel     str      0.00        3       NaN      NaN        NaN          NaN
+           payment_method     str      0.00        2       NaN      NaN        NaN          NaN
+      missed_payments_12m   int64      0.00        7    0.0000     0.00      0.103         6.00
+             new_business    bool      0.00        2       NaN      NaN        NaN          NaN
+            renewal_count   int64      0.00       17    0.0000     7.00      6.951        16.00
+  days_quote_to_inception   int64      0.00       31    0.0000    13.00     13.243        30.00
+         discount_applied float64      0.00        3    0.0000     0.00      0.013         0.10
+          written_premium float64      0.00    15791   26.6200   118.95    128.314       573.35
+customer_service_contacts   int64      0.00       12    0.0000     0.00      0.490        11.00
+         renewal_decision     str      0.00        5       NaN      NaN        NaN          NaN
+  [row_id] 34,566 distinct, e.g. ['C00034260', 'C00034261', 'C00034262', 'C00034263', 'C00034264']
+  [policy_id] 17,689 distinct, e.g. ['C31712473', 'C72559096', 'C49674476', 'C72394376', 'C95911511']
+  [customer_id] 17,689 distinct, e.g. ['88219131', '25030155', '95537081', '14469298', '92486477']
+  [address_id] 18,935 distinct, e.g. ['A6546739', 'A1065263', 'A5881586', 'A1190346', 'A6944531']
+  [period_start] 726 distinct, e.g. [datetime.date(2023, 11, 17), datetime.date(2023, 1, 1), datetime.date(2023, 5, 11), datetime.date(2023, 6, 22), datetime.date(2023, 5, 30)]
+  [period_end] 688 distinct, e.g. [datetime.date(2023, 12, 31), datetime.date(2023, 6, 9), datetime.date(2023, 12, 28), datetime.date(2023, 1, 23), datetime.date(2023, 1, 5)]
+  [policyholder_age_band] 65+: 9,770, 17-24: 6,997, 25-34: 6,504, 50-64: 5,721, 35-49: 5,574
+  [tenure] owner: 19,685, renter: 14,881
+  [security_level] standard: 10,584, alarm_and_locks: 10,545, locks: 9,199, nan: 4,238
+  [high_value_items] 0.0: 15,351, 1.0: 6,187, nan: 4,067, 2.0: 3,573, 3.0: 2,392, 5.0: 1,511, 4.0: 1,485
+  [accidental_damage_cover] False: 19,153, True: 15,413
+  [works_from_home] False: 25,932, True: 8,634
+  [lodgers] False: 32,832, True: 1,734
+  [bicycle_cover] False: 29,316, True: 5,250
+  [voluntary_excess] 0: 17,565, 250: 10,334, 500: 5,056, 1000: 1,611
+  [compulsory_excess] 350: 34,566
+  [channel] broker: 24,305, direct: 8,516, comparison_site: 1,745
+  [payment_method] annual: 19,288, monthly: 15,278
+  [missed_payments_12m] 0: 31,763, 1: 2,201, 2: 486, 3: 96, 4: 16, 5: 3, 6: 1
+  [new_business] False: 29,850, True: 4,716
+  [discount_applied] 0.0: 25,806, 0.05: 8,516, 0.1: 244
+  [customer_service_contacts] 0: 22,451, 1: 8,838, 2: 2,312, 3: 616, 4: 218, 5: 75, 6: 34, 7: 12, 8: 5, 9: 2, 10: 2, 11: 1
+  [renewal_decision] renewed: 29,877, mid_term_change: 1,895, lapsed_by_customer: 1,828, cancelled: 936, declined_by_insurer: 30
+
+====================================================================================================
+policies_motor  rows=47,283  cols=36
+====================================================================================================
+                      col   dtype  missing%  nunique      min     p50     mean     max
+                   row_id     str      0.00    47283      NaN     NaN      NaN     NaN
+                policy_id     str      0.00    23722      NaN     NaN      NaN     NaN
+              customer_id     str      0.00    23722      NaN     NaN      NaN     NaN
+               address_id     str      0.00    23799      NaN     NaN      NaN     NaN
+             period_start  object      0.00      728      NaN     NaN      NaN     NaN
+               period_end  object      0.00      726      NaN     NaN      NaN     NaN
+                 exposure float64      0.00      432   0.0027    1.00    1.151  365.00
+          driver_age_band     str      0.00        5      NaN     NaN      NaN     NaN
+           years_licensed   int64      0.00       74   0.0000   24.00   26.876   73.00
+                ncb_years   int64      0.00       16   0.0000    6.00    6.365   15.00
+      vehicle_value_group   int64      0.00       20   1.0000   11.00   10.872   20.00
+              vehicle_age float64     11.85       24   3.0000    9.00   10.254   26.00
+               make_model     str      0.00      300      NaN     NaN      NaN     NaN
+           engine_size_cc float64     12.15       31 500.0000 2100.00 2095.999 3600.00
+                body_type     str      0.00        5      NaN     NaN      NaN     NaN
+             transmission     str      0.00        2      NaN     NaN      NaN     NaN
+                    seats   int64      0.00        4   2.0000    5.00    4.905    7.00
+           vehicle_colour     str      0.00        8      NaN     NaN      NaN     NaN
+                fuel_type     str      0.00        4      NaN     NaN      NaN     NaN
+            driver_assist    bool      0.00        2      NaN     NaN      NaN     NaN
+               cover_type     str      0.00        3      NaN     NaN      NaN     NaN
+        overnight_parking     str     12.05        3      NaN     NaN      NaN     NaN
+              vehicle_use     str      0.00        3      NaN     NaN      NaN     NaN
+       named_young_driver    bool      0.00        2      NaN     NaN      NaN     NaN
+         voluntary_excess   int64      0.00        4   0.0000  250.00  270.890 1000.00
+        compulsory_excess   int64      0.00        1 250.0000  250.00  250.000  250.00
+                  channel     str      0.00        3      NaN     NaN      NaN     NaN
+           payment_method     str      0.00        2      NaN     NaN      NaN     NaN
+      missed_payments_12m   int64      0.00        6   0.0000    0.00    0.100    5.00
+             new_business    bool      0.00        2      NaN     NaN      NaN     NaN
+            renewal_count   int64      0.00       17   0.0000    7.00    6.887   16.00
+  days_quote_to_inception   int64      0.00       31   0.0000   13.00   13.139   30.00
+         discount_applied float64      0.00        3   0.0000    0.00    0.013    0.10
+          written_premium float64      0.00    33413 192.5400  502.06  611.582 2199.17
+customer_service_contacts   int64      0.00       20   0.0000    0.00    0.808   20.00
+         renewal_decision     str      0.00        5      NaN     NaN      NaN     NaN
+  [row_id] 47,283 distinct, e.g. ['M00000000', 'M00000001', 'M00000002', 'M00000003', 'M00000004']
+  [policy_id] 23,722 distinct, e.g. ['M65448075', 'M10362442', 'M18214761', 'M63493016', 'M80545965']
+  [customer_id] 23,722 distinct, e.g. ['38613727', '70892415', '14469298', '66335797', '79808363']
+  [address_id] 23,799 distinct, e.g. ['A9736411', 'A0550616', 'A1190346', 'A8475977', 'A4097369']
+  [period_start] 728 distinct, e.g. [datetime.date(2023, 1, 1), datetime.date(2023, 7, 6), datetime.date(2023, 7, 11), datetime.date(2023, 6, 8), datetime.date(2023, 12, 17)]
+  [period_end] 726 distinct, e.g. [datetime.date(2023, 12, 31), datetime.date(2023, 4, 7), datetime.date(2023, 9, 27), datetime.date(2023, 4, 24), datetime.date(2023, 3, 22)]
+  [driver_age_band] 65+: 13,311, 17-24: 9,419, 25-34: 9,040, 50-64: 7,908, 35-49: 7,605
+  [make_model] 300 distinct, e.g. ['MM035', 'MM073', 'MM086', 'MM232', 'MM188']
+  [body_type] hatchback: 18,836, saloon: 9,454, suv: 9,282, estate: 5,692, coupe: 4,019
+  [transmission] manual: 25,968, automatic: 21,315
+  [seats] 5: 33,102, 4: 6,936, 7: 4,835, 2: 2,410
+  [vehicle_colour] black: 6,047, blue: 5,990, red: 5,984, green: 5,891, silver: 5,879, other: 5,873, white: 5,822, grey: 5,797
+  [fuel_type] petrol: 25,367, diesel: 14,046, hybrid: 6,900, electric: 970
+  [driver_assist] False: 33,174, True: 14,109
+  [cover_type] comprehensive: 37,219, third_party_fire_theft: 5,143, third_party_only: 4,921
+  [overnight_parking] driveway: 20,823, street: 12,546, garage: 8,217, nan: 5,697
+  [vehicle_use] social: 21,294, commuting: 21,224, business: 4,765
+  [named_young_driver] False: 44,835, True: 2,448
+  [voluntary_excess] 0: 19,079, 250: 14,406, 500: 9,182, 1000: 4,616
+  [compulsory_excess] 250: 47,283
+  [channel] broker: 33,161, direct: 11,806, comparison_site: 2,316
+  [payment_method] annual: 26,147, monthly: 21,136
+  [missed_payments_12m] 0: 43,532, 1: 2,956, 2: 631, 3: 137, 4: 21, 5: 6
+  [new_business] False: 40,748, True: 6,535
+  [discount_applied] 0.0: 35,159, 0.05: 11,806, 0.1: 318
+  [renewal_decision] renewed: 39,968, mid_term_change: 3,477, lapsed_by_customer: 2,369, cancelled: 1,250, declined_by_insurer: 219
+
+====================================================================================================
+reference_policies  rows=20  cols=50
+====================================================================================================
+                      col   dtype  missing%  nunique        min         p50       mean       max
+                   row_id     str       0.0       20        NaN         NaN        NaN       NaN
+                policy_id     str       0.0       20        NaN         NaN        NaN       NaN
+              customer_id     str       0.0       20        NaN         NaN        NaN       NaN
+               address_id     str       0.0       20        NaN         NaN        NaN       NaN
+             period_start  object       0.0       12        NaN         NaN        NaN       NaN
+               period_end  object       0.0        3        NaN         NaN        NaN       NaN
+                 exposure float64       0.0       14     0.0685      0.9726      0.855      1.00
+          driver_age_band     str      65.0        3        NaN         NaN        NaN       NaN
+           years_licensed float64      65.0        6     0.0000      5.0000      7.286     29.00
+                ncb_years float64      65.0        5     0.0000      5.0000      4.000     10.00
+      vehicle_value_group float64      65.0        6     5.0000      8.0000      8.143     12.00
+              vehicle_age float64      75.0        4     4.0000     11.0000      9.200     15.00
+               make_model     str      65.0        7        NaN         NaN        NaN       NaN
+           engine_size_cc float64      65.0        6  1300.0000   1700.0000   1700.000   2100.00
+                body_type     str      65.0        5        NaN         NaN        NaN       NaN
+             transmission     str      65.0        2        NaN         NaN        NaN       NaN
+                    seats float64      65.0        2     4.0000      5.0000      4.857      5.00
+           vehicle_colour     str      65.0        4        NaN         NaN        NaN       NaN
+                fuel_type     str      65.0        2        NaN         NaN        NaN       NaN
+            driver_assist  object      65.0        2        NaN         NaN        NaN       NaN
+               cover_type     str      65.0        3        NaN         NaN        NaN       NaN
+        overnight_parking     str      70.0        2        NaN         NaN        NaN       NaN
+              vehicle_use     str      65.0        3        NaN         NaN        NaN       NaN
+       named_young_driver  object      65.0        1        NaN         NaN        NaN       NaN
+         voluntary_excess   int64       0.0        3     0.0000    250.0000    250.000   1000.00
+        compulsory_excess   int64       0.0        2   250.0000    350.0000    315.000    350.00
+                  channel     str       0.0        2        NaN         NaN        NaN       NaN
+           payment_method     str       0.0        2        NaN         NaN        NaN       NaN
+      missed_payments_12m   int64       0.0        1     0.0000      0.0000      0.000      0.00
+             new_business    bool       0.0        2        NaN         NaN        NaN       NaN
+            renewal_count   int64       0.0        3     0.0000      0.0000      0.900     14.00
+  days_quote_to_inception   int64       0.0       19     0.0000     18.5000     16.350     29.00
+         discount_applied float64       0.0        2     0.0000      0.0000      0.008      0.05
+          written_premium float64       0.0       20    83.1800    270.8350    367.006   1131.78
+customer_service_contacts   int64       0.0        2     0.0000      0.0000      0.300      1.00
+                     line     str       0.0        3        NaN         NaN        NaN       NaN
+    policyholder_age_band     str      35.0        5        NaN         NaN        NaN       NaN
+              sum_insured float64      35.0       12 22100.0000 198000.0000 165107.692 378000.00
+        construction_type     str      65.0        3        NaN         NaN        NaN       NaN
+                occupancy     str      65.0        2        NaN         NaN        NaN       NaN
+          days_unoccupied float64      70.0        6     3.0000      5.5000      5.833      9.00
+             smoke_alarms  object      70.0        2        NaN         NaN        NaN       NaN
+  accidental_damage_cover  object      35.0        2        NaN         NaN        NaN       NaN
+                 mortgage  object      65.0        2        NaN         NaN        NaN       NaN
+                   tenure     str      70.0        2        NaN         NaN        NaN       NaN
+           security_level     str      70.0        3        NaN         NaN        NaN       NaN
+         high_value_items float64      75.0        4     0.0000      3.0000      2.400      5.00
+          works_from_home  object      70.0        2        NaN         NaN        NaN       NaN
+                  lodgers  object      70.0        1        NaN         NaN        NaN       NaN
+            bicycle_cover  object      70.0        1        NaN         NaN        NaN       NaN
+  [row_id] M00161473: 1, M00176777: 1, M00185311: 1, M00167496: 1, M00129413: 1, M00118569: 1, M00153851: 1, B00229821: 1, B00218282: 1, B00250679: 1, B00223369: 1, B00215809: 1, B00215707: 1, B00217584: 1, C00259568: 1, C00283470: 1, C00270331: 1, C00314425: 1, C00302985: 1, C00286287: 1
+  [policy_id] M92909747: 1, M42023395: 1, M83715550: 1, M61457154: 1, M41089337: 1, M75811658: 1, M47069725: 1, B92110463: 1, B74876592: 1, B05817658: 1, B73680946: 1, B88623113: 1, B75172079: 1, B13799940: 1, C16955632: 1, C11841593: 1, C97318122: 1, C17515168: 1, C36495409: 1, C12450281: 1
+  [customer_id] 88632978: 1, 30215970: 1, 37533851: 1, 48843509: 1, 05068935: 1, 81575987: 1, 72238013: 1, 32030141: 1, 44487130: 1, 61828611: 1, 24183771: 1, 56272063: 1, 44849767: 1, 38298979: 1, 92249376: 1, 93454577: 1, 58944765: 1, 27597742: 1, 77971827: 1, 68661780: 1
+  [address_id] A3687131: 1, A8460609: 1, A1367449: 1, A6557449: 1, A0759646: 1, A6924348: 1, A9220498: 1, A4529319: 1, A6888229: 1, A3204800: 1, A5001830: 1, A0629559: 1, A3936314: 1, A4959022: 1, A4488430: 1, A2257901: 1, A3143736: 1, A3128511: 1, A0664702: 1, A2307133: 1
+  [period_start] 2025-01-04: 3, 2025-01-11: 3, 2025-01-13: 3, 2025-01-14: 2, 2025-01-01: 2, 2025-01-07: 1, 2025-09-02: 1, 2025-01-15: 1, 2025-11-22: 1, 2025-01-03: 1, 2025-01-10: 1, 2025-01-06: 1
+  [period_end] 2025-12-31: 18, 2025-12-09: 1, 2025-02-06: 1
+  [driver_age_band] nan: 13, 17-24: 3, 25-34: 3, 35-49: 1
+  [years_licensed] nan: 13, 0.0: 2, 6.0: 1, 9.0: 1, 5.0: 1, 2.0: 1, 29.0: 1
+  [ncb_years] nan: 13, 5.0: 2, 1.0: 2, 0.0: 1, 6.0: 1, 10.0: 1
+  [vehicle_value_group] nan: 13, 6.0: 2, 11.0: 1, 12.0: 1, 8.0: 1, 5.0: 1, 9.0: 1
+  [vehicle_age] nan: 15, 11.0: 2, 15.0: 1, 5.0: 1, 4.0: 1
+  [make_model] nan: 13, MM029: 1, MM181: 1, MM012: 1, MM273: 1, MM186: 1, MM278: 1, MM152: 1
+  [engine_size_cc] nan: 13, 1500.0: 2, 2000.0: 1, 2100.0: 1, 1700.0: 1, 1300.0: 1, 1800.0: 1
+  [body_type] nan: 13, hatchback: 2, suv: 2, coupe: 1, saloon: 1, estate: 1
+  [transmission] nan: 13, manual: 4, automatic: 3
+  [seats] nan: 13, 5.0: 6, 4.0: 1
+  [vehicle_colour] nan: 13, silver: 4, red: 1, white: 1, green: 1
+  [fuel_type] nan: 13, petrol: 5, diesel: 2
+  [driver_assist] None: 13, True: 4, False: 3
+  [cover_type] nan: 13, comprehensive: 4, third_party_fire_theft: 2, third_party_only: 1
+  [overnight_parking] nan: 14, garage: 4, driveway: 2
+  [vehicle_use] nan: 13, social: 3, commuting: 2, business: 2
+  [named_young_driver] None: 13, False: 7
+  [voluntary_excess] 0: 9, 250: 8, 1000: 3
+  [compulsory_excess] 350: 13, 250: 7
+  [channel] broker: 17, direct: 3
+  [payment_method] monthly: 10, annual: 10
+  [missed_payments_12m] 0: 20
+  [new_business] True: 18, False: 2
+  [renewal_count] 0: 18, 4: 1, 14: 1
+  [discount_applied] 0.0: 17, 0.05: 3
+  [customer_service_contacts] 0: 14, 1: 6
+  [line] motor: 7, buildings: 7, contents: 6
+  [policyholder_age_band] nan: 7, 50-64: 4, 65+: 3, 35-49: 2, 17-24: 2, 25-34: 2
+  [sum_insured] nan: 7, 222000.0: 2, 378000.0: 1, 236000.0: 1, 362000.0: 1, 316000.0: 1, 198000.0: 1, 22100.0: 1, 35700.0: 1, 33400.0: 1, 27200.0: 1, 22900.0: 1, 71100.0: 1
+  [construction_type] nan: 13, BRK: 4, MIX: 2, WOD: 1
+  [occupancy] nan: 13, owner_occupied: 6, let: 1
+  [days_unoccupied] nan: 14, 3.0: 1, 8.0: 1, 4.0: 1, 5.0: 1, 6.0: 1, 9.0: 1
+  [smoke_alarms] None: 14, True: 5, False: 1
+  [accidental_damage_cover] False: 10, None: 7, True: 3
+  [mortgage] None: 13, False: 4, True: 3
+  [tenure] nan: 14, owner: 4, renter: 2
+  [security_level] nan: 14, alarm_and_locks: 3, standard: 2, locks: 1
+  [high_value_items] nan: 15, 0.0: 2, 3.0: 1, 4.0: 1, 5.0: 1
+  [works_from_home] None: 14, False: 4, True: 2
+  [lodgers] None: 14, False: 6
+  [bicycle_cover] None: 14, False: 6
+
+--- reference_policies in full ---
+       row_id  policy_id customer_id address_id period_start  period_end  exposure driver_age_band  years_licensed  ncb_years  vehicle_value_group  vehicle_age make_model  engine_size_cc  body_type transmission  seats vehicle_colour fuel_type driver_assist              cover_type overnight_parking vehicle_use named_young_driver  voluntary_excess  compulsory_excess channel payment_method  missed_payments_12m  new_business  renewal_count  days_quote_to_inception  discount_applied  written_premium  customer_service_contacts       line policyholder_age_band  sum_insured construction_type       occupancy  days_unoccupied smoke_alarms accidental_damage_cover mortgage  tenure   security_level  high_value_items works_from_home lodgers bicycle_cover
+0   M00161473  M92909747    88632978   A3687131   2025-01-14  2025-12-31    0.9644           17-24             0.0        0.0                  6.0         15.0      MM029          1500.0  hatchback       manual    5.0            red    diesel         False  third_party_fire_theft            garage      social              False               250                250  broker        monthly                    0          True              0                       24              0.00          1131.78                          0      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+1   M00176777  M42023395    30215970   A8460609   2025-01-04  2025-12-31    0.9918           25-34             6.0        5.0                 11.0          5.0      MM181          2000.0        suv       manual    5.0          white    diesel         False           comprehensive          driveway   commuting              False                 0                250  broker         annual                    0          True              0                       23              0.00           443.61                          0      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+2   M00185311  M83715550    37533851   A1367449   2025-01-14  2025-12-31    0.9644           17-24             0.0        1.0                 12.0          NaN      MM012          2100.0      coupe    automatic    5.0         silver    petrol          True        third_party_only            garage    business              False              1000                250  direct        monthly                    0          True              0                       26              0.05           872.31                          0      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+3   M00167496  M61457154    48843509   A6557449   2025-01-07  2025-12-31    0.9836           25-34             9.0        6.0                  8.0         11.0      MM273          1700.0        suv    automatic    4.0          green    petrol          True           comprehensive            garage    business              False               250                250  broker        monthly                    0          True              0                       12              0.00           463.95                          1      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+4   M00129413  M41089337    05068935   A0759646   2025-09-02  2025-12-31    0.3315           25-34             5.0        5.0                  5.0          NaN      MM186          1300.0  hatchback       manual    5.0         silver    petrol          True           comprehensive            garage      social              False               250                250  broker        monthly                    0          True              0                        2              0.00           354.15                          0      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+5   M00118569  M75811658    81575987   A6924348   2025-01-01  2025-12-09    0.9397           17-24             2.0        1.0                  6.0         11.0      MM278          1500.0     saloon    automatic    5.0         silver    petrol         False  third_party_fire_theft               NaN      social              False                 0                250  direct        monthly                    0         False              4                       16              0.05          1095.48                          1      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+6   M00153851  M47069725    72238013   A9220498   2025-01-15  2025-12-31    0.9616           35-49            29.0       10.0                  9.0          4.0      MM152          1800.0     estate       manual    5.0         silver    petrol          True           comprehensive          driveway   commuting              False                 0                250  broker         annual                    0          True              0                       18              0.00           414.72                          0      motor                   NaN          NaN               NaN             NaN              NaN         None                    None     None     NaN              NaN               NaN            None    None          None
+7   B00229821  B92110463    32030141   A4529319   2025-01-04  2025-12-31    0.9918             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None               250                350  broker        monthly                    0          True              0                       21              0.00           285.60                          1  buildings                 50-64     378000.0               BRK  owner_occupied              3.0         True                   False     True     NaN              NaN               NaN            None    None          None
+8   B00218282  B74876592    44487130   A6888229   2025-01-11  2025-12-31    0.9726             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None               250                350  broker         annual                    0          True              0                        0              0.00           230.80                          0  buildings                   65+     222000.0               MIX  owner_occupied              8.0         True                   False    False     NaN              NaN               NaN            None    None          None
+9   B00250679  B05817658    61828611   A3204800   2025-11-22  2025-12-31    0.1096             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None                 0                350  broker         annual                    0          True              0                       20              0.00           180.72                          0  buildings                 35-49     236000.0               BRK             let              4.0        False                    True     True     NaN              NaN               NaN            None    None          None
+10  B00223369  B73680946    24183771   A5001830   2025-01-03  2025-12-31    0.9945             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None                 0                350  broker        monthly                    0          True              0                        9              0.00           204.56                          1  buildings                 17-24     222000.0               WOD  owner_occupied              5.0         True                   False     True     NaN              NaN               NaN            None    None          None
+11  B00215809  B88623113    56272063   A0629559   2025-01-10  2025-12-31    0.9753             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None                 0                350  direct         annual                    0          True              0                        5              0.05           237.22                          1  buildings                 17-24     362000.0               BRK  owner_occupied              6.0         None                   False    False     NaN              NaN               NaN            None    None          None
+12  B00215707  B75172079    44849767   A3936314   2025-01-06  2025-12-31    0.9863             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None                 0                350  broker        monthly                    0          True              0                       29              0.00           272.44                          0  buildings                 50-64     316000.0               BRK  owner_occupied              9.0         True                    True    False     NaN              NaN               NaN            None    None          None
+13  B00217584  B13799940    38298979   A4959022   2025-01-13  2025-12-31    0.9671             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None                 0                350  broker        monthly                    0          True              0                        8              0.00           323.36                          0  buildings                 50-64     198000.0               MIX  owner_occupied              NaN         True                   False    False     NaN              NaN               NaN            None    None          None
+14  C00259568  C16955632    92249376   A4488430   2025-01-01  2025-12-31    1.0000             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None              1000                350  broker        monthly                    0         False             14                       13              0.00            83.18                          0   contents                 25-34      22100.0               NaN             NaN              NaN         None                   False     None  renter  alarm_and_locks               3.0           False   False         False
+15  C00283470  C11841593    93454577   A2257901   2025-01-11  2025-12-31    0.9726             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None               250                350  broker         annual                    0          True              0                        4              0.00           117.97                          0   contents                   65+      35700.0               NaN             NaN              NaN         None                   False     None   owner            locks               4.0            True   False         False
+16  C00270331  C97318122    58944765   A3143736   2025-01-11  2025-12-31    0.9726             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None              1000                350  broker         annual                    0          True              0                       22              0.00           140.29                          0   contents                 50-64      33400.0               NaN             NaN              NaN         None                    True     None  renter  alarm_and_locks               NaN            True   False         False
+17  C00314425  C17515168    27597742   A3128511   2025-01-13  2025-02-06    0.0685             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None               250                350  broker         annual                    0          True              0                       28              0.00           102.87                          1   contents                 25-34      27200.0               NaN             NaN              NaN         None                   False     None   owner         standard               0.0           False   False         False
+18  C00302985  C36495409    77971827   A0664702   2025-01-04  2025-12-31    0.9918             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None               250                350  broker         annual                    0          True              0                       19              0.00           115.88                          0   contents                   65+      22900.0               NaN             NaN              NaN         None                   False     None   owner  alarm_and_locks               5.0           False   False         False
+19  C00286287  C12450281    68661780   A2307133   2025-01-13  2025-12-31    0.9671             NaN             NaN        NaN                  NaN          NaN        NaN             NaN        NaN          NaN    NaN            NaN       NaN          None                     NaN               NaN         NaN               None                 0                350  broker         annual                    0          True              0                       28              0.00           269.23                          0   contents                 35-49      71100.0               NaN             NaN              NaN         None                   False     None   owner         standard               0.0           False   False         False
+
+====================================================================================================
+sample_submission  rows=209,063  cols=2
+====================================================================================================
+       col   dtype  missing%  nunique  min  p50  mean  max
+    row_id     str       0.0   209063  NaN  NaN   NaN  NaN
+prediction float64       0.0        1  0.0  0.0   0.0  0.0
+  [row_id] 209,063 distinct, e.g. ['M00109296', 'M00109297', 'M00109298', 'M00109299', 'M00109300']
+  [prediction] 0.0: 209,063
+
+====================================================================================================
+test_buildings  rows=52,295  cols=26
+====================================================================================================
+                      col   dtype  missing%  nunique        min         p50       mean          max
+                   row_id     str      0.00    52295        NaN         NaN        NaN          NaN
+                policy_id     str      0.00    50300        NaN         NaN        NaN          NaN
+              customer_id     str      0.00    50300        NaN         NaN        NaN          NaN
+               address_id     str      0.00    52295        NaN         NaN        NaN          NaN
+             period_start  object      0.00      364        NaN         NaN        NaN          NaN
+               period_end  object      0.00      364        NaN         NaN        NaN          NaN
+                 exposure float64      0.00      365     0.0027      0.9808      0.906         1.00
+    policyholder_age_band     str      0.00        5        NaN         NaN        NaN          NaN
+              sum_insured float64      0.00      685 45000.0000 241000.0000 730946.917 568000000.00
+        construction_type     str      0.00        4        NaN         NaN        NaN          NaN
+                occupancy     str      0.00        2        NaN         NaN        NaN          NaN
+          days_unoccupied float64     11.93      104     0.0000      7.0000     10.468       119.00
+             smoke_alarms  object     12.13        2        NaN         NaN        NaN          NaN
+  accidental_damage_cover    bool      0.00        2        NaN         NaN        NaN          NaN
+                 mortgage    bool      0.00        2        NaN         NaN        NaN          NaN
+         voluntary_excess   int64      0.00        4     0.0000    250.0000    200.076      1000.00
+        compulsory_excess   int64      0.00        1   350.0000    350.0000    350.000       350.00
+                  channel     str      0.00        3        NaN         NaN        NaN          NaN
+           payment_method     str      0.00        2        NaN         NaN        NaN          NaN
+      missed_payments_12m   int64      0.00        7     0.0000      0.0000      0.101         7.00
+             new_business    bool      0.00        2        NaN         NaN        NaN          NaN
+            renewal_count   int64      0.00       18     0.0000      0.0000      1.824        17.00
+  days_quote_to_inception   int64      0.00       31     0.0000     13.0000     13.155        30.00
+         discount_applied float64      0.00        3     0.0000      0.0000      0.016         0.10
+          written_premium float64      0.00    30197    76.0400    256.7700    386.604      4717.45
+customer_service_contacts   int64      0.00        7     0.0000      0.0000      0.398         6.00
+  [row_id] 52,295 distinct, e.g. ['B00199817', 'B00199818', 'B00199819', 'B00199820', 'B00199821']
+  [policy_id] 50,300 distinct, e.g. ['B16449179', 'B91046784', 'B60586963', 'B31186449', 'B10887485']
+  [customer_id] 50,300 distinct, e.g. ['88219131', '92486477', '21008507', '75843908', '90082913']
+  [address_id] 52,295 distinct, e.g. ['A6546739', 'A6944531', 'A7385385', 'A1371358', 'A4692371']
+  [period_start] 364 distinct, e.g. [datetime.date(2025, 1, 1), datetime.date(2025, 4, 29), datetime.date(2025, 2, 7), datetime.date(2025, 9, 17), datetime.date(2025, 8, 22)]
+  [period_end] 364 distinct, e.g. [datetime.date(2025, 12, 31), datetime.date(2025, 11, 16), datetime.date(2025, 1, 10), datetime.date(2025, 10, 19), datetime.date(2025, 12, 27)]
+  [policyholder_age_band] 25-34: 13,214, 17-24: 12,907, 65+: 12,343, 50-64: 6,961, 35-49: 6,870
+  [construction_type] BRK: 36,709, WOD: 6,255, MIX: 5,214, STN: 4,117
+  [occupancy] owner_occupied: 47,055, let: 5,240
+  [smoke_alarms] True: 39,155, False: 6,799, None: 6,341
+  [accidental_damage_cover] False: 31,431, True: 20,864
+  [mortgage] True: 28,501, False: 23,794
+  [voluntary_excess] 0: 26,129, 250: 15,684, 500: 7,880, 1000: 2,602
+  [compulsory_excess] 350: 52,295
+  [channel] broker: 36,543, direct: 13,128, comparison_site: 2,624
+  [payment_method] annual: 28,756, monthly: 23,539
+  [missed_payments_12m] 0: 48,098, 1: 3,336, 2: 688, 3: 138, 4: 30, 5: 4, 7: 1
+  [new_business] True: 39,716, False: 12,579
+  [discount_applied] 0.0: 37,189, 0.05: 13,128, 0.1: 1,978
+  [customer_service_contacts] 0: 35,138, 1: 13,961, 2: 2,765, 3: 389, 4: 34, 5: 7, 6: 1
+
+====================================================================================================
+test_contents  rows=66,247  cols=27
+====================================================================================================
+                      col   dtype  missing%  nunique       min        p50       mean         max
+                   row_id     str      0.00    66247       NaN        NaN        NaN         NaN
+                policy_id     str      0.00    62636       NaN        NaN        NaN         NaN
+              customer_id     str      0.00    62636       NaN        NaN        NaN         NaN
+               address_id     str      0.00    64690       NaN        NaN        NaN         NaN
+             period_start  object      0.00      364       NaN        NaN        NaN         NaN
+               period_end  object      0.00      364       NaN        NaN        NaN         NaN
+                 exposure float64      0.00      365    0.0027     0.9781      0.891        1.00
+    policyholder_age_band     str      0.00        5       NaN        NaN        NaN         NaN
+              sum_insured float64      0.00     1480 4900.0000 36300.0000 121722.833 98100000.00
+                   tenure     str      0.00        2       NaN        NaN        NaN         NaN
+           security_level     str     12.15        3       NaN        NaN        NaN         NaN
+         high_value_items float64     12.01        6    0.0000     0.0000      1.125        5.00
+  accidental_damage_cover    bool      0.00        2       NaN        NaN        NaN         NaN
+          works_from_home    bool      0.00        2       NaN        NaN        NaN         NaN
+                  lodgers    bool      0.00        2       NaN        NaN        NaN         NaN
+            bicycle_cover    bool      0.00        2       NaN        NaN        NaN         NaN
+         voluntary_excess   int64      0.00        4    0.0000     0.0000    199.311     1000.00
+        compulsory_excess   int64      0.00        1  350.0000   350.0000    350.000      350.00
+                  channel     str      0.00        3       NaN        NaN        NaN         NaN
+           payment_method     str      0.00        2       NaN        NaN        NaN         NaN
+      missed_payments_12m   int64      0.00        6    0.0000     0.0000      0.101        5.00
+             new_business    bool      0.00        2       NaN        NaN        NaN         NaN
+            renewal_count   int64      0.00       18    0.0000     0.0000      1.823       17.00
+  days_quote_to_inception   int64      0.00       31    0.0000    13.0000     13.135       30.00
+         discount_applied float64      0.00        3    0.0000     0.0000      0.016        0.10
+          written_premium float64      0.00    20608   29.1700   127.0300    137.176      665.49
+customer_service_contacts   int64      0.00        6    0.0000     0.0000      0.399        5.00
+  [row_id] 66,247 distinct, e.g. ['C00252112', 'C00252113', 'C00252114', 'C00252115', 'C00252116']
+  [policy_id] 62,636 distinct, e.g. ['C31712473', 'C49674476', 'C95911511', 'C00387851', 'C81475213']
+  [customer_id] 62,636 distinct, e.g. ['88219131', '95537081', '92486477', '21008507', '06810375']
+  [address_id] 64,690 distinct, e.g. ['A6546739', 'A5881586', 'A6944531', 'A7385385', 'A1546954']
+  [period_start] 364 distinct, e.g. [datetime.date(2025, 1, 1), datetime.date(2025, 4, 29), datetime.date(2025, 9, 17), datetime.date(2025, 8, 22), datetime.date(2025, 7, 20)]
+  [period_end] 364 distinct, e.g. [datetime.date(2025, 12, 31), datetime.date(2025, 11, 16), datetime.date(2025, 3, 17), datetime.date(2025, 11, 10), datetime.date(2025, 10, 19)]
+  [policyholder_age_band] 25-34: 16,805, 17-24: 16,346, 65+: 15,679, 50-64: 8,774, 35-49: 8,643
+  [tenure] owner: 37,230, renter: 29,017
+  [security_level] standard: 20,428, alarm_and_locks: 20,279, locks: 17,490, nan: 8,050
+  [high_value_items] 0.0: 29,246, 1.0: 11,632, nan: 7,954, 2.0: 6,983, 3.0: 4,580, 4.0: 3,009, 5.0: 2,843
+  [accidental_damage_cover] False: 36,209, True: 30,038
+  [works_from_home] False: 49,691, True: 16,556
+  [lodgers] False: 63,041, True: 3,206
+  [bicycle_cover] False: 56,152, True: 10,095
+  [voluntary_excess] 0: 33,228, 250: 19,837, 500: 9,875, 1000: 3,307
+  [compulsory_excess] 350: 66,247
+  [channel] broker: 46,313, direct: 16,630, comparison_site: 3,304
+  [payment_method] annual: 36,427, monthly: 29,820
+  [missed_payments_12m] 0: 60,929, 1: 4,178, 2: 915, 3: 194, 4: 28, 5: 3
+  [new_business] True: 50,441, False: 15,806
+  [discount_applied] 0.0: 47,101, 0.05: 16,630, 0.1: 2,516
+  [customer_service_contacts] 0: 44,477, 1: 17,696, 2: 3,555, 3: 467, 4: 50, 5: 2
+
+====================================================================================================
+test_motor  rows=90,521  cols=35
+====================================================================================================
+                      col   dtype  missing%  nunique      min       p50     mean     max
+                   row_id     str      0.00    90521      NaN       NaN      NaN     NaN
+                policy_id     str      0.00    83907      NaN       NaN      NaN     NaN
+              customer_id     str      0.00    83907      NaN       NaN      NaN     NaN
+               address_id     str      0.00    81670      NaN       NaN      NaN     NaN
+             period_start  object      0.00      364      NaN       NaN      NaN     NaN
+               period_end  object      0.00      364      NaN       NaN      NaN     NaN
+                 exposure float64      0.00      365   0.0027    0.9781    0.873    1.00
+          driver_age_band     str      0.00        5      NaN       NaN      NaN     NaN
+           years_licensed   int64      0.00       75   0.0000   13.0000   22.971   74.00
+                ncb_years   int64      0.00       16   0.0000    5.0000    6.048   15.00
+      vehicle_value_group   int64      0.00       20   1.0000   11.0000   10.720   20.00
+              vehicle_age float64     12.23       25   3.0000   10.0000   10.358   27.00
+               make_model     str      0.00      300      NaN       NaN      NaN     NaN
+           engine_size_cc float64     12.16       31 500.0000 2100.0000 2080.053 3600.00
+                body_type     str      0.00        5      NaN       NaN      NaN     NaN
+             transmission     str      0.00        2      NaN       NaN      NaN     NaN
+                    seats   int64      0.00        4   2.0000    5.0000    4.898    7.00
+           vehicle_colour     str      0.00        8      NaN       NaN      NaN     NaN
+                fuel_type     str      0.00        4      NaN       NaN      NaN     NaN
+            driver_assist    bool      0.00        2      NaN       NaN      NaN     NaN
+               cover_type     str      0.00        3      NaN       NaN      NaN     NaN
+        overnight_parking     str     12.00        3      NaN       NaN      NaN     NaN
+              vehicle_use     str      0.00        3      NaN       NaN      NaN     NaN
+       named_young_driver    bool      0.00        2      NaN       NaN      NaN     NaN
+         voluntary_excess   int64      0.00        4   0.0000  250.0000  273.530 1000.00
+        compulsory_excess   int64      0.00        1 250.0000  250.0000  250.000  250.00
+                  channel     str      0.00        3      NaN       NaN      NaN     NaN
+           payment_method     str      0.00        2      NaN       NaN      NaN     NaN
+      missed_payments_12m   int64      0.00        8   0.0000    0.0000    0.100    7.00
+             new_business    bool      0.00        2      NaN       NaN      NaN     NaN
+            renewal_count   int64      0.00       18   0.0000    0.0000    1.811   17.00
+  days_quote_to_inception   int64      0.00       31   0.0000   13.0000   13.155   30.00
+         discount_applied float64      0.00        3   0.0000    0.0000    0.016    0.10
+          written_premium float64      0.00    54027 173.9300  539.5000  677.917 2415.21
+customer_service_contacts   int64      0.00        6   0.0000    0.0000    0.400    5.00
+  [row_id] 90,521 distinct, e.g. ['M00109296', 'M00109297', 'M00109298', 'M00109299', 'M00109300']
+  [policy_id] 83,907 distinct, e.g. ['M65448075', 'M10362442', 'M63493016', 'M80545965', 'M09357681']
+  [customer_id] 83,907 distinct, e.g. ['38613727', '70892415', '66335797', '79808363', '21008507']
+  [address_id] 81,670 distinct, e.g. ['A9736411', 'A0550616', 'A8475977', 'A4097369', 'A7385385']
+  [period_start] 364 distinct, e.g. [datetime.date(2025, 1, 1), datetime.date(2025, 10, 8), datetime.date(2025, 10, 9), datetime.date(2025, 7, 23), datetime.date(2025, 3, 25)]
+  [period_end] 364 distinct, e.g. [datetime.date(2025, 12, 31), datetime.date(2025, 10, 14), datetime.date(2025, 11, 16), datetime.date(2025, 6, 9), datetime.date(2025, 4, 21)]
+  [driver_age_band] 25-34: 22,945, 17-24: 22,473, 65+: 21,353, 50-64: 11,942, 35-49: 11,808
+  [make_model] 300 distinct, e.g. ['MM158', 'MM073', 'MM022', 'MM172', 'MM234']
+  [body_type] hatchback: 39,462, suv: 16,570, saloon: 16,404, estate: 9,418, coupe: 8,667
+  [transmission] manual: 49,833, automatic: 40,688
+  [seats] 5: 63,377, 4: 13,487, 7: 9,044, 2: 4,613
+  [vehicle_colour] silver: 11,404, black: 11,385, red: 11,384, blue: 11,362, grey: 11,314, white: 11,283, other: 11,268, green: 11,121
+  [fuel_type] petrol: 48,948, diesel: 26,484, hybrid: 13,267, electric: 1,822
+  [driver_assist] False: 63,322, True: 27,199
+  [cover_type] comprehensive: 70,194, third_party_fire_theft: 10,214, third_party_only: 10,113
+  [overnight_parking] driveway: 39,965, street: 23,768, garage: 15,929, nan: 10,859
+  [vehicle_use] social: 40,801, commuting: 40,772, business: 8,948
+  [named_young_driver] False: 86,323, True: 4,198
+  [voluntary_excess] 0: 36,338, 250: 27,251, 500: 17,969, 1000: 8,963
+  [compulsory_excess] 250: 90,521
+  [channel] broker: 63,320, direct: 22,671, comparison_site: 4,530
+  [payment_method] annual: 49,770, monthly: 40,751
+  [missed_payments_12m] 0: 83,342, 1: 5,666, 2: 1,230, 3: 224, 4: 47, 5: 9, 6: 2, 7: 1
+  [new_business] True: 68,823, False: 21,698
+  [discount_applied] 0.0: 64,368, 0.05: 22,671, 0.1: 3,482
+  [customer_service_contacts] 0: 60,681, 1: 24,254, 2: 4,890, 3: 621, 4: 69, 5: 6
+
+====================================================================================================
+weather  rows=410,742  cols=9
+====================================================================================================
+                col   dtype  missing%  nunique      min      p50     mean    max
+         address_id     str       0.0   136914      NaN      NaN      NaN    NaN
+               year   int64       0.0        3 2023.000 2024.000 2024.000 2025.0
+          hail_days float64       0.0       76    0.000   12.000   14.156   83.0
+wind_exposure_index float64       0.0      101    0.000    5.200    5.069   10.0
+      freezing_days float64       0.0       74    0.000   22.000   22.457   74.0
+   dry_summer_index float64       0.0      810    0.132    0.669    0.665    1.0
+     wildfire_index float64       0.0      862    0.104    0.510    0.527    1.0
+        rainfall_mm float64       0.0     1770  622.000 1302.000 1335.520 2727.0
+ mean_temperature_c float64       0.0       98    9.600   15.100   15.098   19.3
+  [address_id] 136,914 distinct, e.g. ['A9736411', 'A6546739', 'A1065263', 'A5881586', 'A0550616']
+  [year] 2023: 136,914, 2024: 136,914, 2025: 136,914
+
+====================================================================================================
+KEY INTEGRITY
+====================================================================================================
+policies_motor: row_id unique=True, customer_id missing in customers=0, address_id missing in addresses=0, policies=23,722, rows by start year={'2023': 21680, '2024': 25603}, exposure sum=54,429
+policies_buildings: row_id unique=True, customer_id missing in customers=0, address_id missing in addresses=0, policies=14,299, rows by start year={'2023': 12580, '2024': 14867}, exposure sum=33,783
+policies_contents: row_id unique=True, customer_id missing in customers=0, address_id missing in addresses=0, policies=17,689, rows by start year={'2023': 15834, '2024': 18732}, exposure sum=38,893
+test_motor: row_id unique=True, customer_id missing in customers=0, address_id missing in addresses=0, policies=83,907, rows by start year={'2025': 90521}, exposure sum=79,007
+test_buildings: row_id unique=True, customer_id missing in customers=0, address_id missing in addresses=0, policies=50,300, rows by start year={'2025': 52295}, exposure sum=47,376
+test_contents: row_id unique=True, customer_id missing in customers=0, address_id missing in addresses=0, policies=62,636, rows by start year={'2025': 66247}, exposure sum=59,016
+motor: share of test policy_id seen in training = 24.0%
+buildings: share of test policy_id seen in training = 24.1%
+contents: share of test policy_id seen in training = 23.9%
+claims: claim_id unique=True, policy_id not in any training policy=0
+claims by line x loss year:
+ loss_date  2021  2022  2023  2024
+line                             
+buildings     1     2   519   537
+contents      1     4   499   512
+motor         4    22  3608  3549
+claims by line x status:
+ status     closed  open  repudiated
+line                               
+buildings     902   157           0
+contents      944    59          13
+motor        6236   840         107
+claims by line x peril:
+ line               buildings  contents  motor
+peril                                        
+accidental_damage        122       340      0
+bodily_injury              0         0    450
+escape_of_water          268       172      0
+fire                      70         0      0
+flood                     81        86      0
+glass_hail                 0         0   1350
+own_damage                 0         0   2712
+storm                    466         0      0
+subsidence                52         0      0
+theft                      0       418    408
+third_party_prop           0         0   2263
+
+sample_submission rows=209,063, ids match test exactly=True, prediction values=[0.]
