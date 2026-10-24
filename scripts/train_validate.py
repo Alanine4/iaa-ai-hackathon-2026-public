@@ -16,17 +16,21 @@ import pandas as pd
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, os.path.join(ROOT, "src"))
-from aiiaa import clean, evaluate, features, models, params  # noqa: E402
+from aiiaa import clean, evaluate, features, markets, models, params  # noqa: E402
 
-DATA = os.path.join(ROOT, "data", "iaa-ai-assisted-hackathon-2026-part-1")
-OUT = os.path.join(ROOT, "output")
+markets.select_from_argv(sys.argv)  # C034: `--market X` on any script that imports this module
+MARKET = markets.get()
+DATA = MARKET.data_dir  # C034: Part 1 folder by default, emerging folder with AIIAA_MARKET=emerging
+OUT = MARKET.out_dir  # C034: output/ by default, output/emerging/ for the emerging market
 LINES = ["motor", "buildings", "contents"]
 VALID_YEAR, TEST_YEAR = 2024, 2025
-TREND_SHARE = 0.5  # C019: half of the log-linear trend (public board: none 0.12376, half 0.12464, full 0.12453)
+TREND_SHARE = markets.get("developed").trend_share  # C019: half of the log-linear trend (public board: none 0.12376, half 0.12464, full 0.12453)
 
 
-def load(name):
-    return pd.read_parquet(os.path.join(DATA, f"{name}.parquet"))
+def load(name, market=None):
+    """Raw table `name` of the active market, or of `market` when given (C034)."""
+    folder = DATA if market is None else markets.get(market).data_dir
+    return pd.read_parquet(os.path.join(folder, f"{name}.parquet"))
 
 
 def log(msg):
@@ -181,5 +185,6 @@ def main(names, lines=LINES):
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
+    assert MARKET.name == "developed", "C034: train_validate.py is the Part 1 pipeline; use oof_predictions.py --market"
     main(sys.argv[1].split(",") if len(sys.argv) > 1 else ["glm", "gam", "lgbm", "xgb"],
          sys.argv[2].split(",") if len(sys.argv) > 2 else LINES)

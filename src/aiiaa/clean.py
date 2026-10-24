@@ -12,6 +12,11 @@ CONSTRUCTION_TYPES = {
     "non_standard": "non_standard",
     "t": "timber",  # code used in 2021-2022
     "w": "timber",  # code used in 2023-2024; same policies switch from T to W
+    # C035: emerging-market local codes (Kaggle Part 2 data page)
+    "brk": "brick",
+    "stn": "stone",
+    "wod": "timber",
+    "mix": "non_standard",  # "mixed or non-standard"
 }
 
 

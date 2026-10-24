@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
-from train_validate import LINES, OUT, ROOT, clean, evaluate, features, history_frame, load, log, models  # noqa: E402
+from train_validate import LINES, MARKET, OUT, ROOT, clean, evaluate, features, history_frame, load, log, models  # noqa: E402
 
 FOLDS = [(2023, [2021, 2022]), (2024, [2021, 2022, 2023])]
 N_RANDOM = 12
@@ -103,5 +103,6 @@ def main(family, lines):
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
+    assert MARKET.name == "developed", "C034: tune_cv.py folds are the developed 2021-2024 design"
     fam = sys.argv[1]
     main(fam, sys.argv[2].split(",") if len(sys.argv) > 2 else LINES)

@@ -102,3 +102,31 @@ def test_guarded_weights_fall_back_to_equal_and_quote_the_failing_fold():
     weights, rule = evaluate.guarded_weights(report, {"a": 0.7, "b": 0.3}, ["a", "b"])
     assert weights == {"a": 0.5, "b": 0.5}
     assert rule == "equal weights: searched weights lost on fold index 1 (0.09031 vs 0.09071)"
+
+
+def test_group_folds_keep_each_group_in_one_fold_and_use_every_fold():
+    # C036: grouped K-fold for the emerging market (groups = policy_id)
+    rng = np.random.default_rng(1)
+    groups = np.array([f"P{i}" for i in rng.integers(0, 300, 2000)], dtype=object)
+    fold = evaluate.group_folds(groups, n_folds=5, seed=42)
+    assert fold.shape == (2000,) and set(fold) == {0, 1, 2, 3, 4}
+    for g in np.unique(groups):
+        assert len(set(fold[groups == g])) == 1
+    sizes = np.bincount(fold)
+    assert sizes.min() > 0.6 * sizes.max()
+
+
+def test_group_folds_are_reproducible_and_seed_dependent():
+    groups = np.array([f"P{i % 97}" for i in range(1000)], dtype=object)
+    a = evaluate.group_folds(groups, 5, 42)
+    assert (a == evaluate.group_folds(groups, 5, 42)).all()
+    assert not (a == evaluate.group_folds(groups, 5, 7)).all()
+
+
+def test_guarded_weights_two_scores_time_fold_and_group_mean():
+    # C036: the emerging guard compares [time fold, grouped-CV mean]; searched must win on both
+    names = ["a", "b"]
+    win = {"weighted": [0.11, 0.21], "equal": [0.10, 0.20]}
+    lose = {"weighted": [0.11, 0.19], "equal": [0.10, 0.20]}
+    assert evaluate.guarded_weights(win, {"a": 0.7, "b": 0.3}, names)[0] == {"a": 0.7, "b": 0.3}
+    assert evaluate.guarded_weights(lose, {"a": 0.7, "b": 0.3}, names)[0] == {"a": 0.5, "b": 0.5}

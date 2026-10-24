@@ -19,9 +19,86 @@ DROP_BY_LINE = {
     "all": ["branch_id", "previous_insurer", "email_domain", "prior_claims_cust", "prior_cost_cust",
             "prior_exposure_cust", "n_policies_customer", "n_customers_address"],
     "motor": ["make_model"],
-    "buildings": ["document_preference", "marital_status", "occupation"],
-    "contents": ["document_preference", "marital_status", "occupation"],
+    "buildings": ["document_preference", "marital_status", "occupation", "self_employed"],  # C035: flag from occupation
+    "contents": ["document_preference", "marital_status", "occupation", "self_employed"],
 }
+
+# C035: common schema of the two Part 2 markets (harmonise). Ages are banded with the emerging cut points.
+AGE_BANDS = ["17-24", "25-34", "35-49", "50-64", "65+"]
+AGE_BAND_DTYPE = pd.CategoricalDtype(AGE_BANDS, ordered=True)
+AGE_COLUMNS = {"driver_age": "driver_age_band", "policyholder_age": "policyholder_age_band"}
+NOT_IN_EMERGING = {"rows": ["annual_mileage", "telematics_opt_in", "telematics_score"],
+                   "customers": ["date_of_birth", "credit_band"]}
+OCCUPATIONS = ["accountant", "administrator", "builder", "care worker", "chef", "doctor", "driver", "electrician",
+               "engineer", "hairdresser", "manager", "mechanic", "nurse", "retail assistant", "retired",
+               "sales representative", "software developer", "student", "teacher", "unemployed"]
+SELF_EMPLOYED_PREFIX = "self-employed "
+
+
+def age_band(age):
+    """C035: integer ages to the ordered bands 17-24, 25-34, 35-49, 50-64, 65+ (ages under 17 fall in 17-24)."""
+    return pd.cut(age, [-np.inf, 24, 34, 49, 64, np.inf], labels=AGE_BANDS).astype(AGE_BAND_DTYPE)
+
+
+def clean_occupation(occupation):
+    """C035 (N1): free-text occupation to (base job, self_employed). Text is trimmed, inner spaces collapsed and
+    lower-cased; a leading "self-employed " becomes self_employed=True; jobs outside OCCUPATIONS become "other".
+    Missing occupation stays missing in both outputs (self_employed None)."""
+    def one(raw):
+        if not isinstance(raw, str):
+            return None, None
+        text = " ".join(raw.split()).lower()
+        job = text.removeprefix(SELF_EMPLOYED_PREFIX)
+        return (job if job in OCCUPATIONS else "other"), text.startswith(SELF_EMPLOYED_PREFIX)
+
+    pairs = [one(v) for v in occupation]
+    return (pd.Series([p[0] for p in pairs], index=occupation.index, dtype=object),
+            pd.Series([p[1] for p in pairs], index=occupation.index, dtype=object))
+
+
+def harmonise(rows, customers, market):
+    """C035: policy rows and customers of either market in the common Part 2 schema.
+
+    Ages become ordered bands (developed ages are banded, emerging bands are validated); columns that the emerging
+    market lacks are dropped (so customer_age is no longer derived); gender is "unknown" in the developed market;
+    occupation is cleaned into a base job plus a self_employed flag; `market` is added. Band and gender columns are
+    moved to the end so both markets give the same column order. Returns new (rows, customers) frames.
+    """
+    r = rows.copy()
+    for age, band in AGE_COLUMNS.items():
+        if age in r:
+            r[band] = age_band(r.pop(age))
+        elif band in r:
+            values = r.pop(band)
+            unknown = sorted(set(values.dropna()) - set(AGE_BANDS))
+            if unknown:
+                raise ValueError(f"Unknown {band} values: {unknown}")
+            r[band] = values.astype(object).astype(AGE_BAND_DTYPE)
+    r = r.drop(columns=[c for c in NOT_IN_EMERGING["rows"] if c in r])
+    r["market"] = market
+    c = customers.drop(columns=[col for col in NOT_IN_EMERGING["customers"] if col in customers])
+    c["gender"] = c.pop("gender") if "gender" in c else "unknown"
+    if "occupation" in c:
+        c["occupation"], c["self_employed"] = clean_occupation(c["occupation"])
+    return r, c
+
+
+def concat_markets(frames):
+    """C035: stack feature frames of different markets; category columns get the union of their levels.
+    The result has a fresh RangeIndex (row ids collide across markets). Any other column must have the same dtype in
+    every frame (a mismatch, e.g. bool vs float, would otherwise become an object column silently)."""
+    if any(list(f.columns) != list(frames[0].columns) for f in frames):
+        raise ValueError("Feature frames of the markets have different columns")
+    for col in frames[0].columns:
+        kinds = {"category" if isinstance(f[col].dtype, pd.CategoricalDtype) else str(f[col].dtype) for f in frames}
+        if len(kinds) > 1:
+            raise ValueError(f"Column {col} has different dtypes across markets: {sorted(kinds)}")
+    out = pd.concat(frames, ignore_index=True)
+    for col in out.columns:
+        if any(isinstance(f[col].dtype, pd.CategoricalDtype) for f in frames) and                 not isinstance(out[col].dtype, pd.CategoricalDtype):
+            levels = list(dict.fromkeys(v for f in frames for v in f[col].cat.categories))
+            out[col] = pd.Categorical(out[col], categories=levels)
+    return out
 
 
 def prior_experience(rows, history, by="policy_id", suffix=""):
@@ -74,7 +151,8 @@ def build_features(rows, customers, addresses, weather, history=None, history_al
     x = x.merge(weather, on=["address_id", "year"], how="left")
     x.index = rows.index
 
-    x["customer_age"] = (start - pd.to_datetime(x["date_of_birth"])).dt.days / 365.25
+    if "date_of_birth" in x:  # C035: harmonised Part 2 tables have no date_of_birth
+        x["customer_age"] = (start - pd.to_datetime(x["date_of_birth"])).dt.days / 365.25
     x["customer_tenure"] = year - x["customer_since_year"]
     x["property_age"] = year - x["year_built"]
     x = x.join(prior_experience(rows, history))

@@ -69,6 +69,15 @@ def guarded_weights(report, searched, names):
     return {n: 1 / len(names) for n in names}, "equal weights: searched weights lost on " + ", ".join(losses)
 
 
+def group_folds(groups, n_folds=5, seed=42):
+    """C036: grouped K-fold assignment: the distinct groups are shuffled with `seed` and dealt round-robin to
+    n_folds folds, so every row of a group lands in the same fold. Returns the fold index (0..n_folds-1) per row."""
+    codes, inverse = np.unique(np.asarray(groups, dtype=object), return_inverse=True)
+    group_fold = np.empty(len(codes), dtype=int)
+    group_fold[np.random.default_rng(seed).permutation(len(codes))] = np.arange(len(codes)) % n_folds
+    return group_fold[inverse]
+
+
 def rescale_trend(pred, full_factor, from_share, to_share):
     """C020: re-express a prediction made with full_factor ** from_share as full_factor ** to_share."""
     return np.asarray(pred) * full_factor ** (to_share - from_share)

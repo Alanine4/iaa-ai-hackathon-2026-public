@@ -57,8 +57,9 @@ class GLM(Balanced):
 
     early_stops = False
 
-    def __init__(self, n_bins=10, alpha=1e-4, max_iter=400, **_):
+    def __init__(self, n_bins=10, alpha=1e-4, max_iter=400, min_frequency=100, **_):
         self.n_bins, self.alpha, self.max_iter = n_bins, alpha, max_iter
+        self.min_frequency = min_frequency  # C036: levels rarer than this share one one-hot column
 
     def _band(self, x):
         out = pd.DataFrame(index=x.index)
@@ -74,7 +75,7 @@ class GLM(Balanced):
         num = [c for c in x.columns if pd.api.types.is_numeric_dtype(x[c]) and x[c].dtype != bool]
         self.edges_ = {c: np.unique(np.nanquantile(x[c].astype(float), np.linspace(0, 1, self.n_bins + 1)[1:-1]))
                        for c in num}
-        self.enc_ = OneHotEncoder(handle_unknown="ignore", min_frequency=100)
+        self.enc_ = OneHotEncoder(handle_unknown="ignore", min_frequency=self.min_frequency)
         xb = self.enc_.fit_transform(self._band(x))
         self.model_ = TweedieRegressor(power=POWER, link="log", alpha=self.alpha, max_iter=self.max_iter)
         self.model_.fit(xb, y, sample_weight=w)
@@ -92,8 +93,9 @@ class GAM(Balanced):
 
     early_stops = False
 
-    def __init__(self, n_knots=8, alpha=1e-4, max_iter=400, **_):
+    def __init__(self, n_knots=8, alpha=1e-4, max_iter=400, min_frequency=100, **_):
         self.n_knots, self.alpha, self.max_iter = n_knots, alpha, max_iter
+        self.min_frequency = min_frequency  # C036
 
     def _design(self, x, fit=False):
         num = x[self.num_].astype(float)
@@ -102,7 +104,7 @@ class GAM(Balanced):
         if fit:
             self.spline_ = SplineTransformer(n_knots=self.n_knots, degree=3, knots="quantile",
                                              extrapolation="constant", sparse_output=True)
-            self.enc_ = OneHotEncoder(handle_unknown="ignore", min_frequency=100)
+            self.enc_ = OneHotEncoder(handle_unknown="ignore", min_frequency=self.min_frequency)
             s, c = self.spline_.fit_transform(num), self.enc_.fit_transform(x[self.cat_].astype(str))
         else:
             s, c = self.spline_.transform(num), self.enc_.transform(x[self.cat_].astype(str))

@@ -24,6 +24,10 @@ TUNED = {
         "xgb": dict(max_depth=2, min_child_weight=50, learning_rate=0.03, colsample_bytree=0.8,
                     subsample=0.7, reg_lambda=0.0),
     },
+    # C036: emerging market (Part 2); model defaults until tuned on emerging data
+    "emerging-motor": {},
+    "emerging-buildings": {},
+    "emerging-contents": {},
 }
 
 

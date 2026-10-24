@@ -60,3 +60,16 @@ def test_clean_policies_applies_only_relevant_fixes():
     out = clean.clean_policies(motor)
     assert out["customer_id"].tolist() == ["00000123"]
     assert "sum_insured_scaled" not in out
+
+
+def test_emerging_construction_codes_map_to_the_developed_categories():
+    # C035: emerging local codes (Kaggle Part 2 data page): BRK brick, STN stone, WOD timber, MIX mixed / non-standard
+    df = pd.DataFrame({"construction_type": ["BRK", "STN", "WOD", "MIX", "brk"]})
+    assert clean.fix_construction_type(df)["construction_type"].tolist() == [
+        "brick", "stone", "timber", "non_standard", "brick"]
+
+
+def test_emerging_construction_unknown_code_still_raises():
+    df = pd.DataFrame({"construction_type": ["BRK", "CON"]})
+    with pytest.raises(ValueError, match="CON"):
+        clean.fix_construction_type(df)

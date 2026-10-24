@@ -16,6 +16,15 @@ C031: `--te <column>` adds `<column>_te`, the smoothed log risk relativity of th
 fit rows get the 5-fold out-of-fold encoding within the fit rows, validation / test rows the encoding fitted on all fit
 rows. Off by default; the json records the column in `target_encoding` and `--refit-only` requires the same `--te`.
 
+C036 (`--market emerging`): emerging-market pass (`emerging_main`). Validation is always on emerging rows: (a) time
+fold, train 2023 -> score 2024; (b) grouped 5-fold CV over all 2023-2024 rows, groups = policy_id, seed 42. Both are
+scored like the developed folds (reported cost vs prediction x exposure x completeness x large-loss load, level-
+calibrated d2_cal). Blend weights are searched on the grouped folds and kept only if they beat equal weights on the time
+fold AND on the grouped-CV mean. `--train-set pooled` (C038) adds every developed training row (harmonised, own target
+and history, sample weight x `--developed-weight`) to every fit set; the fitted level is then re-balanced on the
+emerging fit rows. `--trend none|developed-half` (C037) sets the 2025 factor. Outputs go to output/emerging/ (emerging
+only) or output/emerging/pooled_w<w>/ (pooled).
+
 Usage: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> [--models glm,gam,lgbm,xgb,cat] [--skip-refit]
                                                                [--refit-only] [--seeds N] [--te make_model]
 Writes: output/oof_<line>.parquet, output/blend_weights_<line>.json, output/pred_<line>_<model>.parquet
@@ -31,11 +40,14 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 from train_validate import (OUT, TEST_YEAR, TREND_SHARE, clean, evaluate, features, history_frame,  # noqa: E402
-                            line_trend, load, log, models, params)
+                            line_trend, load, log, markets, models, params)
 from tune_cv import FOLDS  # noqa: E402
 
 MODELS = ["glm", "gam", "lgbm", "xgb", "cat"]  # C025: CatBoost added
 SEED_KWARG = {"lgbm": "random_state", "xgb": "random_state", "cat": "random_seed"}  # C029
+EMERGING_TIME_FOLD = (2024, [2023])  # C036: train 2023 -> score 2024
+GROUP_FOLDS, GROUP_SEED = 5, 42  # C036: grouped CV on policy_id
+EMERGING_MIN_FREQUENCY = 30  # C036: GLM/GAM one-hot threshold for emerging-only fits (default 100)
 
 
 def train_test_features(line, shared, t, train):
@@ -169,10 +181,168 @@ def main(line, names, refit=True, refit_only=False, seeds=1, te=None):
     log(json.dumps(result))
 
 
+def run_dir(train_set, dev_weight):
+    """C036/C038: output folder of an emerging run."""
+    base = markets.get("emerging").out_dir
+    return base if train_set == "emerging" else os.path.join(base, f"pooled_w{dev_weight:g}")
+
+
+def market_features(market, line, with_test):
+    """C035/C036: harmonised features of one market's training rows (and test rows), built within that market: its own
+    customers, addresses, weather, target table (output/ or output/emerging/) and per-policy history."""
+    customers = clean.fix_customer_id(load("customers", market))
+    addresses, weather = load("addresses", market), load("weather", market)
+    train = clean.clean_policies(load(f"policies_{line}", market))
+    t = pd.read_parquet(os.path.join(markets.get(market).out_dir, f"target_{line}.parquet"))
+    assert (t["row_id"].to_numpy() == train["row_id"].to_numpy()).all()
+    year = pd.to_datetime(train["period_start"]).dt.year.to_numpy()
+    history = history_frame(train, t, year, "policy_id")
+    test = clean.clean_policies(load(f"test_{line}", market)) if with_test else None
+    rows = pd.concat([train, test], ignore_index=True) if with_test else train
+    rows, cust = features.harmonise(rows, customers, market)
+    x = features.build_features(rows, cust, addresses, weather, history=history, line=line)  # C026 drops
+    return x, train, test, t, year
+
+
+def emerging_design(line, train_set, dev_weight):
+    """C036/C038: one feature frame for every row the emerging pass needs, with per-row arrays.
+
+    part: "dev" (developed training rows, pooled only), "em" (emerging training rows), "test" (emerging 2025 rows).
+    y = capped cost / exposure_eff, w = exposure_eff (x dev_weight on developed rows).
+    """
+    x_em, train, test, t, year = market_features("emerging", line, with_test=True)
+    frames = [x_em]
+    part = np.array(["em"] * len(train) + ["test"] * len(test), dtype=object)
+    y = np.concatenate([t["claim_cost_capped"].to_numpy() / t["exposure_eff"].to_numpy(), np.zeros(len(test))])
+    w = np.concatenate([t["exposure_eff"].to_numpy(), np.zeros(len(test))])
+    if train_set == "pooled":
+        x_dev, _, _, t_dev, _ = market_features("developed", line, with_test=False)
+        frames = [x_dev, x_em]
+        part = np.concatenate([np.array(["dev"] * len(x_dev), dtype=object), part])
+        y = np.concatenate([t_dev["claim_cost_capped"].to_numpy() / t_dev["exposure_eff"].to_numpy(), y])
+        w = np.concatenate([t_dev["exposure_eff"].to_numpy() * dev_weight, w])  # C038: developed weight multiplier
+    x = features.concat_markets(frames) if len(frames) > 1 else x_em.reset_index(drop=True)
+    return x, part, y, w, train, test, t, year
+
+
+def emerging_model(line, name, train_set, extra=None):
+    """C036: params.for_model("emerging-<line>") (defaults unless tuned); emerging-only GLM/GAM pool rare levels at 30."""
+    kw = params.for_model(f"emerging-{line}", name)
+    if train_set == "emerging" and name in ("glm", "gam"):
+        kw["min_frequency"] = EMERGING_MIN_FREQUENCY
+    return models.make(name, **{**kw, **(extra or {})})
+
+
+def fit_emerging(m, x, y, w, fit, em_fit, train_set, valid):
+    """Fit on rows `fit`; for the pooled set re-balance the level on the emerging rows of the fit set (C038).
+    Returns the re-balance factor (1.0 for emerging-only fits, which Balanced already balances)."""
+    m.fit(x[fit], y[fit], w[fit], valid=valid)
+    if train_set != "pooled":
+        return 1.0
+    factor = float(np.sum(y[em_fit] * w[em_fit]) / np.sum(m.predict(x[em_fit]) * w[em_fit]))
+    m.balance_ *= factor
+    return factor
+
+
+def scores(actual, pred):
+    return {"d2": float(evaluate.tweedie_d2(actual, pred)),
+            "d2_cal": float(evaluate.tweedie_d2(actual, pred * actual.sum() / pred.sum())),
+            "pred_actual": float(pred.sum() / actual.sum())}
+
+
+def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True):
+    out_dir = run_dir(train_set, dev_weight)
+    os.makedirs(out_dir, exist_ok=True)
+    x, part, y, w, train, test, t, year = emerging_design(line, train_set, dev_weight)
+    is_dev, is_em = part == "dev", part == "em"
+    em_idx = np.flatnonzero(is_em)  # positions of the emerging training rows, in the order of t
+    log(f"emerging {line} [{train_set}]: features {x.shape[1]} cols, developed fit rows {is_dev.sum():,}, "
+        f"emerging rows {is_em.sum():,}, test rows {(part == 'test').sum():,}")
+    group = evaluate.group_folds(train["policy_id"].to_numpy(), GROUP_FOLDS, GROUP_SEED)
+    val_year, fit_years = EMERGING_TIME_FOLD
+    schemes = [("time", 0, np.isin(year, fit_years), year == val_year)]
+    schemes += [("group", k, group != k, group == k) for k in range(GROUP_FOLDS)]
+    comp_expo = (t["exposure"] * t["completeness"]).to_numpy()
+
+    frames, folds = [], {"time": [], "group": []}
+    best_its = {n: {"time": [], "group": []} for n in names}
+    rebal = {n: {"time": [], "group": []} for n in names}
+    for scheme, k, em_fit_mask, em_val_mask in schemes:
+        em_fit = np.zeros(len(x), dtype=bool)
+        em_fit[em_idx[em_fit_mask]] = True
+        fit = is_dev | em_fit
+        val_rows = em_idx[em_val_mask]
+        load_f = t.loc[em_fit_mask, "claim_cost"].sum() / t.loc[em_fit_mask, "claim_cost_capped"].sum()
+        actual = t.loc[em_val_mask, "claim_cost"].to_numpy()
+        scale = comp_expo[em_val_mask] * load_f
+        frame = pd.DataFrame({"row_id": t.loc[em_val_mask, "row_id"].to_numpy(), "scheme": scheme, "fold": k,
+                              "actual": actual})
+        for name in names:
+            t0 = time.time()
+            m = emerging_model(line, name, train_set)
+            rebal[name][scheme].append(fit_emerging(m, x, y, w, fit, em_fit, train_set, valid="inner"))  # C027
+            frame[name] = m.predict(x.iloc[val_rows]) * scale
+            best_its[name][scheme].append(getattr(m, "best_iteration", None))
+            s = scores(actual, frame[name].to_numpy())
+            log(f"emerging {line} {scheme} {k} {name}: d2={s['d2']:.5f} d2_cal={s['d2_cal']:.5f} "
+                f"p/a={s['pred_actual']:.3f} it={best_its[name][scheme][-1]} {time.time() - t0:.0f}s")
+        frames.append(frame)
+        folds[scheme].append({"actual": actual, "preds": {n: frame[n].to_numpy() for n in names}})
+    pd.concat(frames).to_parquet(os.path.join(out_dir, f"oof_{line}.parquet"), index=False)
+
+    searched = evaluate.blend_weights(folds["group"], step=0.05)  # C036: searched on the grouped folds
+    rep = {s: evaluate.blend_report(folds[s], searched, names) for s in folds}
+    guard = {b: [rep["time"][b][0], float(np.mean(rep["group"][b]))] for b in ("weighted", "equal")}
+    weights, rule = evaluate.guarded_weights(guard, searched, names)  # index 0 time fold, index 1 grouped mean
+    cv_time = {n: {**scores(folds["time"][0]["actual"], folds["time"][0]["preds"][n]),
+                   "best_iteration": best_its[n]["time"][0]} for n in names}
+    cv_group = {n: {"d2_cal_folds": rep["group"]["single"][n], "d2_cal_mean": float(np.mean(rep["group"]["single"][n])),
+                    "d2_mean": float(np.mean([evaluate.tweedie_d2(f["actual"], f["preds"][n]) for f in folds["group"]])),
+                    "best_iteration": best_its[n]["group"]} for n in names}
+    for b, key in (("weighted", "blend_searched"), ("equal", "blend_equal")):
+        cv_time[key] = {"d2_cal": rep["time"][b][0]}
+        cv_group[key] = {"d2_cal_folds": rep["group"][b], "d2_cal_mean": float(np.mean(rep["group"][b]))}
+    result = {"line": line, "market": "emerging", "train_set": train_set,
+              "developed_weight": dev_weight if train_set == "pooled" else None,
+              "weights": weights, "weights_searched": searched, "rule": rule,
+              "guard_scores": {"index": ["time fold 2023->2024", f"grouped {GROUP_FOLDS}-fold mean"], **guard},
+              "cv_time": cv_time, "cv_group": cv_group, "rebalance_factor": rebal}
+
+    if refit:
+        n_est = {n: int(np.mean(best_its[n]["group"]) * 1.1) if all(best_its[n]["group"]) else None for n in names}
+        factor = markets.get("emerging").trends[trend][line]  # C037
+        load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
+        fit = is_dev | is_em
+        test_rows = np.flatnonzero(part == "test")
+        scale = test["exposure"].to_numpy() * factor * load_test
+        log(f"emerging {line}: large-loss load test {load_test:.4f}, trend {trend} {factor:.4f}")
+        result["refit_rebalance_factor"] = {}
+        for name in names:
+            t0 = time.time()
+            m = emerging_model(line, name, train_set, {"n_estimators": n_est[name]} if n_est[name] else None)
+            result["refit_rebalance_factor"][name] = fit_emerging(m, x, y, w, fit, is_em, train_set, valid=None)
+            pred = m.predict(x.iloc[test_rows]) * scale
+            pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
+                          "trend_factor": factor}).to_parquet(os.path.join(out_dir, f"pred_{line}_{name}.parquet"),
+                                                              index=False)
+            log(f"emerging {line}: {name} refit (n_estimators {n_est[name]}) in {time.time() - t0:.0f}s, "
+                f"test mean {pred.mean():.2f}")
+        result.update(refit_n_estimators=n_est, trend=trend, trend_factor=factor, load_test=float(load_test))
+
+    with open(os.path.join(out_dir, f"blend_weights_{line}.json"), "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2)
+    log(json.dumps(result))
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("line")
+    ap.add_argument("--market", default=None, choices=sorted(markets.MARKETS),
+                    help="C034: default from AIIAA_MARKET, else developed")
+    ap.add_argument("--train-set", default="emerging", choices=["emerging", "pooled"], help="C038 (emerging market)")
+    ap.add_argument("--developed-weight", type=float, default=0.3, help="C038: weight multiplier on developed rows")
+    ap.add_argument("--trend", default="none", choices=["none", "developed-half"], help="C037 (emerging market)")
     ap.add_argument("--models", default=",".join(MODELS), help="comma list of models (default: all five)")
     ap.add_argument("--skip-refit", action="store_true", help="only OOF predictions and blend weights")
     ap.add_argument("--refit-only", action="store_true",
@@ -181,4 +351,8 @@ if __name__ == "__main__":
     ap.add_argument("--te", default=None, help="C031: raw code column to target-encode, e.g. make_model (default off)")
     a = ap.parse_args()
     assert a.seeds >= 1 and not (a.refit_only and a.skip_refit)
-    main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds, te=a.te)
+    if markets.get(a.market).name == "emerging":
+        assert not (a.refit_only or a.te or a.seeds != 1), "C036: --refit-only, --te and --seeds are developed-only"
+        emerging_main(a.line, a.models.split(","), a.train_set, a.developed_weight, a.trend, refit=not a.skip_refit)
+    else:
+        main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds, te=a.te)

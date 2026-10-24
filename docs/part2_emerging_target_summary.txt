@@ -1,0 +1,75 @@
+
+motor: large-loss cap (q=0.995) = 27,578; capped share of cost = 0.0503
+
+######## motor
+rows=47,283  claims(non-repudiated)=7,076  matched=7,048  unmatched=28
+net cost total=15,919,144.70  on rows=15,855,887.96  unmatched=63,256.74  difference=-0.0000
+unmatched by loss year: {2021: 4, 2022: 22, 2023: 2}
+per-peril reporting CDF (cost-weighted, AY2021) at 30/90/365 days, and cost share:
+  bodily_injury      share=0.4341  cdf30/90/365=[0.1421, 0.376, 0.8272]
+  third_party_prop   share=0.2539  cdf30/90/365=[0.7584, 0.981, 0.9935]
+  own_damage         share=0.1953  cdf30/90/365=[0.9511, 0.9947, 0.9949]
+  theft              share=0.0848  cdf30/90/365=[0.9932, 0.9953, 0.9953]
+  glass_hail         share=0.0318  cdf30/90/365=[0.9807, 0.9912, 0.9912]
+        exposure  completeness    reported      ultimate  pp_reported  pp_ultimate
+year                                                                              
+2023  18864.5096        0.9682  8162761.21  8.427145e+06     432.7047     446.7195
+2024  20104.0247        0.7672  7693126.75  9.937389e+06     382.6660     494.2985
+min completeness=0.0734  rows with completeness<0.5: 905
+CDF consistency (motor; cost-weighted, all perils): emerging AY2023 n=3,559 | developed AY2023 n=28,020 (same truncation) | developed AY2021 n=27,390 (used)
+  lag  30 days: emerging 0.6028 | developed AY2023 0.5789 | developed AY2021 0.5555
+  lag  90 days: emerging 0.7742 | developed AY2023 0.7174 | developed AY2021 0.7226
+  lag 180 days: emerging 0.8606 | developed AY2023 0.8960 | developed AY2021 0.8272
+  lag 365 days: emerging 0.9610 | developed AY2023 0.9702 | developed AY2021 0.9217
+  peril cost shares, emerging 2023-24 reported / developed AY2021: third_party_prop 0.340/0.254, bodily_injury 0.302/0.434, own_damage 0.192/0.195, theft 0.101/0.085, glass_hail 0.065/0.032
+  sensitivity, mean completeness of 2024 rows: developed peril shares 0.7672, emerging peril shares 0.8202
+
+buildings: large-loss cap (q=0.995) = 220,808; capped share of cost = 0.0486
+
+######## buildings
+rows=27,447  claims(non-repudiated)=1,059  matched=1,056  unmatched=3
+net cost total=9,578,176.32  on rows=9,558,749.31  unmatched=19,427.01  difference=-0.0000
+unmatched by loss year: {2021: 1, 2022: 2}
+per-peril reporting CDF (cost-weighted, AY2021) at 30/90/365 days, and cost share:
+  flood              share=0.2920  cdf30/90/365=[0.9765, 0.9967, 0.9967]
+  fire               share=0.2372  cdf30/90/365=[0.9733, 0.9834, 0.9834]
+  escape_of_water    share=0.2353  cdf30/90/365=[0.8666, 0.9954, 0.9965]
+  subsidence         share=0.1154  cdf30/90/365=[0.2144, 0.4728, 0.9849]
+  storm              share=0.1010  cdf30/90/365=[0.9355, 0.9971, 0.9971]
+  accidental_damage  share=0.0191  cdf30/90/365=[0.95, 0.9918, 0.9918]
+        exposure  completeness    reported      ultimate  pp_reported  pp_ultimate
+year                                                                              
+2023  11372.5699        0.9970  5848688.10  5.864969e+06     514.2803     515.7118
+2024  12095.4356        0.9248  3710061.21  3.958372e+06     306.7323     327.2616
+min completeness=0.1653  rows with completeness<0.5: 110
+CDF consistency (buildings; cost-weighted, all perils): emerging AY2023 n=519 | developed AY2023 n=6,824 (same truncation) | developed AY2021 n=6,204 (used)
+  lag  30 days: emerging 0.9134 | developed AY2023 0.8293 | developed AY2021 0.8573
+  lag  90 days: emerging 0.9523 | developed AY2023 0.9267 | developed AY2021 0.9327
+  lag 180 days: emerging 0.9833 | developed AY2023 0.9626 | developed AY2021 0.9680
+  lag 365 days: emerging 0.9975 | developed AY2023 0.9922 | developed AY2021 0.9921
+  peril cost shares, emerging 2023-24 reported / developed AY2021: fire 0.454/0.237, flood 0.222/0.292, storm 0.128/0.101, escape_of_water 0.108/0.235, subsidence 0.076/0.115, accidental_damage 0.011/0.019
+  sensitivity, mean completeness of 2024 rows: developed peril shares 0.9248, emerging peril shares 0.9402
+
+contents: large-loss cap (q=0.995) = 28,312; capped share of cost = 0.0210
+
+######## contents
+rows=34,566  claims(non-repudiated)=1,003  matched=998  unmatched=5
+net cost total=2,592,937.81  on rows=2,583,354.30  unmatched=9,583.51  difference=-0.0000
+unmatched by loss year: {2021: 1, 2022: 4}
+per-peril reporting CDF (cost-weighted, AY2021) at 30/90/365 days, and cost share:
+  theft              share=0.4088  cdf30/90/365=[0.9911, 0.9973, 0.9973]
+  flood              share=0.2587  cdf30/90/365=[0.9361, 0.9734, 0.9752]
+  escape_of_water    share=0.2214  cdf30/90/365=[0.8881, 0.9872, 0.988]
+  accidental_damage  share=0.1111  cdf30/90/365=[0.9479, 0.9965, 0.9972]
+        exposure  completeness    reported      ultimate  pp_reported  pp_ultimate
+year                                                                              
+2023  14107.6959        0.9966  1285654.53  1.289516e+06      91.1314      91.4051
+2024  14950.2849        0.9582  1297699.77  1.340412e+06      86.8010      89.6579
+min completeness=0.1880  rows with completeness<0.5: 99
+CDF consistency (contents; cost-weighted, all perils): emerging AY2023 n=491 | developed AY2023 n=6,165 (same truncation) | developed AY2021 n=5,588 (used)
+  lag  30 days: emerging 0.9611 | developed AY2023 0.9470 | developed AY2021 0.9493
+  lag  90 days: emerging 0.9914 | developed AY2023 0.9948 | developed AY2021 0.9888
+  lag 180 days: emerging 0.9933 | developed AY2023 0.9956 | developed AY2021 0.9895
+  lag 365 days: emerging 0.9933 | developed AY2023 0.9956 | developed AY2021 0.9895
+  peril cost shares, emerging 2023-24 reported / developed AY2021: theft 0.474/0.409, flood 0.304/0.259, escape_of_water 0.140/0.221, accidental_damage 0.082/0.111
+  sensitivity, mean completeness of 2024 rows: developed peril shares 0.9582, emerging peril shares 0.9600

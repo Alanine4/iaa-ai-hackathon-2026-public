@@ -104,3 +104,14 @@ def test_inner_validation_split_is_deterministic(name, data):
     first = models.make(name, n_estimators=150).fit(x, y, w, valid="inner").predict(x)
     second = models.make(name, n_estimators=150).fit(x, y, w, valid="inner").predict(x)
     assert np.array_equal(first, second)
+
+
+@pytest.mark.parametrize("name", ["glm", "gam"])
+def test_one_hot_min_frequency_is_a_parameter_with_default_100(name):
+    # C036: rare levels are pooled by the one-hot encoder; emerging-only fits lower the threshold to 30
+    assert models.make(name).min_frequency == 100
+    x = pd.DataFrame({"c": pd.Categorical(["a"] * 60 + ["b"] * 940), "v": np.linspace(0, 1, 1000)})
+    y, w = np.where(x["c"] == "a", 2.0, 1.0), np.ones(1000)
+    pooled = models.make(name, min_frequency=100).fit(x, y, w).enc_.infrequent_categories_[0]
+    kept = models.make(name, min_frequency=30).fit(x, y, w).enc_.infrequent_categories_[0]
+    assert list(pooled) == ["a"] and kept is None  # column 0 of the encoder is "c" for both models
