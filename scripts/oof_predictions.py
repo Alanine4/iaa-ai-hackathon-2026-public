@@ -250,6 +250,16 @@ def scores(actual, pred):
             "pred_actual": float(pred.sum() / actual.sum())}
 
 
+def emerging_schemes(train, year):
+    """C036/C039: validation schemes over the emerging training rows as (scheme, k, fit_mask, val_mask): the time fold
+    (fit EMERGING_TIME_FOLD years, validate its year) and GROUP_FOLDS grouped folds on policy_id."""
+    group = evaluate.group_folds(train["policy_id"].to_numpy(), GROUP_FOLDS, GROUP_SEED)
+    val_year, fit_years = EMERGING_TIME_FOLD
+    schemes = [("time", 0, np.isin(year, fit_years), year == val_year)]
+    schemes += [("group", k, group != k, group == k) for k in range(GROUP_FOLDS)]
+    return schemes
+
+
 def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True):
     out_dir = run_dir(train_set, dev_weight)
     os.makedirs(out_dir, exist_ok=True)
@@ -258,10 +268,7 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
     em_idx = np.flatnonzero(is_em)  # positions of the emerging training rows, in the order of t
     log(f"emerging {line} [{train_set}]: features {x.shape[1]} cols, developed fit rows {is_dev.sum():,}, "
         f"emerging rows {is_em.sum():,}, test rows {(part == 'test').sum():,}")
-    group = evaluate.group_folds(train["policy_id"].to_numpy(), GROUP_FOLDS, GROUP_SEED)
-    val_year, fit_years = EMERGING_TIME_FOLD
-    schemes = [("time", 0, np.isin(year, fit_years), year == val_year)]
-    schemes += [("group", k, group != k, group == k) for k in range(GROUP_FOLDS)]
+    schemes = emerging_schemes(train, year)
     comp_expo = (t["exposure"] * t["completeness"]).to_numpy()
 
     frames, folds = [], {"time": [], "group": []}

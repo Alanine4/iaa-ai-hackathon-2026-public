@@ -14,3 +14,13 @@ Validation D2 = combined three-line Tweedie D2 on 2024 (`docs/validation_results
 | S07 | 2026-10-22 | `sub_v3_weighted.zip` | C026 feature policy + C027 inner early stopping + CatBoost; per-line weights: motor equal 0.2x5 (searched weights failed the both-folds guard), buildings GAM .2 / LGBM .25 / CAT .55, contents GAM .25 / LGBM .2 / XGB .35 / CAT .2; half trend | CV d2_cal (2-fold mean): motor equal 0.0919, buildings weighted 0.1144, contents weighted 0.0945 | 0.12851 | 11 | Submitted via CLI 2026-10-22 13:35. +0.00272 vs S06 (0.12579). Leader 0.12996 |
 | S08 | 2026-10-22 | `sub_v3_trend25bc.zip` | Probe for audit finding B4: S07 with buildings and contents at trend share 0.25 (motor unchanged at 0.5) | – | 0.12820 | – | −0.00031 vs S07: lower trend on buildings/contents hurts; half trend kept for all lines. B4 (residual-trend double counting) not supported by the public board |
 | S09 | 2026-10-22 | `sub_v3_seeds.zip` | S07 recipe with seed-averaged tree refits (C029) | same OOF as S07 (refit only) | 0.12863 | – | Submitted via CLI 2026-10-22 18:19. +0.00012 vs S07; best so far. Final submission candidate |
+
+# Kaggle submissions (Part 2, emerging market)
+
+Competition: iaa-ai-assisted-hackathon-2026-part-2 (deadline 2026-10-31 03:59:59 local). Public leaderboard share not stated; treated like Part 1 (about a third of the test rows).
+Validation = emerging time fold (train 2023 -> score 2024) and grouped 5-fold CV (`output/emerging/blend_weights_<line>.json`, C036).
+
+| # | Date | File | What it is | Validation (d2_cal) | Public score | Public rank | Notes |
+|---|---|---|---|---|---|---|---|
+| P2-S01 | 2026-10-24 | `p2_emerging_only.zip` | Emerging data only (C036); five models per line, searched weights (motor cat .6 / xgb .2 / lgbm .1 / gam .1; buildings cat .65 / xgb .3 / gam .05; contents lgbm .4 / cat .4 / glm .15 / gam .05), guard passed on both schemes; developed AY2021 CDFs (C037); cap q99.5 + load; no trend; mean 346.1 | time fold: motor 0.0762, buildings 0.0410, contents 0.0779; grouped mean: 0.0677 / 0.0732 / 0.0934 | 0.14370 | 8 of 10 | Submitted via CLI 2026-10-24 18:29. Leader 0.16446; baseline (average cost) 0.07319 |
+| P2-S02 | 2026-10-24 | `p2_emerging_half.zip` | P2-S01 re-expressed at the developed market's half trend to 2025 (motor 1.0175, buildings 1.0948, contents 1.0636; C037 option `developed-half`); mean 361.1 | same OOF as P2-S01 (level only) | 0.14460 | – | Pre-planned probe (decision D4). +0.00090 vs P2-S01: the 2025 level is above the 2023-24 training level (test rows are 76% new business, younger). `developed-half` adopted as the Part 2 default; no further trend probing (public-board chasing rule) |

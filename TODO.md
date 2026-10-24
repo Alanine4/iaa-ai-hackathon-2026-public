@@ -68,4 +68,9 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [ ] 用全量数据重跑一次发达市场的 build_target 和 S09 融合，确认默认路径结果逐字节不变
 - [ ] 核对协调方给的发达市场半趋势系数（车险 1.0175、房屋 1.0948、家财 1.0636）
 - [ ] GLM/GAM 在新兴市场严重过拟合（房屋时间折 D² 为负，单行预测 40 万），考虑加大正则或只用树模型
-- [ ] 上传 `work/p2_emerging_only.zip` 到 Kaggle 并记录分数（由协调方操作）
+- [x] 上传 `work/p2_emerging_only.zip` 到 Kaggle 并记录分数 — 2026-10-24，P2-S01 公开榜 0.14370（第 8 / 10），`docs/SUBMISSIONS.md`
+- [x] 趋势探针 P2-S02（developed-half）：0.14460，比无趋势高 0.0009，Part 2 默认改用 developed-half — 2026-10-24，`docs/SUBMISSIONS.md`
+- [x] 办公室保费公式草案（expenses 8 项、20 张参考保单全表、公式链、8 个开放问题） — 2026-10-24，`docs/OFFICE_PREMIUM_DRAFT.md`、`scripts/part2_expenses.py`；**开放问题待你和队友定**
+- [x] 人工复核签字单：11 项 AI 关键决策 + 7 条被纠正的 AI 输出，每项附文件:行号与数字 — 2026-10-24，`docs/HUMAN_REVIEW.md`；**等队长逐项签字**，签完抄进 AI_LOG
+- [ ] 修正过时文字：`docs/DATA_GUIDE.md` 第 107–108 行 Q3/Q4 仍写"待定/未确认"，应改为 C003/C004 的结论（worker 顺手发现）
+- [ ] 邀请队友为 GitHub collaborator（等用户名）；报告第 7 节；视频脚本
