@@ -21,6 +21,8 @@ class Market:
     out_subdir: str  # under output/; "" keeps the Part 1 location
     trend_share: float = None  # C019: share of the fitted log-linear trend (developed only)
     trends: dict = field(default_factory=dict)  # fixed per-line 2025 trend factors by option name (emerging)
+    # C040: developed-row weight of the pooled training run adopted per line (emerging)
+    developed_weights: dict = field(default_factory=dict)
 
     @property
     def data_dir(self):
@@ -39,7 +41,11 @@ MARKETS = {
         # C037: two training years (2024 not developed) cannot support a trend fit. Base run: no trend.
         # Probe: the developed market's half trend to 2025 (developed line_trend ** 0.5, C019).
         trends={"none": {"motor": 1.0, "buildings": 1.0, "contents": 1.0},
-                "developed-half": {"motor": 1.0175, "buildings": 1.0948, "contents": 1.0636}}),
+                "developed-half": {"motor": 1.0175, "buildings": 1.0948, "contents": 1.0636}},
+        # C040: adopted per line by the time-fold + grouped-CV rule. Buildings 1.0 beat 0.3 (+0.0104 time fold,
+        # +0.0048 grouped); contents 1.0 vs 0.3 was only +0.0013 on the mean, so 0.3 is kept; motor 0.3 until the
+        # 1.0 probe has finished.
+        developed_weights={"motor": 0.3, "buildings": 1.0, "contents": 0.3}),
 }
 
 

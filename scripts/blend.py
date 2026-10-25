@@ -8,11 +8,12 @@ FILE_TREND_SHARE records the share they were written with (checked against the r
 `output/train_validate.log` and `output/train_trees_tuned.log`).
 
 C036 (`--market emerging`): blends the emerging pred files of one run folder (`--train-set`, `--developed-weight`,
-see oof_predictions.run_dir); files carry their fixed `trend_factor` (C037) and are re-expressed at `--trend`. The
+see oof_predictions.run_dir; C040: the developed-row weight may differ per line, so each line is read from its own run
+folder and zero-weight models need no pred file); files carry their fixed `trend_factor` (C037) and are re-expressed at `--trend`. The
 result is checked against the emerging sample_submission (every row_id, same order, no missing or negative values).
 
 Usage: .venv\\Scripts\\python.exe scripts\\blend.py glm,gam,lgbm,xgb <name> [--weighted]
-       [--market emerging] [--train-set emerging|pooled] [--developed-weight 0.3] [--trend none|developed-half]
+       [--market emerging] [--train-set emerging|pooled] [--developed-weight 0.3|per-line|motor=0.3,buildings=1,contents=0.3] [--trend none|developed-half]
 Writes: work/<name>.csv and work/<name>.zip
 """
 import argparse
@@ -31,6 +32,7 @@ from train_validate import LINES, OUT, TEST_YEAR, TREND_SHARE, line_trend, load,
 
 # glm/gam: run finished 16:34 (full trend, before C019); lgbm/xgb: tuned run finished 19:03 (half trend)
 FILE_TREND_SHARE = {"glm": 1.0, "gam": 1.0, "lgbm": 0.5, "xgb": 0.5}
+EMERGING_ROWS = 209_063  # rows of the emerging sample_submission
 
 
 def line_weights(line, names, weighted, out_dir=OUT):
@@ -75,32 +77,51 @@ def main(names, out_name, weighted=False):
     write_submission(sub, out_name)
 
 
+def parse_dev_weight(text, market):
+    """C040: `--developed-weight` as a float (every line), `per-line` (market.developed_weights) or `line=w,...`."""
+    if text == "per-line":
+        return dict(market.developed_weights)
+    if "=" not in text:
+        return float(text)
+    pairs = [p.split("=", 1) for p in text.split(",")]
+    weights = {k.strip(): float(v) for k, v in pairs}
+    if sorted(weights) != sorted(LINES):
+        raise ValueError(f"--developed-weight needs exactly the lines {LINES}, got {sorted(weights)}")
+    return weights
+
+
 def emerging_blend(names, out_name, weighted, train_set, dev_weight, trend):
-    """C036: weighted or equal blend of one emerging run, re-expressed at the requested fixed trend (C037)."""
+    """C036: weighted or equal blend of emerging runs, re-expressed at the requested fixed trend (C037).
+
+    C040: dev_weight is a float (one run folder for all lines) or a dict line -> float (one folder per line).
+    Models with weight 0 are skipped, so they need no pred file in that run."""
     from oof_predictions import run_dir
-    out_dir = run_dir(train_set, dev_weight)
     factors = markets.get("emerging").trends[trend]
     sample = load("sample_submission", "emerging")
     parts = []
     for line in LINES:
+        line_dev = dev_weight[line] if isinstance(dev_weight, dict) else dev_weight
+        out_dir = run_dir(train_set, line_dev)
         w = line_weights(line, names, weighted, out_dir)
         assert abs(sum(w.values()) - 1) < 1e-9, f"{line} weights do not sum to 1: {w}"
         cols = []
-        for n in names:
-            f = pd.read_parquet(os.path.join(out_dir, f"pred_{line}_{n}.parquet")).set_index("row_id")
+        for n in (n for n in names if w[n] > 0):
+            path = os.path.join(out_dir, f"pred_{line}_{n}.parquet")
+            assert os.path.exists(path), f"{line}: model {n} has weight {w[n]} but no pred file {path}"
+            f = pd.read_parquet(path).set_index("row_id")
             assert f["trend_factor"].nunique() == 1, f"{line} {n}: mixed trend factors"
             cols.append((f["prediction"] * factors[line] / f["trend_factor"].iloc[0]).rename(n))
         df = pd.concat(cols, axis=1)
         assert df.notna().all().all(), f"{line}: pred files cover different rows"
-        blend = sum(w[n] * df[n] for n in names)
-        print(f"{line}: trend {trend} {factors[line]:.4f}; weights {w}; mean by model "
+        blend = sum(w[n] * df[n] for n in df)
+        print(f"{line}: developed weight {line_dev:g}; trend {trend} {factors[line]:.4f}; weights {w}; mean by model "
               + ", ".join(f"{c} {df[c].mean():.2f}" for c in df) + f"; blend mean {blend.mean():.2f} rows {len(blend):,}")
         parts.append(blend)
 
     stacked = pd.concat(parts)
     assert stacked.index.is_unique and set(stacked.index) == set(sample["row_id"]), "row_ids differ from sample"
     sub = stacked.reindex(sample["row_id"])
-    assert sub.notna().all() and (sub >= 0).all() and len(sub) == len(sample) == 209_063
+    assert sub.notna().all() and (sub >= 0).all() and len(sub) == len(sample) == EMERGING_ROWS
     assert (sub.index == sample["row_id"].to_numpy()).all()
     write_submission(sub, out_name)
 
@@ -114,10 +135,16 @@ if __name__ == "__main__":
     ap.add_argument("--market", default=None, choices=sorted(markets.MARKETS),
                     help="C034: default from AIIAA_MARKET, else developed")
     ap.add_argument("--train-set", default="emerging", choices=["emerging", "pooled"], help="C038 (emerging market)")
-    ap.add_argument("--developed-weight", type=float, default=0.3, help="C038 (emerging market)")
+    ap.add_argument("--developed-weight", default="0.3",
+                    help="C038/C040 (emerging market): one number for all lines, `per-line` (markets.developed_weights), "
+                         "or motor=0.3,buildings=1.0,contents=0.3")
     ap.add_argument("--trend", default="none", choices=["none", "developed-half"], help="C037 (emerging market)")
     a = ap.parse_args()
     if markets.get(a.market).name == "emerging":
-        emerging_blend(a.models.split(","), a.name, a.weighted, a.train_set, a.developed_weight, a.trend)
+        try:
+            dev_weight = parse_dev_weight(a.developed_weight, markets.get("emerging"))
+        except ValueError as e:
+            ap.error(str(e))
+        emerging_blend(a.models.split(","), a.name, a.weighted, a.train_set, dev_weight, a.trend)
     else:
         main(a.models.split(","), a.name, weighted=a.weighted)
