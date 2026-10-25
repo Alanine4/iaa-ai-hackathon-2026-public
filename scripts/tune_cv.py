@@ -153,11 +153,11 @@ def emerging_summary(df):
     return out.sort_values(["line", "model", "d2_cal_group"], ascending=[True, True, False])
 
 
-def emerging_main(family, lines, train_set="emerging", dev_weight=0.3):
+def emerging_main(family, lines, train_set="emerging", dev_weight=0.3, models=None):
     """C039: search the emerging-market configurations of `family` on the C036 schemes (see module docstring)."""
     import oof_predictions as oof  # here, not at the top: oof_predictions imports FOLDS from this module
 
-    todo = emerging_configs(family)
+    todo = [(n, cfg) for n, cfg in emerging_configs(family) if models is None or n in models]  # C039: --models filter
     out_dir = oof.run_dir(train_set, dev_weight)
     os.makedirs(out_dir, exist_ok=True)
     csv = os.path.join(out_dir, f"cv_{family}.csv")
@@ -209,10 +209,11 @@ if __name__ == "__main__":
                     help="C034: default from AIIAA_MARKET, else developed")
     ap.add_argument("--train-set", default="emerging", choices=["emerging", "pooled"], help="C039 (emerging market)")
     ap.add_argument("--developed-weight", type=float, default=0.3, help="C039: weight multiplier on developed rows")
+    ap.add_argument("--models", default=None, help="C039: comma list of model names to search (default: all)")
     a = ap.parse_args()
     selected = a.lines.split(",") if a.lines else LINES
     if markets.get(a.market).name == "emerging":
-        emerging_main(a.family, selected, a.train_set, a.developed_weight)
+        emerging_main(a.family, selected, a.train_set, a.developed_weight, a.models.split(",") if a.models else None)
     else:
         if a.train_set != "emerging":
             ap.error("--train-set pooled is an emerging-market option")
