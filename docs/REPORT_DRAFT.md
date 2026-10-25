@@ -96,3 +96,48 @@ Limitations, taken from the audit:
 - The public score covers about 33% of the test rows. The final ranking uses the other 67% and may move.
 
 ## 7. Adaptation to the new market (Part 2)
+
+### 7.1 What differs in the emerging market
+
+The emerging market has about one tenth of the developed exposure (38,969 motor exposure-years against 399,468) and only two accident years. In the 2025 test set 76% of rows are new business against 15%, and 24% of policies appear in training. Motor frequency is 34% higher (18.09% against 13.48%) and severity 42% lower (2,250 against 3,862 CU). Construction type arrives as BRK, STN, WOD and MIX, occupation as 80 free-text spellings and age as bands. About 12% of values in affected columns are missing against 2.5%.
+
+### 7.2 What we changed in the pipeline
+
+Each market is a configuration; the developed path is unchanged (C034). A common schema (C035) cuts developed ages into the emerging bands and maps the four construction codes to brick, stone, timber and non_standard. Two accident years give no tail, so we apply the developed accident year 2021 reporting curves; at 365 days the motor curve reaches 0.961 for emerging 2023 and 0.922 for the curve used. Pooled training adds every developed row at a weight times exposure, with `market` as a feature, and re-balances the level on emerging rows after each fit (C038).
+
+### 7.3 Validation design for a two-year market
+
+Two years allow one time fold (train 2023, score 2024), so we add a grouped 5-fold on `policy_id` (C036). Searched blend weights are kept only if they beat equal weights on both, and the developed-row weight is chosen per line the same way. Pooled runs score emerging rows only. The time fold is weak: about 500 claims per year on each property line, and 2024 is the least developed year.
+
+### 7.4 Results and what we adopted or rejected
+
+Emerging-only GLM and GAM over-fitted (buildings time fold `d2_cal` -10.5 and -30.7). Pooling lifted every line. The GAM was left out of pooled runs because it exceeded the memory cap on 756k rows. Tree models needed level re-balancing on emerging rows, with factors of 1.08 to 1.26 at weight 0.3 on the property lines and 1.01 to 1.10 at weight 1.0, a known limitation of pooling.
+
+| Line | Emerging only (time / grouped) | Pooled, weight 0.3 | Pooled, weight 1.0 | Adopted weight |
+|---|---|---|---|---|
+| Motor | 0.0762 / 0.0677 | 0.0915 / 0.0740 | 0.0908 / 0.0730 | 0.3 |
+| Buildings | 0.0410 / 0.0732 | 0.1065 / 0.1132 | 0.1169 / 0.1180 | 1.0 |
+| Contents | 0.0779 / 0.0934 | 0.1072 / 0.1100 | 0.1069 / 0.1128 | 0.3 |
+
+Buildings at 1.0 beat 0.3 by 0.0104 on the time fold and 0.0048 on the grouped mean. Contents at 1.0 lost 0.0003 on the time fold, so 0.3 stayed. The C039 search of 23 tree configurations on pooled contents found none better than the defaults on both columns, so nothing was adopted. The developed market's half trend (C037) was adopted after the P2-S02 probe (+0.0009).
+
+| ID | Recipe | Public score |
+|---|---|---|
+| P2-S01 | Emerging only, no trend | 0.14370 |
+| P2-S02 | P2-S01 with developed half trend | 0.14460 |
+| P2-S03 | Contents pooled | 0.14693 |
+| P2-S04 | All lines pooled, weight 0.3 | 0.15193 |
+| P2-S05 | P2-S04 with buildings at weight 1.0 | 0.15123 |
+
+On P2-S05 the public board disagreed with validation. It covers about a third of the rows, so we kept the validation rule (C040).
+
+### 7.5 Office premium
+
+For the 20 reference policies the office premium is P = (R + Cat + F) / (1 - k). R is our predicted row risk premium, Cat is 0.12 R on buildings and contents and 0 on motor, and F is 85 CU. Here k = 0.15 + c + 0.08 + 0.08 is variable expense, commission c (0.20 broker, 0.00 direct), premium tax and profit, so the divisor is 0.49 for broker and 0.69 for direct. The build-up table is in section 8. The team is deciding four conventions: whether F scales with exposure, whether contents counts as property for reinsurance, where premium tax enters, and the blank comparison-site commission.
+
+### 7.6 Limitations specific to Part 2
+
+- 76% of test rows are new business, motor training holds about 3,040 new-business exposure-years, and we did not validate new and renewal business separately.
+- The trend rests on one public-board probe of 0.0009, below our 0.002 threshold.
+- Reporting curves are borrowed, and the caps rest on 36 (motor), 6 (buildings) and 6 (contents) claims above the cap.
+- The sign-off sheet for Part 2 decisions (`docs/HUMAN_REVIEW.md`, R08 to R11) is pending; the work is logged in `docs/AI_LOG.md` A20 to A22.
