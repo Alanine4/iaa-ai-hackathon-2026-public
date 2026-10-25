@@ -101,6 +101,36 @@ def concat_markets(frames):
     return out
 
 
+DEVELOPED_LEVEL = "developed"  # C042: level of every market interaction column on developed rows
+
+
+def market_interactions(x, cols):
+    """C042: market x factor interactions for the pooled GLM: `<col>__em` per col, appended to a copy of x.
+
+    Categorical (any non-numeric or bool) col: the value as text on emerging rows (missing stays missing, its own GLM
+    level) and the single level "developed" on developed rows; categories are the emerging levels plus "developed".
+    Numeric col: the value on emerging rows and NaN on developed rows, so GLM bands it on emerging quantiles and the
+    developed rows share the missing band (genuinely missing emerging values fall in that band too, i.e. they get the
+    pooled effect). The developed rows of every interaction carry one constant level, so the developed fit is the
+    main-effect model and the interaction levels are emerging-only departures from it.
+    """
+    market = x["market"].astype(str).to_numpy()
+    em = market == "emerging"
+    if em.all() or not em.any():
+        raise ValueError("market_interactions needs rows of both markets")
+    new = {}
+    for col in cols:
+        v = x[col]
+        if pd.api.types.is_numeric_dtype(v) and v.dtype != bool:
+            new[f"{col}__em"] = v.astype(float).where(em)
+        else:
+            text = v.astype(object).where(v.notna()).map(lambda s: s if pd.isna(s) else str(s))
+            order = list(v.cat.categories) if isinstance(v.dtype, pd.CategoricalDtype) else sorted(v[em].dropna().unique())
+            levels = list(dict.fromkeys(str(s) for s in order if str(s) in set(text[em].dropna())))
+            new[f"{col}__em"] = pd.Categorical(text.where(em, DEVELOPED_LEVEL), categories=levels + [DEVELOPED_LEVEL])
+    return pd.concat([x, pd.DataFrame(new, index=x.index)], axis=1)
+
+
 def prior_experience(rows, history, by="policy_id", suffix=""):
     """Claims, cost and exposure held under the same `by` id in years strictly before each row's start year.
 

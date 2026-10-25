@@ -24,6 +24,8 @@ fold AND on the grouped-CV mean. `--train-set pooled` (C038) adds every develope
 and history, sample weight x `--developed-weight`) to every fit set; the fitted level is then re-balanced on the
 emerging fit rows. `--trend none|developed-half` (C037) sets the 2025 factor. Outputs go to output/emerging/ (emerging
 only) or output/emerging/pooled_w<w>/ (pooled).
+C042: `--glm-interactions` (pooled, `--models glm` only) appends the GLM_INTERACTIONS market interaction columns
+(features.market_interactions) and writes to output/emerging/pooled_w<w>_glmx/.
 
 Usage: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> [--models glm,gam,lgbm,xgb,cat] [--skip-refit]
                                                                [--refit-only] [--seeds N] [--te make_model]
@@ -48,6 +50,14 @@ SEED_KWARG = {"lgbm": "random_state", "xgb": "random_state", "cat": "random_seed
 EMERGING_TIME_FOLD = (2024, [2023])  # C036: train 2023 -> score 2024
 GROUP_FOLDS, GROUP_SEED = 5, 42  # C036: grouped CV on policy_id
 EMERGING_MIN_FREQUENCY = 30  # C036: GLM/GAM one-hot threshold for emerging-only fits (default 100)
+# C042: factors that get an emerging-only GLM relativity in the pooled fit (features.market_interactions).
+# region is left out: its codes already differ by market (R01-R12 vs E01-E06), so its main effect is market-specific.
+GLM_INTERACTIONS = {
+    "motor": ["channel", "new_business", "driver_age_band", "fuel_type", "vehicle_age", "hail_days"],
+    "buildings": ["channel", "new_business", "policyholder_age_band", "construction_type", "sum_insured",
+                  "wind_exposure_index"],
+    "contents": ["channel", "new_business", "policyholder_age_band", "tenure", "security_level", "sum_insured"],
+}
 
 
 def train_test_features(line, shared, t, train):
@@ -204,11 +214,12 @@ def market_features(market, line, with_test):
     return x, train, test, t, year
 
 
-def emerging_design(line, train_set, dev_weight):
+def emerging_design(line, train_set, dev_weight, glm_interactions=False):
     """C036/C038: one feature frame for every row the emerging pass needs, with per-row arrays.
 
     part: "dev" (developed training rows, pooled only), "em" (emerging training rows), "test" (emerging 2025 rows).
     y = capped cost / exposure_eff, w = exposure_eff (x dev_weight on developed rows).
+    C042: glm_interactions appends the GLM_INTERACTIONS[line] market interaction columns (pooled GLM-only runs).
     """
     x_em, train, test, t, year = market_features("emerging", line, with_test=True)
     frames = [x_em]
@@ -222,6 +233,8 @@ def emerging_design(line, train_set, dev_weight):
         y = np.concatenate([t_dev["claim_cost_capped"].to_numpy() / t_dev["exposure_eff"].to_numpy(), y])
         w = np.concatenate([t_dev["exposure_eff"].to_numpy() * dev_weight, w])  # C038: developed weight multiplier
     x = features.concat_markets(frames) if len(frames) > 1 else x_em.reset_index(drop=True)
+    if glm_interactions:
+        x = features.market_interactions(x, GLM_INTERACTIONS[line])  # C042
     return x, part, y, w, train, test, t, year
 
 
@@ -260,10 +273,12 @@ def emerging_schemes(train, year):
     return schemes
 
 
-def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True):
-    out_dir = run_dir(train_set, dev_weight)
+def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True, glm_interactions=False):
+    if glm_interactions:  # C042: the interaction columns must reach the GLM only; tree runs keep today's frame
+        assert train_set == "pooled" and list(names) == ["glm"], "C042: --glm-interactions is for pooled GLM-only runs"
+    out_dir = run_dir(train_set, dev_weight) + ("_glmx" if glm_interactions else "")  # C042: own run folder
     os.makedirs(out_dir, exist_ok=True)
-    x, part, y, w, train, test, t, year = emerging_design(line, train_set, dev_weight)
+    x, part, y, w, train, test, t, year = emerging_design(line, train_set, dev_weight, glm_interactions)
     is_dev, is_em = part == "dev", part == "em"
     em_idx = np.flatnonzero(is_em)  # positions of the emerging training rows, in the order of t
     log(f"emerging {line} [{train_set}]: features {x.shape[1]} cols, developed fit rows {is_dev.sum():,}, "
@@ -314,6 +329,8 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
               "weights": weights, "weights_searched": searched, "rule": rule,
               "guard_scores": {"index": ["time fold 2023->2024", f"grouped {GROUP_FOLDS}-fold mean"], **guard},
               "cv_time": cv_time, "cv_group": cv_group, "rebalance_factor": rebal}
+    if glm_interactions:
+        result["glm_interactions"] = GLM_INTERACTIONS[line]  # C042
 
     if refit:
         n_est = {n: int(np.mean(best_its[n]["group"]) * 1.1) if all(best_its[n]["group"]) else None for n in names}
@@ -356,10 +373,16 @@ if __name__ == "__main__":
                     help="skip the folds; take refit_n_estimators and weights from the existing blend_weights json")
     ap.add_argument("--seeds", type=int, default=1, help="seeds averaged per tree model in the refit (default 1)")
     ap.add_argument("--te", default=None, help="C031: raw code column to target-encode, e.g. make_model (default off)")
+    ap.add_argument("--glm-interactions", action="store_true",
+                    help="C042 (emerging, pooled, --models glm): emerging-only GLM relativities for GLM_INTERACTIONS; "
+                         "writes to <run folder>_glmx")
     a = ap.parse_args()
+    if a.glm_interactions and not (a.train_set == "pooled" and a.models == "glm"):
+        ap.error("C042: --glm-interactions needs --train-set pooled and --models glm")
     assert a.seeds >= 1 and not (a.refit_only and a.skip_refit)
     if markets.get(a.market).name == "emerging":
         assert not (a.refit_only or a.te or a.seeds != 1), "C036: --refit-only, --te and --seeds are developed-only"
-        emerging_main(a.line, a.models.split(","), a.train_set, a.developed_weight, a.trend, refit=not a.skip_refit)
+        emerging_main(a.line, a.models.split(","), a.train_set, a.developed_weight, a.trend, refit=not a.skip_refit,
+                      glm_interactions=a.glm_interactions)
     else:
         main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds, te=a.te)

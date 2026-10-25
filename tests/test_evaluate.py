@@ -130,3 +130,26 @@ def test_guarded_weights_two_scores_time_fold_and_group_mean():
     lose = {"weighted": [0.11, 0.19], "equal": [0.10, 0.20]}
     assert evaluate.guarded_weights(win, {"a": 0.7, "b": 0.3}, names)[0] == {"a": 0.7, "b": 0.3}
     assert evaluate.guarded_weights(lose, {"a": 0.7, "b": 0.3}, names)[0] == {"a": 0.5, "b": 0.5}
+
+
+def _noisy_folds(seed, n_models, n_rows=400, n_folds=3):
+    rng = np.random.default_rng(seed)
+    folds = []
+    for _ in range(n_folds):
+        mu = rng.gamma(2.0, 50.0, n_rows)
+        y = np.where(rng.uniform(size=n_rows) < 0.3, rng.gamma(1.5, mu / 0.45), 0.0)
+        preds = {f"m{i}": mu * np.exp(rng.normal(0, 0.2 + 0.15 * i, n_rows)) for i in range(n_models)}
+        folds.append({"actual": y, "preds": preds})
+    return folds
+
+
+@pytest.mark.parametrize("seed, n_models, step", [(0, 3, 0.05), (1, 4, 0.1), (2, 5, 0.1), (3, 2, 0.05)])
+def test_blend_weights_grid_matches_the_reference_grid_search(seed, n_models, step):
+    # C041: vectorised search gives the same weights as blend_weights (same grid, same order, first maximum)
+    folds = _noisy_folds(seed, n_models)
+    assert evaluate.blend_weights_grid(folds, step=step, batch=7) == evaluate.blend_weights(folds, step=step)
+
+
+def test_blend_weights_grid_handles_a_single_model():
+    folds = _noisy_folds(4, 1)
+    assert evaluate.blend_weights_grid(folds, step=0.05) == {"m0": 1.0}

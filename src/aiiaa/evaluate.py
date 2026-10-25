@@ -1,6 +1,9 @@
 """Scoring and trend helpers."""
+from concurrent.futures import ThreadPoolExecutor
+from itertools import islice
+
 import numpy as np
-from sklearn.metrics import d2_tweedie_score
+from sklearn.metrics import d2_tweedie_score, mean_tweedie_deviance
 
 POWER = 1.5  # competition metric: Tweedie D2 with power 1.5
 
@@ -37,6 +40,50 @@ def blend_weights(folds, step=0.05):
             score += tweedie_d2(f["actual"], pred * f["actual"].sum() / pred.sum())
         if score > best:
             best, best_w = score, w
+    return {n: round(float(v), 10) for n, v in zip(names, best_w)}
+
+
+def blend_weights_grid(folds, step=0.05, batch=256):
+    """C041: the `blend_weights` search (same grid, same order, first maximum kept) vectorised over grid points, so
+    8-10 candidates are feasible (8 candidates on a 0.05 grid are 888,030 points, 9 are 3,108,105).
+
+    For Tweedie power 1.5 the mean deviance of the level-calibrated blend c * p (c = sum y / sum p) is
+    2 * (-4 sum sqrt(y) + 2 c^-0.5 sum y / sqrt(p) + 2 c^0.5 sum sqrt(p)) / n, so each grid point needs only
+    sqrt(p) of its blend; D2 divides by the deviance of the fold mean, as sklearn's d2_tweedie_score does.
+    Folds are scored in parallel threads (numpy releases the GIL) and summed in fold order.
+    """
+    assert POWER == 1.5, "closed form below is for power 1.5"
+    names = list(folds[0]["preds"])
+    steps = round(1 / step)
+    prepared = []
+    for f in folds:
+        y = np.asarray(f["actual"], dtype=float)
+        p = np.column_stack([np.asarray(f["preds"][n], dtype=float) for n in names])
+        null = mean_tweedie_deviance(y, np.full(len(y), y.mean()), power=POWER)
+        prepared.append((y, p, y.sum(), np.sqrt(np.clip(y, 0, None)).sum(), null, len(y)))
+
+    def fold_d2(fold, w):
+        y, p, y_sum, sqrt_y_sum, null, n = fold
+        pred = p @ w  # rows x grid points
+        c = y_sum / pred.sum(axis=0)
+        np.sqrt(pred, out=pred)
+        root_sum = pred.sum(axis=0)
+        np.reciprocal(pred, out=pred)
+        dev = 2 * (-4 * sqrt_y_sum + 2 * c ** -0.5 * (y @ pred) + 2 * c ** 0.5 * root_sum) / n
+        return 1 - dev / null
+
+    grid = _simplex(len(names), steps)
+    best, best_w = -np.inf, None
+    with ThreadPoolExecutor(len(prepared)) as pool:
+        while True:
+            combos = np.array(list(islice(grid, batch)), dtype=float)
+            if not len(combos):
+                break
+            w = combos.T / steps  # models x grid points
+            score = sum(pool.map(lambda fold: fold_d2(fold, w), prepared))
+            i = int(np.argmax(score))
+            if score[i] > best:
+                best, best_w = score[i], w[:, i]
     return {n: round(float(v), 10) for n, v in zip(names, best_w)}
 
 
