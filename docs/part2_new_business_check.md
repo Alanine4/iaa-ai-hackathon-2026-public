@@ -10,19 +10,19 @@ Conventions: developed pure premium = sum(`claim_cost_ult`) / sum(`exposure`) (`
 
 | seg | rows | exposure | claims | pure_premium_ult | exposure_share | row_share |
 |---|---|---|---|---|---|---|
-| new | 6,535 | 4,189.910 | 697 | 542.841 | 0.077 | 0.138 |
-| renewal | 40,748 | 50,239.555 | 6,351 | 320.267 | 0.923 | 0.862 |
+| new | 6,535 | 3,039.893 | 697 | 748.203 | 0.078 | 0.138 |
+| renewal | 40,748 | 35,928.641 | 6,351 | 447.834 | 0.922 | 0.862 |
 
-Pure premium ratio new/renewal (all years): **1.695**
+Pure premium ratio new/renewal (all years): **1.671**
 
 By accident year (year of `period_start`):
 
 | year | seg | rows | exposure | claims | pure_premium_ult | pp_ratio_new_over_renewal |
 |---|---|---|---|---|---|---|
-| 2023 | new | 2,620 | 1,509.772 | 315 | 753.541 | 2.587 |
-| 2023 | renewal | 19,060 | 25,025.994 | 3,242 | 291.276 | 2.587 |
-| 2024 | new | 3,915 | 2,680.138 | 382 | 424.150 | 1.215 |
-| 2024 | renewal | 21,688 | 25,213.561 | 3,109 | 349.043 | 1.215 |
+| 2023 | new | 2,620 | 1,209.510 | 315 | 940.609 | 2.278 |
+| 2023 | renewal | 19,060 | 17,655.000 | 3,242 | 412.884 | 2.278 |
+| 2024 | new | 3,915 | 1,830.384 | 382 | 621.062 | 1.290 |
+| 2024 | renewal | 21,688 | 18,273.641 | 3,109 | 481.601 | 1.290 |
 
 ### 2. OOF calibration, sum(pred)/sum(actual) (run `pooled_w0.3`; blend weights {'glm': 0.25, 'lgbm': 0.25, 'xgb': 0.25, 'cat': 0.25})
 
@@ -56,19 +56,19 @@ New-business share of test rows: 0.760; of test exposure: 0.769. Mean prediction
 
 | seg | rows | exposure | claims | pure_premium_ult | exposure_share | row_share |
 |---|---|---|---|---|---|---|
-| new | 3,786 | 2,802.261 | 77 | 228.711 | 0.083 | 0.138 |
-| renewal | 23,661 | 30,980.822 | 979 | 296.391 | 0.917 | 0.862 |
+| new | 3,786 | 1,809.863 | 77 | 354.120 | 0.077 | 0.138 |
+| renewal | 23,661 | 21,658.142 | 979 | 423.971 | 0.923 | 0.862 |
 
-Pure premium ratio new/renewal (all years): **0.772**
+Pure premium ratio new/renewal (all years): **0.835**
 
 By accident year (year of `period_start`):
 
 | year | seg | rows | exposure | claims | pure_premium_ult | pp_ratio_new_over_renewal |
 |---|---|---|---|---|---|---|
-| 2023 | new | 1,507 | 718.639 | 40 | 494.913 | 1.619 |
-| 2023 | renewal | 11,073 | 18,024.422 | 479 | 305.658 | 1.619 |
-| 2024 | new | 2,279 | 2,083.622 | 37 | 136.898 | 0.483 |
-| 2024 | renewal | 12,588 | 12,956.400 | 500 | 283.499 | 0.483 |
+| 2023 | new | 1,507 | 718.570 | 40 | 494.961 | 0.957 |
+| 2023 | renewal | 11,073 | 10,654.000 | 479 | 517.111 | 0.957 |
+| 2024 | new | 2,279 | 1,091.293 | 37 | 261.382 | 0.783 |
+| 2024 | renewal | 12,588 | 11,004.142 | 500 | 333.795 | 0.783 |
 
 ### 2. OOF calibration, sum(pred)/sum(actual) (run `pooled_w1`; blend weights {'cat': 0.95, 'lgbm': 0.05})
 
@@ -102,19 +102,19 @@ New-business share of test rows: 0.759; of test exposure: 0.768. Mean prediction
 
 | seg | rows | exposure | claims | pure_premium_ult | exposure_share | row_share |
 |---|---|---|---|---|---|---|
-| new | 4,716 | 3,109.961 | 102 | 84.264 | 0.080 | 0.136 |
-| renewal | 29,850 | 35,782.940 | 896 | 66.173 | 0.920 | 0.864 |
+| new | 4,716 | 2,233.203 | 102 | 117.346 | 0.077 | 0.136 |
+| renewal | 29,850 | 26,824.778 | 896 | 88.272 | 0.923 | 0.864 |
 
-Pure premium ratio new/renewal (all years): **1.273**
+Pure premium ratio new/renewal (all years): **1.329**
 
 By accident year (year of `period_start`):
 
 | year | seg | rows | exposure | claims | pure_premium_ult | pp_ratio_new_over_renewal |
 |---|---|---|---|---|---|---|
-| 2023 | new | 1,847 | 1,244.741 | 37 | 69.377 | 0.988 |
-| 2023 | renewal | 13,987 | 17,128.178 | 454 | 70.244 | 0.988 |
-| 2024 | new | 2,869 | 1,865.220 | 65 | 94.199 | 1.509 |
-| 2024 | renewal | 15,863 | 18,654.761 | 442 | 62.435 | 1.509 |
+| 2023 | new | 1,847 | 871.696 | 37 | 99.067 | 1.090 |
+| 2023 | renewal | 13,987 | 13,236.000 | 454 | 90.901 | 1.090 |
+| 2024 | new | 2,869 | 1,361.507 | 65 | 129.050 | 1.506 |
+| 2024 | renewal | 15,863 | 13,588.778 | 442 | 85.711 | 1.506 |
 
 ### 2+3. OOF calibration, sum(pred)/sum(actual) (run `pooled_w0.3`; blend weights {'glm': 0.55, 'xgb': 0.25, 'lgbm': 0.2}; `glm_interaction` = `pooled_w0.3_glmx` GLM, `glm` = plain GLM)
 
@@ -153,13 +153,13 @@ Numbers (generated):
 - contents, time: blend pred/actual on new business = 0.737 (65 claims, 2869 rows) vs renewal 1.111 (442 claims).
 - contents, group: blend pred/actual on new business = 0.837 (102 claims, 4716 rows) vs renewal 1.018 (896 claims).
 
-- Training developed pure-premium ratio new/renewal: motor 1.695 (new share of exposure 0.077); buildings 0.772 (new share of exposure 0.083); contents 1.273 (new share of exposure 0.080).
+- Training developed pure-premium ratio new/renewal: motor 1.671 (new share of exposure 0.078); buildings 0.835 (new share of exposure 0.077); contents 1.329 (new share of exposure 0.077).
 - Contents test predictions, new/renewal ratio of mean per exposure-year: blend_P2S05 1.043; glm_plain 1.022; glm_interaction 1.264.
 
 Reading (claim counts in brackets; ratios are pred/actual on reported cost):
 
-- Motor: new business is under-predicted in the `group` scheme (blend 0.812, 697 claims; renewal 1.025), i.e. about 21% low relative to renewal (relative 0.792). In the `time` scheme (train 2023, validate 2024) it is not (new 1.012 on 382 claims, renewal 0.933; relative 1.084). The two schemes disagree on the sign of the new-vs-renewal gap, so the evidence is mixed. Training experience: new/renewal developed pure premium is 1.695 overall but 2.587 in 2023 and 1.215 in 2024. The test blend gives new/renewal 1.388 per exposure-year, between the two accident-year ratios.
-- Buildings: new business is over-predicted in both schemes (group 1.296 on 77 claims vs renewal 0.981; time 2.229 on 37 claims vs renewal 1.607; relative 1.321 and 1.387). New-business claim counts are small, so the ratios are noisy, but the direction is the same in both schemes. Training new/renewal pure premium is 0.772 overall (2023 1.619, 2024 0.483, on 40 and 37 new claims). The test blend gives new/renewal 1.093, above both the pooled ratio (0.772) and the 2024 ratio (0.483). The time-scheme level (renewal 1.607 too) is a general level issue, not specific to new business.
-- Contents: new business is under-predicted in both schemes by the P2-S05 blend (group 0.837 on 102 claims vs renewal 1.018; time 0.737 on 65 claims vs renewal 1.111; relative 0.822 and 0.664). The test blend gives new/renewal 1.043, whereas the emerging training ratio is 1.273 overall (2023 0.988, 2024 1.509).
-- Interaction GLM (contents): in the `group` scheme it lifts new business from 0.847 (plain GLM) to 1.028, a factor of 1.214 (the +21%), and removes the segment gap (relative 1.029; renewal 1.018 -> 0.999). In the `time` scheme it goes the other way: new 0.684 vs plain 0.737, renewal 1.148 vs 1.121 (relative 0.596 vs 0.658). On test it gives new/renewal 1.264 per exposure-year vs 1.022 for the plain GLM, close to the overall training ratio 1.273 but below the 2024 ratio 1.509. Support is partial: the grouped OOF (102 new claims) and the pooled training pure-premium ratio back an uplift of about this size, the 2023-to-2024 time split does not (65 new claims). With claim counts this small each segment ratio carries a sampling error that is likely in the 10-15% range (rough judgement, not computed here).
+- Motor: new business is under-predicted in the `group` scheme (blend 0.812, 697 claims; renewal 1.025), i.e. about 21% low relative to renewal (relative 0.792). In the `time` scheme (train 2023, validate 2024) it is not (new 1.012 on 382 claims, renewal 0.933; relative 1.084). The two schemes disagree on the sign of the new-vs-renewal gap, so the evidence is mixed. Training experience: new/renewal developed pure premium is 1.671 overall but 2.278 in 2023 and 1.290 in 2024. The test blend gives new/renewal 1.388 per exposure-year, between the two accident-year ratios.
+- Buildings: new business is over-predicted in both schemes (group 1.296 on 77 claims vs renewal 0.981; time 2.229 on 37 claims vs renewal 1.607; relative 1.321 and 1.387). New-business claim counts are small, so the ratios are noisy, but the direction is the same in both schemes. Training new/renewal pure premium is 0.835 overall (2023 0.957, 2024 0.783, on 40 and 37 new claims). The test blend gives new/renewal 1.093, above both the pooled ratio (0.835) and the 2024 ratio (0.783). The time-scheme level (renewal 1.607 too) is a general level issue, not specific to new business.
+- Contents: new business is under-predicted in both schemes by the P2-S05 blend (group 0.837 on 102 claims vs renewal 1.018; time 0.737 on 65 claims vs renewal 1.111; relative 0.822 and 0.664). The test blend gives new/renewal 1.043, whereas the emerging training ratio is 1.329 overall (2023 1.090, 2024 1.506).
+- Interaction GLM (contents): in the `group` scheme it lifts new business from 0.847 (plain GLM) to 1.028, a factor of 1.214 (the +21%), and removes the segment gap (relative 1.029; renewal 1.018 -> 0.999). In the `time` scheme it goes the other way: new 0.684 vs plain 0.737, renewal 1.148 vs 1.121 (relative 0.596 vs 0.658). On test it gives new/renewal 1.264 per exposure-year vs 1.022 for the plain GLM, close to the overall training ratio 1.329 but below the 2024 ratio 1.506. Support is partial: the grouped OOF (102 new claims) and the pooled training pure-premium ratio back an uplift of about this size, the 2023-to-2024 time split does not (65 new claims). With claim counts this small each segment ratio carries a sampling error that is likely in the 10-15% range (rough judgement, not computed here).
 - Not computed: confidence intervals; the OOF ratios split by accident year within the `group` scheme.
