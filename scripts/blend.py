@@ -138,7 +138,7 @@ if __name__ == "__main__":
     ap.add_argument("--developed-weight", default="0.3",
                     help="C038/C040 (emerging market): one number for all lines, `per-line` (markets.developed_weights), "
                          "or motor=0.3,buildings=1.0,contents=0.3")
-    ap.add_argument("--trend", default="none", choices=["none", "developed-half"], help="C037 (emerging market)")
+    ap.add_argument("--trend", default="none", choices=["none", "developed-half", "mixed-half"], help="C037 (emerging market)")
     a = ap.parse_args()
     if markets.get(a.market).name == "emerging":
         try:

@@ -41,7 +41,12 @@ MARKETS = {
         # C037: two training years (2024 not developed) cannot support a trend fit. Base run: no trend.
         # Probe: the developed market's half trend to 2025 (developed line_trend ** 0.5, C019).
         trends={"none": {"motor": 1.0, "buildings": 1.0, "contents": 1.0},
-                "developed-half": {"motor": 1.0175, "buildings": 1.0948, "contents": 1.0636}},
+                "developed-half": {"motor": 1.0175, "buildings": 1.0948, "contents": 1.0636},
+                # C043: motor takes half (sqrt) of the emerging market's own observed trend: 2024/avg 1.0489 x
+                # 2024/2023 growth 1.1065 = 1.1606, sqrt 1.0773 (output/emerging/target_motor.parquet). Property lines
+                # keep developed-half: their two-year change is dominated by the 2023 cat year (buildings 2024/2023
+                # 0.63), so the own trend is not usable; public-board level probes P2-S06..S08 put them at the optimum.
+                "mixed-half": {"motor": 1.0773, "buildings": 1.0948, "contents": 1.0636}},
         # C040: adopted per line by the time-fold + grouped-CV rule. Buildings 1.0 beat 0.3 (+0.0104 time fold,
         # +0.0048 grouped); contents 1.0 vs 0.3 was only +0.0013 on the mean, so 0.3 is kept; motor 1.0 was slightly
         # worse than 0.3 (-0.0007 time fold, -0.0010 grouped), so 0.3 is kept.
