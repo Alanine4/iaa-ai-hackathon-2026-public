@@ -137,7 +137,7 @@ For the 20 reference policies the office premium is P = (R + Cat + F) / (1 - k).
 
 ### 7.6 Limitations specific to Part 2
 
-- 76% of test rows are new business, motor training holds about 3,040 new-business exposure-years, and we did not validate new and renewal business separately.
+- 76% of test rows are new business against about 8% of training exposure. A segment check (`docs/part2_new_business_check.md`) gives new-business prediction-to-actual ratios of 0.81 to 1.01 for motor, 1.30 to 2.23 for buildings and 0.74 to 0.84 for contents, on 37 to 697 claims and with the two validation schemes disagreeing for motor. We judged this too noisy to support a segment adjustment and made none.
 - The trend rests on one public-board probe of 0.0009, below our 0.002 threshold.
 - Reporting curves are borrowed, and the caps rest on 36 (motor), 6 (buildings) and 6 (contents) claims above the cap.
 - The sign-off sheet for Part 2 decisions (`docs/HUMAN_REVIEW.md`, R08 to R11) is pending; the work is logged in `docs/AI_LOG.md` A20 to A22.
