@@ -43,8 +43,8 @@ MARKETS = {
         trends={"none": {"motor": 1.0, "buildings": 1.0, "contents": 1.0},
                 "developed-half": {"motor": 1.0175, "buildings": 1.0948, "contents": 1.0636}},
         # C040: adopted per line by the time-fold + grouped-CV rule. Buildings 1.0 beat 0.3 (+0.0104 time fold,
-        # +0.0048 grouped); contents 1.0 vs 0.3 was only +0.0013 on the mean, so 0.3 is kept; motor 0.3 until the
-        # 1.0 probe has finished.
+        # +0.0048 grouped); contents 1.0 vs 0.3 was only +0.0013 on the mean, so 0.3 is kept; motor 1.0 was slightly
+        # worse than 0.3 (-0.0007 time fold, -0.0010 grouped), so 0.3 is kept.
         developed_weights={"motor": 0.3, "buildings": 1.0, "contents": 0.3}),
 }
 

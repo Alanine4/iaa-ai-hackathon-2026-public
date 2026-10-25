@@ -68,9 +68,10 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 合并权重探针（家财）：权重 1.0 对 0.3，时间折 0.1069 vs 0.1072、分组均值 0.1128 vs 0.1100，平均 +0.0013 < 0.002，0.3 保留；树模型单独受益（LGBM +0.0067、CAT +0.0145） — 2026-10-25，`output/emerging/pooled_w1/blend_weights_contents.json`
 - [x] C039 调参（pooled 家财，LGBM 13 配置 + XGB 10 配置 × 6 折）：没有配置在时间折和分组折上同时赢默认值（LGBM 叶子 15：分组 +0.0030 / 时间折 −0.0063；XGB 默认最好），参数不变；"叶子 3000 行太粗"的假设在 pooled 上不成立 — 2026-10-25，`docs/cv_emerging_trees_pooled_w0.3.md`
 - [x] 房屋线权重 1.0 探针：时间折 0.1169 vs 0.1065、分组均值 0.1180 vs 0.1132，平均 +0.0076，房屋采用 1.0（家财保留 0.3） — 2026-10-25，`output/emerging/pooled_w1/blend_weights_buildings.json`，P2-S05
-- [ ] 车险线权重 1.0 探针（跑中，约 3 小时）；之后把三条线各自的权重写进 `markets.py` 或 params，让 blend.py 支持按线取不同 run 目录（现在是临时脚本拼的）
-- [ ] 用全量数据重跑一次发达市场的 build_target 和 S09 融合，确认默认路径结果逐字节不变
-- [ ] 核对协调方给的发达市场半趋势系数（车险 1.0175、房屋 1.0948、家财 1.0636）
+- [x] 车险线权重 1.0 探针：时间折 0.0908 vs 0.0915、分组均值 0.0730 vs 0.0740，略差，车险保留 0.3；三线权重 {车险 0.3，房屋 1.0，家财 0.3} 写进 `markets.py`，blend.py 支持 `--developed-weight per-line`（C040），仓库命令重现 P2-S05 逐字节一致 — 2026-10-25
+- [ ] Kaggle 最终选择：按验证规则选 P2-S05（0.15123）；公开榜更高的 P2-S04（0.15193）可一并勾选作对冲（Kaggle 允许选两个，取私榜更好的）
+- [x] 发达市场默认路径复验：build_target 三条线 target 表与 `output/target_*.parquet` 完全一致、报告与 `docs/target_summary.txt` 一致；S09 融合用当前 blend.py 重现，与 `work/sub_v3_seeds.csv` SHA256 相同 — 2026-10-25，`output/emerging/check_dev_target.log`
+- [x] 半趋势系数重算：车险 1.0175、房屋 1.0948、家财 1.0636，与 `markets.py` 一致 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [ ] GLM/GAM 在新兴市场严重过拟合（房屋时间折 D² 为负，单行预测 40 万），考虑加大正则或只用树模型
 - [x] 上传 `work/p2_emerging_only.zip` 到 Kaggle 并记录分数 — 2026-10-24，P2-S01 公开榜 0.14370（第 8 / 10），`docs/SUBMISSIONS.md`
 - [x] 趋势探针 P2-S02（developed-half）：0.14460，比无趋势高 0.0009，Part 2 默认改用 developed-half — 2026-10-24，`docs/SUBMISSIONS.md`
