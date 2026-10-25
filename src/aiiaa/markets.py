@@ -46,7 +46,12 @@ MARKETS = {
                 # 2024/2023 growth 1.1065 = 1.1606, sqrt 1.0773 (output/emerging/target_motor.parquet). Property lines
                 # keep developed-half: their two-year change is dominated by the 2023 cat year (buildings 2024/2023
                 # 0.63), so the own trend is not usable; public-board level probes P2-S06..S08 put them at the optimum.
-                "mixed-half": {"motor": 1.0773, "buildings": 1.0948, "contents": 1.0636}},
+                "mixed-half": {"motor": 1.0773, "buildings": 1.0948, "contents": 1.0636},
+                # C043 outcome: public-board level points for motor (x1.0588 +0.0016, x1.10 +0.0024, x1.1406 +0.0029 vs
+                # P2-S05) fit a parabola with its optimum near +20% and only +0.0004 left beyond +14%, so motor takes
+                # its full own trend 1.1606 (P2-S10). A new-business-only placement of the same uplift (P2-S11) scored
+                # +0.0002 more, inside the 0.0005 tie band, so the simpler uniform factor is kept. Adopted.
+                "mixed-full": {"motor": 1.1606, "buildings": 1.0948, "contents": 1.0636}},
         # C040: adopted per line by the time-fold + grouped-CV rule. Buildings 1.0 beat 0.3 (+0.0104 time fold,
         # +0.0048 grouped); contents 1.0 vs 0.3 was only +0.0013 on the mean, so 0.3 is kept; motor 1.0 was slightly
         # worse than 0.3 (-0.0007 time fold, -0.0010 grouped), so 0.3 is kept.

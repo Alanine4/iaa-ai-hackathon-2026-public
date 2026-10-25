@@ -70,7 +70,8 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 房屋线权重 1.0 探针：时间折 0.1169 vs 0.1065、分组均值 0.1180 vs 0.1132，平均 +0.0076，房屋采用 1.0（家财保留 0.3） — 2026-10-25，`output/emerging/pooled_w1/blend_weights_buildings.json`，P2-S05
 - [x] 车险线权重 1.0 探针：时间折 0.0908 vs 0.0915、分组均值 0.0730 vs 0.0740，略差，车险保留 0.3；三线权重 {车险 0.3，房屋 1.0，家财 0.3} 写进 `markets.py`，blend.py 支持 `--developed-weight per-line`（C040），仓库命令重现 P2-S05 逐字节一致 — 2026-10-25
 - [x] 优化探针 C041（跨运行融合）与 C042（GLM 市场交互项）：都未达采纳标准，C042 的形式达标版因新业务水平未验证被否决；新业务分段核查证据噪声大，不做调整 — 2026-10-25，`docs/CHANGELOG.md` C041/C042、`docs/part2_new_business_check.md`、AI_LOG A23
-- [ ] Kaggle 最终选择：按验证规则选 P2-S05（0.15123）；公开榜更高的 P2-S04（0.15193）可一并勾选作对冲（Kaggle 允许选两个，取私榜更好的）
+- [x] 水平校准（C043）：6 个标量探针（P2-S06–S11）；车险水平偏低，改用新兴市场自身完整趋势 1.1606（`mixed-full`），房屋家财不变；P2-S10 0.15414 — 2026-10-25，`docs/SUBMISSIONS.md`
+- [ ] Kaggle 最终选择：候选 P2-S10（`mixed-full`，0.15414）；对冲可一并勾选 P2-S11（0.15434）或 S04
 - [x] 发达市场默认路径复验：build_target 三条线 target 表与 `output/target_*.parquet` 完全一致、报告与 `docs/target_summary.txt` 一致；S09 融合用当前 blend.py 重现，与 `work/sub_v3_seeds.csv` SHA256 相同 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [x] 半趋势系数重算：车险 1.0175、房屋 1.0948、家财 1.0636，与 `markets.py` 一致 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [ ] GLM/GAM 在新兴市场严重过拟合（房屋时间折 D² 为负，单行预测 40 万），考虑加大正则或只用树模型
