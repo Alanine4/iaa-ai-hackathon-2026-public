@@ -106,12 +106,14 @@ def test_emerging_main_writes_the_glm_interaction_run_into_its_own_folder(tmp_pa
     part = np.array(["dev"] * n_dev + ["em"] * n_em + ["test"] * n_test, dtype=object)
     x = pd.DataFrame({"market": pd.Categorical(np.where(part == "dev", "developed", "emerging")),
                       "channel": pd.Categorical(rng.choice(["broker", "direct"], n)), "v": rng.uniform(0, 1, n)})
+    x["new_business"] = np.arange(n) % 10 == 0  # C044: emerging_main reads it for the test-mix views
     y = np.where(rng.uniform(size=n) < 0.2, rng.gamma(1.0, 500.0, n), 0.0) * (part != "test")
     w = np.where(part == "test", 0.0, 1.0)
     year = np.where(np.arange(n_em) < n_em // 2, 2023, 2024)
     train = pd.DataFrame({"policy_id": [f"P{i % 700:04d}" for i in range(n_em)]})
     t = pd.DataFrame({"row_id": [f"E{i:05d}" for i in range(n_em)], "claim_cost": y[part == "em"],
-                      "claim_cost_capped": y[part == "em"], "exposure": 1.0, "completeness": 1.0})
+                      "claim_cost_capped": y[part == "em"], "claim_count": (y[part == "em"] > 0).astype(int),
+                      "exposure": 1.0, "completeness": 1.0})
     test = pd.DataFrame({"row_id": [f"T{i:05d}" for i in range(n_test)], "exposure": 1.0})
     seen = {}
 

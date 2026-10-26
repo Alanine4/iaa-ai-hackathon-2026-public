@@ -21,7 +21,8 @@ def _oof(rng, n=600, models=("a", "b")):
             mu = rng.gamma(2.0, 50.0, n)
             y = np.where(rng.uniform(size=n) < 0.3, rng.gamma(1.5, mu / 0.45), 0.0)
             frame = pd.DataFrame({"row_id": [f"{scheme}{k}_{i:04d}" for i in range(n)], "scheme": scheme, "fold": k,
-                                  "actual": y})
+                                  "actual": y, "new_business": np.arange(n) % 10 == 0, "exposure": 1.0,
+                                  "claim_count": (y > 0).astype(int)})  # C044 row info
             for j, m in enumerate(models):
                 frame[m] = mu if m == "a" else mu * np.exp(rng.normal(0, 0.6 + 0.2 * j, n))
             rows.append(frame)
@@ -32,6 +33,7 @@ def _oof(rng, n=600, models=("a", "b")):
 def emerging_root(tmp_path, monkeypatch):
     monkeypatch.setattr(markets, "ROOT", str(tmp_path))
     monkeypatch.setattr(blend, "ROOT", str(tmp_path))
+    monkeypatch.setattr(blend_runs, "nb_share_2025", lambda line: 0.77)  # C044
     return tmp_path / "output" / "emerging"
 
 
@@ -81,7 +83,7 @@ def test_evaluate_line_searches_on_grouped_folds_and_applies_guard_and_adoption_
     folds = blend_runs.scheme_folds(frame, names)
     assert [len(folds["time"]), len(folds["group"])] == [1, 5]
 
-    res = blend_runs.evaluate_line(folds, names, {"r1:b": 1.0}, step=0.1)
+    res = blend_runs.evaluate_line(folds, names, {"r1:b": 1.0}, 0.1, 0.77)
     w = res["weights"]
     assert set(w) == set(names) and sum(w.values()) == pytest.approx(1.0)
     assert max(w, key=w.get) == "r1:a"  # the truth model carries the blend
@@ -93,7 +95,7 @@ def test_evaluate_line_searches_on_grouped_folds_and_applies_guard_and_adoption_
     assert res["adoption"]["passes"] is True and gains["time"] > 0.002
     assert res["concentration"]["n_nonzero"] == sum(v > 0 for v in w.values())
     # same baseline as the searched blend -> zero gain -> not adopted
-    same = blend_runs.evaluate_line(folds, names, res["weights"], step=0.1)
+    same = blend_runs.evaluate_line(folds, names, res["weights"], 0.1, 0.77)
     assert same["gain"]["mean"] == pytest.approx(0.0, abs=1e-12) and same["adoption"]["passes"] is False
 
 
@@ -101,7 +103,7 @@ def test_evaluate_line_requires_baseline_candidates_to_be_loaded():
     folds = {"time": [{"actual": np.ones(3), "preds": {"r1:a": np.ones(3)}}],
              "group": [{"actual": np.ones(3), "preds": {"r1:a": np.ones(3)}}]}
     with pytest.raises(AssertionError, match="baseline"):
-        blend_runs.evaluate_line(folds, ["r1:a"], {"r9:a": 1.0}, step=0.5)
+        blend_runs.evaluate_line(folds, ["r1:a"], {"r9:a": 1.0}, 0.5, 0.77)
 
 
 def _write_pred(base, run, line, model, ids, values, trend_factor):

@@ -26,6 +26,14 @@ emerging fit rows. `--trend none|developed-half` (C037) sets the 2025 factor. Ou
 only) or output/emerging/pooled_w<w>/ (pooled).
 C042: `--glm-interactions` (pooled, `--models glm` only) appends the GLM_INTERACTIONS market interaction columns
 (features.market_interactions) and writes to output/emerging/pooled_w<w>_glmx/.
+C044: every emerging model and blend is also scored on two test-mix views (`evaluate.nb_views`): `d2_cal_testmix`
+(validation rows importance-weighted so new business carries the 2025 test file's NB exposure share of the line) and
+`d2_cal_nb` (NB rows only, with their claim count); the OOF file keeps new_business, exposure and claim_count. Weights
+are still searched and guarded on the raw grouped folds; `guard_scores.testmix` is reported only.
+C045: `--nb-weight auto|<factor>` multiplies the fit weight of new-business rows (both markets) in every fit (`auto`:
+NB rows get the test NB exposure share of the fit weight); the C038 re-balance uses the same weights.
+`--inner-emerging` (pooled) draws the C027 early-stopping holdout from the emerging fit rows only. Run folders get the
+suffix `_nb` (both options), `_nbw` (weighting only) or `_ie` (holdout only).
 
 Usage: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> [--models glm,gam,lgbm,xgb,cat] [--skip-refit]
                                                                [--refit-only] [--seeds N] [--te make_model]
@@ -273,22 +281,73 @@ def emerging_schemes(train, year):
     return schemes
 
 
-def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True, glm_interactions=False):
+def run_suffix(glm_interactions, nb_weight, inner_emerging):
+    """C042 / C045: run-folder suffix, one folder per option set so existing runs stay untouched: `_glmx` (C042),
+    then `_nb` (NB weighting with emerging-only early stopping), `_nbw` (NB weighting only), `_ie` (emerging-only early
+    stopping only)."""
+    tail = ("_nb" if inner_emerging else "_nbw") if nb_weight is not None else ("_ie" if inner_emerging else "")
+    return ("_glmx" if glm_interactions else "") + tail
+
+
+def inner_emerging_holdout(fit, em_fit):
+    """C045: early-stopping holdout as a mask over the fit rows (length fit.sum()): a seeded 10% of the EMERGING fit
+    rows, the C027 draw (numpy default_rng(models.SEED), n // 10 rows) applied to them only; every developed row stays
+    in the fit part."""
+    em_pos = np.flatnonzero(em_fit[fit])
+    mask = np.zeros(int(fit.sum()), dtype=bool)
+    mask[em_pos[np.random.default_rng(models.SEED).permutation(len(em_pos))[:len(em_pos) // 10]]] = True
+    return mask
+
+
+def nb_weights(w, nb, fit, option, target_share):
+    """C045: sample weights with the new-business rows of both markets multiplied by one factor. option "auto": the
+    factor that gives NB rows `target_share` of the total weight of the fit rows; a number: that factor; None: w
+    unchanged. Returns (weights, factor, NB share of the fit rows' weight after weighting)."""
+    if option is None:
+        out, factor = w, 1.0
+    else:
+        factor = (target_share * w[fit & ~nb].sum() / ((1 - target_share) * w[fit & nb].sum())
+                  if option == "auto" else float(option))
+        out = w * np.where(nb, factor, 1.0)
+    return out, float(factor), float(out[fit & nb].sum() / out[fit].sum())
+
+
+def view_entries(rep, single_fold=False):
+    """C044: per-fold `evaluate.view_report` entries as JSON fields: <key>_folds and <key>_mean, or (one fold) <key>."""
+    keys = ("d2_cal_testmix", "d2_cal_nb", "nb_claims")
+    if single_fold:
+        return {k: rep[0][k] for k in keys}
+    return {**{f"{k}_folds": [f[k] for f in rep] for k in keys},
+            **{f"{k}_mean": float(np.mean([f[k] for f in rep])) for k in keys if k != "nb_claims"}}
+
+
+def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True, glm_interactions=False,
+                  nb_weight=None, inner_emerging=False):
     if glm_interactions:  # C042: the interaction columns must reach the GLM only; tree runs keep today's frame
         assert train_set == "pooled" and list(names) == ["glm"], "C042: --glm-interactions is for pooled GLM-only runs"
-    out_dir = run_dir(train_set, dev_weight) + ("_glmx" if glm_interactions else "")  # C042: own run folder
+    assert not inner_emerging or train_set == "pooled", "C045: --inner-emerging is for pooled runs"
+    out_dir = run_dir(train_set, dev_weight) + run_suffix(glm_interactions, nb_weight, inner_emerging)  # C042/C045
     os.makedirs(out_dir, exist_ok=True)
     x, part, y, w, train, test, t, year = emerging_design(line, train_set, dev_weight, glm_interactions)
     is_dev, is_em = part == "dev", part == "em"
     em_idx = np.flatnonzero(is_em)  # positions of the emerging training rows, in the order of t
+    assert x["new_business"].dtype == bool, "C044: new_business must be a boolean feature column"
+    nb = x["new_business"].to_numpy()
+    test_rows = np.flatnonzero(part == "test")
+    test_share = evaluate.nb_exposure_share(nb[test_rows], test["exposure"].to_numpy())  # C044: test NB exposure share
     log(f"emerging {line} [{train_set}]: features {x.shape[1]} cols, developed fit rows {is_dev.sum():,}, "
-        f"emerging rows {is_em.sum():,}, test rows {(part == 'test').sum():,}")
+        f"emerging rows {is_em.sum():,}, test rows {len(test_rows):,}; test NB exposure share {test_share:.4f}; "
+        f"NB weight {nb_weight}; early stopping on emerging rows only: {inner_emerging}")
     schemes = emerging_schemes(train, year)
     comp_expo = (t["exposure"] * t["completeness"]).to_numpy()
+    # C044: per emerging training row, kept in the OOF file so the views can be recomputed offline
+    row_info = {"new_business": nb[em_idx], "exposure": t["exposure"].to_numpy(),
+                "claim_count": t["claim_count"].to_numpy()}
 
     frames, folds = [], {"time": [], "group": []}
     best_its = {n: {"time": [], "group": []} for n in names}
     rebal = {n: {"time": [], "group": []} for n in names}
+    nb_factor, nb_share = {"time": [], "group": []}, {"time": [], "group": []}
     for scheme, k, em_fit_mask, em_val_mask in schemes:
         em_fit = np.zeros(len(x), dtype=bool)
         em_fit[em_idx[em_fit_mask]] = True
@@ -297,38 +356,62 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
         load_f = t.loc[em_fit_mask, "claim_cost"].sum() / t.loc[em_fit_mask, "claim_cost_capped"].sum()
         actual = t.loc[em_val_mask, "claim_cost"].to_numpy()
         scale = comp_expo[em_val_mask] * load_f
+        val_info = {c: v[em_val_mask] for c, v in row_info.items()}
         frame = pd.DataFrame({"row_id": t.loc[em_val_mask, "row_id"].to_numpy(), "scheme": scheme, "fold": k,
-                              "actual": actual})
+                              "actual": actual, **val_info})
+        # C045: NB-weighted fit weights (the C038 re-balance in fit_emerging then uses them too); emerging-only holdout
+        w_fit, factor, share = nb_weights(w, nb, fit, nb_weight, test_share)
+        nb_factor[scheme].append(factor)
+        nb_share[scheme].append(share)
+        valid = inner_emerging_holdout(fit, em_fit) if inner_emerging else "inner"  # C027 / C045
+        if nb_weight is not None or inner_emerging:
+            n_hold = int(valid.sum()) if inner_emerging else int(fit.sum()) // 10
+            log(f"emerging {line} {scheme} {k}: NB factor {factor:.3f}, NB share of fit weight {share:.4f}; "
+                f"early-stopping rows {n_hold:,}")
         for name in names:
             t0 = time.time()
             m = emerging_model(line, name, train_set)
-            rebal[name][scheme].append(fit_emerging(m, x, y, w, fit, em_fit, train_set, valid="inner"))  # C027
+            rebal[name][scheme].append(fit_emerging(m, x, y, w_fit, fit, em_fit, train_set, valid=valid))
             frame[name] = m.predict(x.iloc[val_rows]) * scale
             best_its[name][scheme].append(getattr(m, "best_iteration", None))
             s = scores(actual, frame[name].to_numpy())
+            v = evaluate.nb_views(actual, frame[name].to_numpy(), val_info["new_business"], val_info["exposure"],
+                                  val_info["claim_count"], test_share)
             log(f"emerging {line} {scheme} {k} {name}: d2={s['d2']:.5f} d2_cal={s['d2_cal']:.5f} "
+                f"testmix={v['d2_cal_testmix']:.5f} nb={v['d2_cal_nb']:.5f} "
                 f"p/a={s['pred_actual']:.3f} it={best_its[name][scheme][-1]} {time.time() - t0:.0f}s")
         frames.append(frame)
-        folds[scheme].append({"actual": actual, "preds": {n: frame[n].to_numpy() for n in names}})
+        folds[scheme].append({"actual": actual, "preds": {n: frame[n].to_numpy() for n in names}, **val_info})
     pd.concat(frames).to_parquet(os.path.join(out_dir, f"oof_{line}.parquet"), index=False)
 
     searched = evaluate.blend_weights(folds["group"], step=0.05)  # C036: searched on the grouped folds
     rep = {s: evaluate.blend_report(folds[s], searched, names) for s in folds}
+    views = {s: evaluate.view_report(folds[s], searched, names, test_share) for s in folds}  # C044
     guard = {b: [rep["time"][b][0], float(np.mean(rep["group"][b]))] for b in ("weighted", "equal")}
     weights, rule = evaluate.guarded_weights(guard, searched, names)  # index 0 time fold, index 1 grouped mean
     cv_time = {n: {**scores(folds["time"][0]["actual"], folds["time"][0]["preds"][n]),
+                   **view_entries(views["time"]["single"][n], single_fold=True),
                    "best_iteration": best_its[n]["time"][0]} for n in names}
     cv_group = {n: {"d2_cal_folds": rep["group"]["single"][n], "d2_cal_mean": float(np.mean(rep["group"]["single"][n])),
                     "d2_mean": float(np.mean([evaluate.tweedie_d2(f["actual"], f["preds"][n]) for f in folds["group"]])),
+                    **view_entries(views["group"]["single"][n]),
                     "best_iteration": best_its[n]["group"]} for n in names}
     for b, key in (("weighted", "blend_searched"), ("equal", "blend_equal")):
-        cv_time[key] = {"d2_cal": rep["time"][b][0]}
-        cv_group[key] = {"d2_cal_folds": rep["group"][b], "d2_cal_mean": float(np.mean(rep["group"][b]))}
+        cv_time[key] = {"d2_cal": rep["time"][b][0], **view_entries(views["time"][b], single_fold=True)}
+        cv_group[key] = {"d2_cal_folds": rep["group"][b], "d2_cal_mean": float(np.mean(rep["group"][b])),
+                         **view_entries(views["group"][b])}
+    # C044: the test-mix view of the guard, reported only: weights are neither searched nor guarded on it
+    testmix_guard = {b: [views["time"][b][0]["d2_cal_testmix"],
+                         float(np.mean([f["d2_cal_testmix"] for f in views["group"][b]]))] for b in ("weighted", "equal")}
     result = {"line": line, "market": "emerging", "train_set": train_set,
               "developed_weight": dev_weight if train_set == "pooled" else None,
               "weights": weights, "weights_searched": searched, "rule": rule,
-              "guard_scores": {"index": ["time fold 2023->2024", f"grouped {GROUP_FOLDS}-fold mean"], **guard},
-              "cv_time": cv_time, "cv_group": cv_group, "rebalance_factor": rebal}
+              "guard_scores": {"index": ["time fold 2023->2024", f"grouped {GROUP_FOLDS}-fold mean"], **guard,
+                               "testmix": {"index": ["time fold test-mix", "grouped mean test-mix"], **testmix_guard}},
+              "test_nb_share": test_share,
+              "cv_time": cv_time, "cv_group": cv_group, "rebalance_factor": rebal,
+              "nb_weight": {"option": nb_weight, "factor": nb_factor, "nb_weight_share": nb_share},
+              "inner_emerging": inner_emerging}
     if glm_interactions:
         result["glm_interactions"] = GLM_INTERACTIONS[line]  # C042
 
@@ -337,14 +420,16 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
         factor = markets.get("emerging").trends[trend][line]  # C037
         load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
         fit = is_dev | is_em
-        test_rows = np.flatnonzero(part == "test")
+        w_fit, nb_f, nb_s = nb_weights(w, nb, fit, nb_weight, test_share)  # C045: same weighting in the refit
+        result["nb_weight"].update(refit_factor=nb_f, refit_nb_weight_share=nb_s)
         scale = test["exposure"].to_numpy() * factor * load_test
-        log(f"emerging {line}: large-loss load test {load_test:.4f}, trend {trend} {factor:.4f}")
+        log(f"emerging {line}: large-loss load test {load_test:.4f}, trend {trend} {factor:.4f}; "
+            f"refit NB factor {nb_f:.3f}, NB share of fit weight {nb_s:.4f}")
         result["refit_rebalance_factor"] = {}
         for name in names:
             t0 = time.time()
             m = emerging_model(line, name, train_set, {"n_estimators": n_est[name]} if n_est[name] else None)
-            result["refit_rebalance_factor"][name] = fit_emerging(m, x, y, w, fit, is_em, train_set, valid=None)
+            result["refit_rebalance_factor"][name] = fit_emerging(m, x, y, w_fit, fit, is_em, train_set, valid=None)
             pred = m.predict(x.iloc[test_rows]) * scale
             pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
                           "trend_factor": factor}).to_parquet(os.path.join(out_dir, f"pred_{line}_{name}.parquet"),
@@ -356,6 +441,16 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
     with open(os.path.join(out_dir, f"blend_weights_{line}.json"), "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
     log(json.dumps(result))
+
+
+def parse_nb_weight(text):
+    """C045: `--nb-weight` value: None (off), "auto" or a positive factor."""
+    if text is None or text == "auto":
+        return text
+    value = float(text)  # ValueError on anything else
+    if not value > 0:
+        raise ValueError(f"factor must be positive, got {value}")
+    return value
 
 
 if __name__ == "__main__":
@@ -376,13 +471,25 @@ if __name__ == "__main__":
     ap.add_argument("--glm-interactions", action="store_true",
                     help="C042 (emerging, pooled, --models glm): emerging-only GLM relativities for GLM_INTERACTIONS; "
                          "writes to <run folder>_glmx")
+    ap.add_argument("--nb-weight", default=None,
+                    help="C045 (emerging): multiply the weight of new-business rows (both markets) in every fit; "
+                         "`auto` gives them the test NB exposure share of the fit weight, a number is the factor")
+    ap.add_argument("--inner-emerging", action="store_true",
+                    help="C045 (emerging, pooled): early-stopping holdout = 10%% of the emerging fit rows only")
     a = ap.parse_args()
     if a.glm_interactions and not (a.train_set == "pooled" and a.models == "glm"):
         ap.error("C042: --glm-interactions needs --train-set pooled and --models glm")
+    try:
+        nb_weight = parse_nb_weight(a.nb_weight)
+    except ValueError as e:
+        ap.error(f"C045: --nb-weight must be `auto` or a positive number ({e})")
+    if a.inner_emerging and a.train_set != "pooled":
+        ap.error("C045: --inner-emerging needs --train-set pooled")
     assert a.seeds >= 1 and not (a.refit_only and a.skip_refit)
     if markets.get(a.market).name == "emerging":
         assert not (a.refit_only or a.te or a.seeds != 1), "C036: --refit-only, --te and --seeds are developed-only"
         emerging_main(a.line, a.models.split(","), a.train_set, a.developed_weight, a.trend, refit=not a.skip_refit,
-                      glm_interactions=a.glm_interactions)
+                      glm_interactions=a.glm_interactions, nb_weight=nb_weight, inner_emerging=a.inner_emerging)
     else:
+        assert nb_weight is None and not a.inner_emerging, "C045: --nb-weight and --inner-emerging are emerging-only"
         main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds, te=a.te)

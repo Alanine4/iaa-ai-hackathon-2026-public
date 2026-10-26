@@ -3,6 +3,7 @@
 fit(x, rate, weight, valid=None): rate = cost / exposure, weight = exposure (C010).
 valid = (x, rate, weight) enables early stopping for the tree models on that set.
 valid = "inner" (C027) early-stops on a seeded 10% of the training rows instead, so a scored fold is never seen.
+valid = boolean mask over the rows (C045) early-stops on the rows marked True (e.g. emerging rows only).
 """
 import lightgbm as lgb
 import numpy as np
@@ -33,14 +34,19 @@ class Balanced:
     def fit(self, x, y, w, valid=None):
         if isinstance(valid, str):
             if valid != "inner":
-                raise ValueError(f"valid must be None, a (x, y, w) tuple or 'inner', got {valid!r}")
+                raise ValueError(f"valid must be None, a (x, y, w) tuple, a boolean mask or 'inner', got {valid!r}")
+            # C027: hold out a seeded 10% of the training rows for early stopping
+            valid = np.zeros(len(x), dtype=bool)
+            valid[np.random.default_rng(SEED).permutation(len(x))[:len(x) // 10]] = True
+        if isinstance(valid, np.ndarray):
+            # C045: explicit boolean holdout mask over the rows of x (True = early-stopping row); the balance factor
+            # below still uses all rows; models without early stopping train on all rows
+            if valid.dtype != bool or len(valid) != len(x):
+                raise ValueError(f"holdout mask must be boolean with one entry per row ({len(x)}), "
+                                 f"got {valid.dtype} of length {len(valid)}")
             if self.early_stops:
-                # C027: hold out 10% of the training rows for early stopping; the balance factor below still uses all rows
-                holdout = np.zeros(len(x), dtype=bool)
-                holdout[np.random.default_rng(SEED).permutation(len(x))[:len(x) // 10]] = True
                 y_arr, w_arr = np.asarray(y), np.asarray(w)
-                self._fit(x[~holdout], y_arr[~holdout], w_arr[~holdout],
-                          (x[holdout], y_arr[holdout], w_arr[holdout]))
+                self._fit(x[~valid], y_arr[~valid], w_arr[~valid], (x[valid], y_arr[valid], w_arr[valid]))
             else:
                 self._fit(x, y, w, None)
         else:

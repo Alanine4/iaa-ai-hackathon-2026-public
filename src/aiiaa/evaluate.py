@@ -103,6 +103,58 @@ def blend_report(folds, weights, names):
             "single": {n: per_fold({m: float(m == n) for m in names}) for n in names}}
 
 
+def d2_cal(actual, pred, weight=None):
+    """C021 level-calibrated D2: pred rescaled so its total equals the actual total of the scored rows (unweighted
+    sums). C044: `weight` weights the deviance terms of the model and of the null (weighted mean of y); the calibration
+    stays unweighted, so the model's own new-business / renewal split is kept, as in the pipeline, which balances the
+    level on the training mix."""
+    actual, pred = np.asarray(actual, dtype=float), np.asarray(pred, dtype=float)
+    return float(tweedie_d2(actual, pred * actual.sum() / pred.sum(), weight))
+
+
+def nb_exposure_share(new_business, exposure):
+    """C044: new-business share of the exposure of a set of rows."""
+    nb, e = np.asarray(new_business, dtype=bool), np.asarray(exposure, dtype=float)
+    return float(e[nb].sum() / e.sum())
+
+
+def testmix_weights(new_business, exposure, target_share):
+    """C044: importance weight per validation row so that new-business rows carry `target_share` of the weighted
+    exposure (sum of weight x exposure): NB rows target_share / s, renewal rows (1 - target_share) / (1 - s), with s
+    the NB share of the rows' exposure. The total exposure is kept. Ones if s already equals the target; ValueError if
+    the rows hold no NB or no renewal exposure (the share cannot be moved) or the target is outside [0, 1]."""
+    if not 0.0 <= target_share <= 1.0:
+        raise ValueError(f"target share must be in [0, 1], got {target_share}")
+    nb = np.asarray(new_business, dtype=bool)
+    s = nb_exposure_share(nb, exposure)
+    if s == target_share:
+        return np.ones(len(nb))
+    if s in (0.0, 1.0):
+        raise ValueError(f"cannot re-weight: the rows hold {'no' if s == 0 else 'only'} new-business exposure")
+    return np.where(nb, target_share / s, (1 - target_share) / (1 - s))
+
+
+def nb_views(actual, pred, new_business, exposure, claim_count, target_share):
+    """C044: the two test-mix views of one fold: d2_cal with test-mix importance weights (`testmix_weights`), d2_cal on
+    the new-business rows only (calibrated within them: ranking among new business) and their claim count."""
+    actual, pred = np.asarray(actual, dtype=float), np.asarray(pred, dtype=float)
+    nb = np.asarray(new_business, dtype=bool)
+    return {"d2_cal_testmix": d2_cal(actual, pred, testmix_weights(nb, exposure, target_share)),
+            "d2_cal_nb": d2_cal(actual[nb], pred[nb]),
+            "nb_claims": int(np.asarray(claim_count)[nb].sum())}
+
+
+def view_report(folds, weights, names, target_share):
+    """C044: `nb_views` per fold (list in fold order) for the weighted blend, the equal-weight blend and every single
+    model, the layout of `blend_report`. Folds carry "new_business", "exposure" and "claim_count" arrays."""
+    def per_fold(wts):
+        return [nb_views(f["actual"], sum(wts[n] * f["preds"][n] for n in names), f["new_business"], f["exposure"],
+                         f["claim_count"], target_share) for f in folds]
+
+    return {"weighted": per_fold(weights), "equal": per_fold({n: 1 / len(names) for n in names}),
+            "single": {n: per_fold({m: float(m == n) for m in names}) for n in names}}
+
+
 def guarded_weights(report, searched, names):
     """C030: the both-folds guard. Searched blend weights are adopted only if the weighted blend beats the equal-weight
     blend on every fold of `report` (from `blend_report`); otherwise equal weights are used.
