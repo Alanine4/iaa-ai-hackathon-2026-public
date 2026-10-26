@@ -8,7 +8,9 @@ def test_tuned_params_cover_every_line_and_model():
     assert set(params.TUNED) == {"motor", "buildings", "contents", "emerging-motor", "emerging-buildings",
                                  "emerging-contents"}
     for line, by_model in params.TUNED.items():
-        assert set(by_model) <= {"glm", "gam", "lgbm", "xgb"}
+        # C046: emerging keys hold emerging-only tree tunings (CatBoost included)
+        allowed = {"lgbm", "xgb", "cat"} if line.startswith("emerging-") else {"glm", "gam", "lgbm", "xgb"}
+        assert set(by_model) <= allowed
 
 
 @pytest.mark.parametrize("line", ["motor", "buildings", "contents"])
@@ -23,9 +25,16 @@ def test_for_model_returns_empty_dict_when_default_kept():
 
 
 @pytest.mark.parametrize("line", ["emerging-motor", "emerging-buildings", "emerging-contents"])
-@pytest.mark.parametrize("name", ["glm", "gam", "lgbm", "xgb", "cat"])
-def test_emerging_lines_use_model_defaults(line, name):
+@pytest.mark.parametrize("name", ["glm", "gam"])
+def test_emerging_linear_models_use_model_defaults(line, name):
     assert params.for_model(line, name) == {}
+
+
+@pytest.mark.parametrize("line", ["emerging-motor", "emerging-buildings", "emerging-contents"])
+@pytest.mark.parametrize("name", ["lgbm", "xgb", "cat"])
+def test_emerging_tuned_params_are_accepted_by_models(line, name):
+    # C046: picks of the emerging-only search (tune_cv --market emerging), defaults where nothing beat them
+    assert models.make(name, **params.for_model(line, name)) is not None
 
 
 def test_unknown_line_raises():

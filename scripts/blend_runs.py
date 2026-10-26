@@ -18,6 +18,15 @@ test-mix grouped mean do not lose, and the mean raw gain >= ADOPT_GAIN OR the te
 `--report-views` prints the four views of the submitted recipes (RECIPES) per line and for the three lines stacked
 (Kaggle-like D2), on the exposure basis and on the row basis of the audit (audit_p2 a21: NB rows to 77% of rows).
 
+C047: `--baseline P2-S12` compares with the current recipe (contents pooled_w0.3 glm .35 + pooled_w1 lgbm .65; motor and
+buildings as P2-S05); the default stays P2-S05 (BASELINE). `--segment new_business` searches, guards and gates the new
+business rows (segment "nb") and the renewal rows ("renewal") of each line separately: per segment the weights are
+searched on that segment's rows of the raw grouped folds and guarded on its time fold and grouped mean (both within the
+segment); the gate scores the whole line with that segment's blend on its rows and the baseline on the other segment's
+rows, with every view as before; the NB segment must also not lose on the NB grouped view (the test-mix and NB views
+agree). The submission weights are then {"nb": ..., "renewal": ...}: NB test rows take the nb blend, the others the
+renewal blend (`line_prediction`, `--write-from`).
+
 `--write` builds work/<name>.csv/.zip from the runs' pred files, each re-expressed at `--trend`
 (trend factor / the file's trend_factor), checked against the emerging sample_submission like blend.py. Per line the
 submission uses the cross-run weights when they pass the adoption rule, otherwise the BASELINE weights.
@@ -27,6 +36,7 @@ Usage: .venv\\Scripts\\python.exe scripts\\blend_runs.py motor,buildings,content
        [--gate raw|testmix] [--candidates run:model,...] [--report-views]
        .venv\\Scripts\\python.exe scripts\\blend_runs.py motor,buildings,contents
        --write-from motor=<out>,buildings=<out>,contents=<out> --trend mixed-full --name <name>
+       C047: [--baseline P2-S05|P2-S12] [--segment new_business]
 Writes: output/emerging/<out>/blend_weights_<line>.json; with --write work/<name>.csv and work/<name>.zip;
         with --report-views output/emerging/<out>/views_recipes.csv
 """
@@ -54,6 +64,10 @@ BASELINE = {
     "buildings": {"pooled_w1:cat": 0.95, "pooled_w1:lgbm": 0.05},
     "contents": {"pooled_w0.3:glm": 0.55, "pooled_w0.3:xgb": 0.25, "pooled_w0.3:lgbm": 0.2},
 }
+# C047: the current recipe (P2-S12, work/p2_c044_contents_xrun): contents from the C044 two-run blend
+BASELINES = {"P2-S05": BASELINE,
+             "P2-S12": {**BASELINE, "contents": {"pooled_w0.3:glm": 0.35, "pooled_w1:lgbm": 0.65}}}
+SEGMENTS = ("nb", "renewal")  # C047: new-business rows, renewal rows
 # C044: the OOF recipes of the submitted Part 2 files; "." = emerging-only run (output/emerging/blend_weights_*.json)
 EMERGING_ONLY = {"motor": {".:gam": 0.1, ".:lgbm": 0.1, ".:xgb": 0.2, ".:cat": 0.6},
                  "buildings": {".:gam": 0.05, ".:xgb": 0.3, ".:cat": 0.65},
@@ -139,14 +153,41 @@ def restrict(folds, names):
     return {s: [{**f, "preds": {n: f["preds"][n] for n in names}} for f in folds[s]] for s in folds}
 
 
+def segment_mask(new_business, segment):
+    """C047: rows of one segment: "nb" = new business, "renewal" = the others."""
+    nb = np.asarray(new_business, dtype=bool)
+    return nb if segment == "nb" else ~nb
+
+
+def segment_folds(folds, segment):
+    """C047: the folds restricted to the rows of one segment (every array of a fold, candidates included)."""
+    out = {}
+    for scheme in folds:
+        out[scheme] = []
+        for f in folds[scheme]:
+            m = segment_mask(f["new_business"], segment)
+            out[scheme].append({**{k: np.asarray(v)[m] for k, v in f.items() if k != "preds"},
+                                "preds": {n: np.asarray(p)[m] for n, p in f["preds"].items()}})
+    return out
+
+
+def fold_pred(f, weights):
+    """Blend of one fold (names missing from `weights` weigh 0). C047: by-segment weights {"nb": {...}, "renewal":
+    {...}} take the nb blend on new-business rows and the renewal blend on the others."""
+    if set(weights) == set(SEGMENTS):
+        nb = segment_mask(f["new_business"], "nb")
+        return np.where(nb, fold_pred(f, weights["nb"]), fold_pred(f, weights["renewal"]))
+    return sum(wt * f["preds"][n] for n, wt in weights.items() if wt > 0)
+
+
 def blend_scores(folds, weights, share):
-    """C044: one blend (names missing from `weights` weigh 0) on the raw d2_cal and the two test-mix views:
-    time fold, grouped mean (and per-fold lists), NB claim counts."""
+    """C044: one blend (names missing from `weights` weigh 0; C047: or by-segment weights, `fold_pred`) on the raw
+    d2_cal and the two test-mix views: time fold, grouped mean (and per-fold lists), NB claim counts."""
     out = {}
     for scheme in SCHEMES:
         raw, mix, nbv, claims = [], [], [], 0
         for f in folds[scheme]:
-            p = sum(wt * f["preds"][n] for n, wt in weights.items() if wt > 0)
+            p = fold_pred(f, weights)
             raw.append(evaluate.d2_cal(f["actual"], p))
             v = evaluate.nb_views(f["actual"], p, f["new_business"], f["exposure"], f["claim_count"], share)
             mix.append(v["d2_cal_testmix"])
@@ -172,7 +213,7 @@ def pooled_scores(folds_by_line, recipe, shares):
             for line, w in recipe.items():
                 f = folds_by_line[line][scheme][k]
                 y, nb = f["actual"], f["new_business"].astype(bool)
-                p = sum(wt * f["preds"][n] for n, wt in w.items() if wt > 0)
+                p = fold_pred(f, w)  # C047: flat or by-segment weights
                 ys.append(y)
                 ps.append(p * y.sum() / p.sum())
                 ws.append(evaluate.testmix_weights(nb, f["exposure"], shares[line]))
@@ -199,6 +240,13 @@ def adopt(gain, gate):
     assert gate == "testmix", f"unknown gate {gate}"
     return bool(raw_ok and gain["group_testmix"] >= 0
                 and (gain["mean"] >= ADOPT_GAIN or gain["group_testmix"] >= ADOPT_GAIN))
+
+
+def adopt_segment(gain, gate, segment):
+    """C047: the gate of one segment, on the whole-line gains of the assembled prediction (this segment's blend on its
+    rows, the baseline elsewhere); the NB segment must also not lose on the NB grouped view, so the test-mix and NB
+    views agree."""
+    return bool(adopt(gain, gate) and (segment != "nb" or gain["group_nb"] >= 0))
 
 
 GATE_RULES = {"raw": f"mean gain over time fold and grouped mean >= {ADOPT_GAIN} and no loss on either",
@@ -238,8 +286,72 @@ def evaluate_line(folds, names, baseline, step, share, gate="raw"):
             "single": single}
 
 
+def segment_scores(folds, weights):
+    """C047: raw d2_cal within one segment's folds (calibrated within the segment): time fold, grouped folds, mean."""
+    group = [evaluate.d2_cal(f["actual"], fold_pred(f, weights)) for f in folds["group"]]
+    return {"time": evaluate.d2_cal(folds["time"][0]["actual"], fold_pred(folds["time"][0], weights)),
+            "group_mean": float(np.mean(group)), "group_folds": group}
+
+
+def evaluate_segments(folds, names, baseline, step, share, gate="testmix"):
+    """C047: per segment ("nb", "renewal") the C036 search (on the segment's rows of the raw grouped folds) and guard
+    (the segment's time fold and grouped mean, against equal weights), then the gate (`adopt_segment`) on the whole line
+    with this segment's guarded blend on its rows and the baseline on the other segment's rows. Also the within-segment
+    scores of the blend, the baseline and every candidate (the per-segment model table), the claims of the segment, and
+    the final assembled prediction (each segment's blend if adopted, otherwise the baseline) on every view."""
+    loaded = list(folds["group"][0]["preds"])
+    missing = sorted(set(baseline) - set(loaded))
+    assert not missing, f"baseline candidates {missing} are not in the loaded runs"
+    base_s = blend_scores(folds, baseline, share)
+    out, chosen = {"baseline": {"weights": dict(baseline), **base_s}, "segments": {}}, {}
+    for seg in SEGMENTS:
+        seg_folds = segment_folds(folds, seg)
+        sub = restrict(seg_folds, names)
+        searched = evaluate.blend_weights_grid(sub["group"], step=step)
+        rep = {s: evaluate.blend_report(sub[s], searched, names) for s in SCHEMES}
+        guard = {b: [rep["time"][b][0], float(np.mean(rep["group"][b]))] for b in ("weighted", "equal")}
+        weights, rule = evaluate.guarded_weights(guard, searched, names)
+        other = [s for s in SEGMENTS if s != seg][0]
+        blend_s = blend_scores(folds, {seg: weights, other: dict(baseline)}, share)
+        gain = {k: blend_s[k] - base_s[k] for k in VIEW_KEYS}
+        gain["mean"] = (gain["time"] + gain["group_mean"]) / 2
+        passes = adopt_segment(gain, gate, seg)
+        chosen[seg] = weights if passes else dict(baseline)
+        nonzero = {n: v for n, v in weights.items() if v > 0}
+        out["segments"][seg] = {
+            "weights": weights, "weights_searched": searched, "rule": rule,
+            "guard_scores": {"index": [f"{seg} rows: time fold", f"{seg} rows: grouped mean"], **guard},
+            "within_segment": {"blend": segment_scores(seg_folds, weights),
+                               "baseline": segment_scores(seg_folds, baseline)},
+            "claims": {s: int(sum(f["claim_count"].sum() for f in seg_folds[s])) for s in SCHEMES},
+            "rows": {s: int(sum(len(f["actual"]) for f in seg_folds[s])) for s in SCHEMES},
+            "assembled": blend_s, "gain": gain,
+            "adoption": {"passes": passes, "gate": gate,
+                         "rule": GATE_RULES[gate] + ("; NB grouped view must not lose" if seg == "nb" else "")},
+            "concentration": {"n_nonzero": len(nonzero), "max_weight": max(nonzero.values())},
+            "single": {n: segment_scores(seg_folds, {n: 1.0}) for n in names}}
+    final = blend_scores(folds, chosen, share)
+    gain = {k: final[k] - base_s[k] for k in VIEW_KEYS}
+    gain["mean"] = (gain["time"] + gain["group_mean"]) / 2
+    out.update(final=final, final_gain=gain, submission_weights=chosen)
+    return out
+
+
+def nb_flags_2025(line):
+    """C047: new_business flag of the 2025 test rows of a line, indexed by row_id."""
+    test = clean.clean_policies(load(f"test_{line}", "emerging"))
+    return pd.Series(test["new_business"].to_numpy(dtype=bool), index=test["row_id"].to_numpy())
+
+
 def line_prediction(line, weights, trend):
-    """Blended 2025 prediction of one line from the runs' pred files, each re-expressed at `trend` (C037)."""
+    """Blended 2025 prediction of one line from the runs' pred files, each re-expressed at `trend` (C037).
+    C047: by-segment weights take the nb blend on new-business test rows and the renewal blend on the others."""
+    if set(weights) == set(SEGMENTS):
+        parts = {s: line_prediction(line, weights[s], trend) for s in SEGMENTS}
+        renewal = parts["renewal"].reindex(parts["nb"].index)
+        nb = nb_flags_2025(line).reindex(parts["nb"].index)
+        assert renewal.notna().all() and nb.notna().all(), f"{line}: segment predictions cover different rows"
+        return parts["nb"].where(nb.astype(bool), renewal)
     factor = markets.get("emerging").trends[trend][line]
     cols = []
     for cand, wt in weights.items():
@@ -299,7 +411,7 @@ def _fmt(d):
     return " ".join(f"{k} {d[k]:.5f}" for k in VIEW_KEYS)
 
 
-def main(lines, runs, trend, name, step, out, write, baseline=None, gate="raw", candidates=None):
+def main(lines, runs, trend, name, step, out, write, baseline=None, gate="raw", candidates=None, segment=None):
     baseline = baseline or BASELINE
     out_dir = os.path.join(markets.get("emerging").out_dir, out)
     os.makedirs(out_dir, exist_ok=True)
@@ -314,6 +426,16 @@ def main(lines, runs, trend, name, step, out, write, baseline=None, gate="raw", 
         folds = scheme_folds(frame, loaded)
         share = nb_share_2025(line)
         t0 = time.time()
+        if segment:  # C047
+            assert segment == "new_business", f"unknown segment {segment}"
+            res = evaluate_segments(folds, names, baseline[line], step, share, gate)
+            chosen[line] = res["submission_weights"]
+            res = {"line": line, "runs": runs, "candidates": names, "step": step, "trend": trend,
+                   "test_nb_share": share, "segment": segment, "search_seconds": round(time.time() - t0, 1), **res}
+            with open(os.path.join(out_dir, f"blend_weights_{line}.json"), "w", encoding="utf-8") as f:
+                json.dump(res, f, indent=2)
+            print_segments(line, res)
+            continue
         res = evaluate_line(folds, names, baseline[line], step, share, gate)
         chosen[line] = res["weights"] if res["adoption"]["passes"] else dict(baseline[line])
         res = {"line": line, "runs": runs, "candidates": names, "step": step, "trend": trend, "test_nb_share": share,
@@ -334,6 +456,30 @@ def main(lines, runs, trend, name, step, out, write, baseline=None, gate="raw", 
         for line, pred in by_line.items():
             print(f"{line}: submission weights {chosen[line]}; mean {pred.mean():.2f} rows {len(pred):,}")
         write_submission(by_line, name)
+
+
+def _fmt_seg(d):
+    return f"time {d['time']:.5f} group_mean {d['group_mean']:.5f}"
+
+
+def print_segments(line, res):
+    """C047: per-segment tables of a segment run."""
+    print(f"{line}: {len(res['candidates'])} candidates, search {res['search_seconds']}s, "
+          f"test NB share {res['test_nb_share']:.4f}", flush=True)
+    print(f"{line}: baseline (whole line)  {_fmt(res['baseline'])}", flush=True)
+    for seg, r in res["segments"].items():
+        print(f"{line} [{seg}] rows {r['rows']} claims {r['claims']}; rule: {r['rule']}", flush=True)
+        print(f"{line} [{seg}] weights {{{', '.join(f'{k}: {v:g}' for k, v in r['weights'].items() if v > 0)}}}",
+              flush=True)
+        print(f"{line} [{seg}] within segment: blend {_fmt_seg(r['within_segment']['blend'])}; "
+              f"baseline {_fmt_seg(r['within_segment']['baseline'])}", flush=True)
+        print(f"{line} [{seg}] assembled {_fmt(r['assembled'])}", flush=True)
+        print(f"{line} [{seg}] gain      {_fmt(r['gain'])} mean {r['gain']['mean']:+.5f}; adopted "
+              f"{r['adoption']['passes']}", flush=True)
+        for n, s in r["single"].items():
+            print(f"{line} [{seg}]   single {n:<26} {_fmt_seg(s)}", flush=True)
+    print(f"{line}: final     {_fmt(res['final'])}\n{line}: final gain {_fmt(res['final_gain'])} "
+          f"mean {res['final_gain']['mean']:+.5f}; submission weights {res['submission_weights']}", flush=True)
 
 
 def report_views(lines, out, recipes=None):
@@ -395,6 +541,10 @@ if __name__ == "__main__":
     ap.add_argument("--candidates", default=None, help="C044: comma list of <run>:<model> to search over")
     ap.add_argument("--report-views", action="store_true",
                     help="C044: print the four views of the RECIPES (runs taken from the recipes) and exit")
+    ap.add_argument("--baseline", default="P2-S05", choices=sorted(BASELINES),
+                    help="C047: recipe the gate compares with (P2-S12 = current recipe)")
+    ap.add_argument("--segment", default=None, choices=["new_business"],
+                    help="C047: search, guard and gate NB rows and renewal rows separately")
     ap.add_argument("--write-from", default=None,
                     help="C044: motor=<out>,buildings=<out>,contents=<out>: write work/<name> from the submission_weights "
                          "of those result folders (no search; <out> = baseline: BASELINE weights) and exit")
@@ -408,5 +558,6 @@ if __name__ == "__main__":
             ap.error(str(e))
         write_from(spec, a.trend, a.name)
     else:
-        main(a.lines.split(","), a.runs.split(","), a.trend, a.name, a.step, a.out, a.write, gate=a.gate,
-             candidates=a.candidates.split(",") if a.candidates else None)
+        main(a.lines.split(","), a.runs.split(","), a.trend, a.name, a.step, a.out, a.write,
+             baseline=BASELINES[a.baseline], gate=a.gate, candidates=a.candidates.split(",") if a.candidates else None,
+             segment=a.segment)

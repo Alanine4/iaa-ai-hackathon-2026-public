@@ -34,6 +34,12 @@ C045: `--nb-weight auto|<factor>` multiplies the fit weight of new-business rows
 NB rows get the test NB exposure share of the fit weight); the C038 re-balance uses the same weights.
 `--inner-emerging` (pooled) draws the C027 early-stopping holdout from the emerging fit rows only. Run folders get the
 suffix `_nb` (both options), `_nbw` (weighting only) or `_ie` (holdout only).
+C046: `params.TUNED["emerging-<line>"]` (tuned on emerging-only data) applies to emerging-only fits only; pooled fits
+keep the model defaults (C039). `--tag <name>` appends `_<name>` to the run folder; an emerging-only run with a tag goes
+to output/emerging/emerging_<name>/ (the untagged emerging-only folder is output/emerging/ itself).
+C047: `--rows nb` (pooled) restricts every fit set (folds and refit) to the new-business rows of both markets; the C038
+re-balance uses the emerging NB fit rows; validation still scores every emerging validation row and the refit predicts
+every test row. Run folder suffix `_nbrows`.
 
 Usage: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> [--models glm,gam,lgbm,xgb,cat] [--skip-refit]
                                                                [--refit-only] [--seeds N] [--te make_model]
@@ -247,8 +253,10 @@ def emerging_design(line, train_set, dev_weight, glm_interactions=False):
 
 
 def emerging_model(line, name, train_set, extra=None):
-    """C036: params.for_model("emerging-<line>") (defaults unless tuned); emerging-only GLM/GAM pool rare levels at 30."""
-    kw = params.for_model(f"emerging-{line}", name)
+    """C036: params.for_model("emerging-<line>") (defaults unless tuned); emerging-only GLM/GAM pool rare levels at 30.
+    C046: the emerging keys are tuned on emerging-only fits, so pooled fits keep the model defaults (C039: no pooled
+    configuration beat them); `extra` (tune_cv configs, refit n_estimators) applies to both."""
+    kw = params.for_model(f"emerging-{line}", name) if train_set == "emerging" else {}
     if train_set == "emerging" and name in ("glm", "gam"):
         kw["min_frequency"] = EMERGING_MIN_FREQUENCY
     return models.make(name, **{**kw, **(extra or {})})
@@ -281,12 +289,22 @@ def emerging_schemes(train, year):
     return schemes
 
 
-def run_suffix(glm_interactions, nb_weight, inner_emerging):
+def run_suffix(glm_interactions, nb_weight, inner_emerging, rows="all"):
     """C042 / C045: run-folder suffix, one folder per option set so existing runs stay untouched: `_glmx` (C042),
     then `_nb` (NB weighting with emerging-only early stopping), `_nbw` (NB weighting only), `_ie` (emerging-only early
-    stopping only)."""
+    stopping only); C047: `_nbrows` (fit on new-business rows only)."""
     tail = ("_nb" if inner_emerging else "_nbw") if nb_weight is not None else ("_ie" if inner_emerging else "")
-    return ("_glmx" if glm_interactions else "") + tail
+    return ("_glmx" if glm_interactions else "") + tail + ("_nbrows" if rows == "nb" else "")
+
+
+def run_folder(train_set, dev_weight, suffix, tag):
+    """C046: the run folder: run_dir + suffix, plus `_<tag>`; a tagged emerging-only run goes to
+    output/emerging/emerging<suffix>_<tag>/ because the emerging-only run_dir is output/emerging/ itself."""
+    if tag is None:
+        return run_dir(train_set, dev_weight) + suffix
+    if train_set == "emerging":
+        return os.path.join(run_dir(train_set, dev_weight), f"emerging{suffix}_{tag}")
+    return run_dir(train_set, dev_weight) + f"{suffix}_{tag}"
 
 
 def inner_emerging_holdout(fit, em_fit):
@@ -322,22 +340,26 @@ def view_entries(rep, single_fold=False):
 
 
 def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True, glm_interactions=False,
-                  nb_weight=None, inner_emerging=False):
+                  nb_weight=None, inner_emerging=False, rows="all", tag=None):
     if glm_interactions:  # C042: the interaction columns must reach the GLM only; tree runs keep today's frame
         assert train_set == "pooled" and list(names) == ["glm"], "C042: --glm-interactions is for pooled GLM-only runs"
     assert not inner_emerging or train_set == "pooled", "C045: --inner-emerging is for pooled runs"
-    out_dir = run_dir(train_set, dev_weight) + run_suffix(glm_interactions, nb_weight, inner_emerging)  # C042/C045
+    assert rows in ("all", "nb") and (rows == "all" or train_set == "pooled"), "C047: --rows nb is for pooled runs"
+    out_dir = run_folder(train_set, dev_weight, run_suffix(glm_interactions, nb_weight, inner_emerging, rows),
+                         tag)  # C042/C045/C046/C047
     os.makedirs(out_dir, exist_ok=True)
     x, part, y, w, train, test, t, year = emerging_design(line, train_set, dev_weight, glm_interactions)
     is_dev, is_em = part == "dev", part == "em"
     em_idx = np.flatnonzero(is_em)  # positions of the emerging training rows, in the order of t
     assert x["new_business"].dtype == bool, "C044: new_business must be a boolean feature column"
     nb = x["new_business"].to_numpy()
+    # C047: rows a fit may use (every row, or new-business rows of both markets); validation rows are not restricted
+    fit_rows = nb if rows == "nb" else np.ones(len(x), dtype=bool)
     test_rows = np.flatnonzero(part == "test")
     test_share = evaluate.nb_exposure_share(nb[test_rows], test["exposure"].to_numpy())  # C044: test NB exposure share
     log(f"emerging {line} [{train_set}]: features {x.shape[1]} cols, developed fit rows {is_dev.sum():,}, "
         f"emerging rows {is_em.sum():,}, test rows {len(test_rows):,}; test NB exposure share {test_share:.4f}; "
-        f"NB weight {nb_weight}; early stopping on emerging rows only: {inner_emerging}")
+        f"NB weight {nb_weight}; early stopping on emerging rows only: {inner_emerging}; fit rows: {rows}")
     schemes = emerging_schemes(train, year)
     comp_expo = (t["exposure"] * t["completeness"]).to_numpy()
     # C044: per emerging training row, kept in the OOF file so the views can be recomputed offline
@@ -348,10 +370,13 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
     best_its = {n: {"time": [], "group": []} for n in names}
     rebal = {n: {"time": [], "group": []} for n in names}
     nb_factor, nb_share = {"time": [], "group": []}, {"time": [], "group": []}
+    n_fit = {"time": [], "group": []}  # C047: fit rows per market
     for scheme, k, em_fit_mask, em_val_mask in schemes:
         em_fit = np.zeros(len(x), dtype=bool)
         em_fit[em_idx[em_fit_mask]] = True
-        fit = is_dev | em_fit
+        em_fit &= fit_rows  # C047: with --rows nb the re-balance (C038) and the holdout use emerging NB fit rows
+        fit = (is_dev & fit_rows) | em_fit
+        n_fit[scheme].append({"developed": int((fit & is_dev).sum()), "emerging": int(em_fit.sum())})
         val_rows = em_idx[em_val_mask]
         load_f = t.loc[em_fit_mask, "claim_cost"].sum() / t.loc[em_fit_mask, "claim_cost_capped"].sum()
         actual = t.loc[em_val_mask, "claim_cost"].to_numpy()
@@ -411,7 +436,7 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
               "test_nb_share": test_share,
               "cv_time": cv_time, "cv_group": cv_group, "rebalance_factor": rebal,
               "nb_weight": {"option": nb_weight, "factor": nb_factor, "nb_weight_share": nb_share},
-              "inner_emerging": inner_emerging}
+              "inner_emerging": inner_emerging, "rows": rows, "fit_rows": n_fit}
     if glm_interactions:
         result["glm_interactions"] = GLM_INTERACTIONS[line]  # C042
 
@@ -419,7 +444,8 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
         n_est = {n: int(np.mean(best_its[n]["group"]) * 1.1) if all(best_its[n]["group"]) else None for n in names}
         factor = markets.get("emerging").trends[trend][line]  # C037
         load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
-        fit = is_dev | is_em
+        fit = (is_dev | is_em) & fit_rows  # C047
+        result["fit_rows"]["refit"] = {"developed": int((fit & is_dev).sum()), "emerging": int((fit & is_em).sum())}
         w_fit, nb_f, nb_s = nb_weights(w, nb, fit, nb_weight, test_share)  # C045: same weighting in the refit
         result["nb_weight"].update(refit_factor=nb_f, refit_nb_weight_share=nb_s)
         scale = test["exposure"].to_numpy() * factor * load_test
@@ -429,7 +455,8 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
         for name in names:
             t0 = time.time()
             m = emerging_model(line, name, train_set, {"n_estimators": n_est[name]} if n_est[name] else None)
-            result["refit_rebalance_factor"][name] = fit_emerging(m, x, y, w_fit, fit, is_em, train_set, valid=None)
+            result["refit_rebalance_factor"][name] = fit_emerging(m, x, y, w_fit, fit, fit & is_em, train_set,
+                                                                  valid=None)  # C047: emerging NB rows with --rows nb
             pred = m.predict(x.iloc[test_rows]) * scale
             pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
                           "trend_factor": factor}).to_parquet(os.path.join(out_dir, f"pred_{line}_{name}.parquet"),
@@ -476,6 +503,9 @@ if __name__ == "__main__":
                          "`auto` gives them the test NB exposure share of the fit weight, a number is the factor")
     ap.add_argument("--inner-emerging", action="store_true",
                     help="C045 (emerging, pooled): early-stopping holdout = 10%% of the emerging fit rows only")
+    ap.add_argument("--rows", default="all", choices=["all", "nb"],
+                    help="C047 (emerging, pooled): nb = fit on new-business rows of both markets only (folder _nbrows)")
+    ap.add_argument("--tag", default=None, help="C046 (emerging): append _<tag> to the run folder")
     a = ap.parse_args()
     if a.glm_interactions and not (a.train_set == "pooled" and a.models == "glm"):
         ap.error("C042: --glm-interactions needs --train-set pooled and --models glm")
@@ -485,11 +515,15 @@ if __name__ == "__main__":
         ap.error(f"C045: --nb-weight must be `auto` or a positive number ({e})")
     if a.inner_emerging and a.train_set != "pooled":
         ap.error("C045: --inner-emerging needs --train-set pooled")
+    if a.rows == "nb" and a.train_set != "pooled":
+        ap.error("C047: --rows nb needs --train-set pooled")
     assert a.seeds >= 1 and not (a.refit_only and a.skip_refit)
     if markets.get(a.market).name == "emerging":
         assert not (a.refit_only or a.te or a.seeds != 1), "C036: --refit-only, --te and --seeds are developed-only"
         emerging_main(a.line, a.models.split(","), a.train_set, a.developed_weight, a.trend, refit=not a.skip_refit,
-                      glm_interactions=a.glm_interactions, nb_weight=nb_weight, inner_emerging=a.inner_emerging)
+                      glm_interactions=a.glm_interactions, nb_weight=nb_weight, inner_emerging=a.inner_emerging,
+                      rows=a.rows, tag=a.tag)
     else:
         assert nb_weight is None and not a.inner_emerging, "C045: --nb-weight and --inner-emerging are emerging-only"
+        assert a.rows == "all" and a.tag is None, "C046/C047: --rows and --tag are emerging-only"
         main(a.line, a.models.split(","), refit=not a.skip_refit, refit_only=a.refit_only, seeds=a.seeds, te=a.te)
