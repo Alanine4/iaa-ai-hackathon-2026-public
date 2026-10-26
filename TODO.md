@@ -14,7 +14,7 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 建 `docs/AI_LOG.md` 和修改日志 `docs/CHANGELOG.md` — 2026-10-21
 - [x] 推送到 GitHub 私有仓库 https://github.com/Alanine4/iaa-ai-hackathon-2026（不含 output/） — 2026-10-21
 - [x] 原始数据作为只读备份提交到私有仓库，附 SHA256 清单和完整性测试（C007） — 2026-10-21
-- [ ] 邀请队友为 collaborator（要先拿到队友的 GitHub 用户名；队友也必须在 Kaggle 上合入同一个队伍）
+- [x] 邀请队友为 collaborator：GitHub 用户 OBLEMOS 已有写权限（gh api 核对）；Kaggle 已同队 — 2026-10-26
 
 ## 阶段 1：目标变量（第 1 天）
 - [x] 清洗：exposure 重算（C001）、customer_id 补零（C002）、construction_type 统一（C004） — 2026-10-21，`src/aiiaa/clean.py`
@@ -84,4 +84,5 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 报告第 7 节（新市场适配：差异、流程改动、验证设计、结果表、办公室保费公式、局限），约 590 词 — 2026-10-25，`docs/REPORT_DRAFT.md`
 - [ ] 报告压到 5 页以内并加第 8 节：20 张参考保单的办公室保费表（等最终预测文件和队友定口径）
 - [ ] 视频脚本（5 分钟，约 700 字）
-- [ ] 邀请队友为 GitHub collaborator（等用户名）
+- [x] 邀请队友为 GitHub collaborator（OBLEMOS，写权限） — 2026-10-26
+- [ ] 取得队友 Part 1 的代码与方法（公开榜 0.1356 的 submission_improved* 系列），放进仓库 `teammate/` 并在 AI_LOG 记录；在 Part 2 上复跑并与我们的预测融合
