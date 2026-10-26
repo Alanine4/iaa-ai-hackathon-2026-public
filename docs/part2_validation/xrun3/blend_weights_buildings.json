@@ -1,0 +1,120 @@
+{
+  "line": "buildings",
+  "runs": [
+    "pooled_w0.3",
+    "pooled_w1",
+    "pooled_w0.3_glmx"
+  ],
+  "candidates": [
+    "pooled_w0.3:glm",
+    "pooled_w0.3:lgbm",
+    "pooled_w0.3:xgb",
+    "pooled_w0.3:cat",
+    "pooled_w1:glm",
+    "pooled_w1:lgbm",
+    "pooled_w1:xgb",
+    "pooled_w1:cat"
+  ],
+  "step": 0.05,
+  "trend": "developed-half",
+  "search_seconds": 214.3,
+  "weights": {
+    "pooled_w0.3:glm": 0.0,
+    "pooled_w0.3:lgbm": 0.1,
+    "pooled_w0.3:xgb": 0.0,
+    "pooled_w0.3:cat": 0.0,
+    "pooled_w1:glm": 0.0,
+    "pooled_w1:lgbm": 0.0,
+    "pooled_w1:xgb": 0.0,
+    "pooled_w1:cat": 0.9
+  },
+  "weights_searched": {
+    "pooled_w0.3:glm": 0.0,
+    "pooled_w0.3:lgbm": 0.1,
+    "pooled_w0.3:xgb": 0.0,
+    "pooled_w0.3:cat": 0.0,
+    "pooled_w1:glm": 0.0,
+    "pooled_w1:lgbm": 0.0,
+    "pooled_w1:xgb": 0.0,
+    "pooled_w1:cat": 0.9
+  },
+  "rule": "searched weights beat equal weights on all folds",
+  "guard_scores": {
+    "index": [
+      "time fold 2023->2024",
+      "grouped 5-fold mean"
+    ],
+    "weighted": [
+      0.11677243398705228,
+      0.11822258504721735
+    ],
+    "equal": [
+      0.09911043720165313,
+      0.11096053204846097
+    ]
+  },
+  "baseline": {
+    "weights": {
+      "pooled_w1:cat": 0.95,
+      "pooled_w1:lgbm": 0.05
+    },
+    "time": 0.11693094903800205,
+    "group_mean": 0.11800214490032615
+  },
+  "blend": {
+    "time": 0.11677243398705228,
+    "group_mean": 0.11822258504721735
+  },
+  "gain": {
+    "time": -0.00015851505094977014,
+    "group_mean": 0.00022044014689119595,
+    "mean": 3.0962547970712906e-05
+  },
+  "adoption": {
+    "passes": false,
+    "rule": "mean gain over time fold and grouped mean >= 0.002 and no loss on either"
+  },
+  "concentration": {
+    "n_nonzero": 2,
+    "max_weight": 0.9,
+    "effective_n": 1.2195121951219512
+  },
+  "single": {
+    "pooled_w0.3:glm": {
+      "time": 0.06841194198031852,
+      "group_mean": 0.09047905615788143
+    },
+    "pooled_w0.3:lgbm": {
+      "time": 0.1020781768414365,
+      "group_mean": 0.0994496865031504
+    },
+    "pooled_w0.3:xgb": {
+      "time": 0.09251191960451977,
+      "group_mean": 0.10260865596562681
+    },
+    "pooled_w0.3:cat": {
+      "time": 0.10589048240613963,
+      "group_mean": 0.11237612467845534
+    },
+    "pooled_w1:glm": {
+      "time": 0.07071684299110126,
+      "group_mean": 0.09205694015571941
+    },
+    "pooled_w1:lgbm": {
+      "time": 0.09377746020256073,
+      "group_mean": 0.10802554131583897
+    },
+    "pooled_w1:xgb": {
+      "time": 0.09485992247015063,
+      "group_mean": 0.10407211888034307
+    },
+    "pooled_w1:cat": {
+      "time": 0.11756482905002663,
+      "group_mean": 0.11797020707159153
+    }
+  },
+  "submission_weights": {
+    "pooled_w1:cat": 0.95,
+    "pooled_w1:lgbm": 0.05
+  }
+}

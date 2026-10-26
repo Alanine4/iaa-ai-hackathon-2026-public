@@ -1,0 +1,112 @@
+{
+  "line": "contents",
+  "market": "emerging",
+  "train_set": "pooled",
+  "developed_weight": 0.3,
+  "weights": {
+    "glm": 1.0
+  },
+  "weights_searched": {
+    "glm": 1.0
+  },
+  "rule": "equal weights: searched weights lost on fold index 0 (0.08851 vs 0.08851), fold index 1 (0.10149 vs 0.10149)",
+  "guard_scores": {
+    "index": [
+      "time fold 2023->2024",
+      "grouped 5-fold mean"
+    ],
+    "weighted": [
+      0.08851105867417086,
+      0.1014863828498902
+    ],
+    "equal": [
+      0.08851105867417086,
+      0.1014863828498902
+    ]
+  },
+  "cv_time": {
+    "glm": {
+      "d2": 0.08930668633023098,
+      "d2_cal": 0.08851105867417086,
+      "pred_actual": 1.0877063759311105,
+      "best_iteration": null
+    },
+    "blend_searched": {
+      "d2_cal": 0.08851105867417086
+    },
+    "blend_equal": {
+      "d2_cal": 0.08851105867417086
+    }
+  },
+  "cv_group": {
+    "glm": {
+      "d2_cal_folds": [
+        0.05702071815647736,
+        0.1394027154684182,
+        0.1366399277328968,
+        0.09078500650196986,
+        0.08358354638968879
+      ],
+      "d2_cal_mean": 0.1014863828498902,
+      "d2_mean": 0.10140562346774103,
+      "best_iteration": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "blend_searched": {
+      "d2_cal_folds": [
+        0.05702071815647736,
+        0.1394027154684182,
+        0.1366399277328968,
+        0.09078500650196986,
+        0.08358354638968879
+      ],
+      "d2_cal_mean": 0.1014863828498902
+    },
+    "blend_equal": {
+      "d2_cal_folds": [
+        0.05702071815647736,
+        0.1394027154684182,
+        0.1366399277328968,
+        0.09078500650196986,
+        0.08358354638968879
+      ],
+      "d2_cal_mean": 0.1014863828498902
+    }
+  },
+  "rebalance_factor": {
+    "glm": {
+      "time": [
+        1.050267125269934
+      ],
+      "group": [
+        1.0417687282641581,
+        1.0252330728601116,
+        1.0276482498157022,
+        1.029624373867822,
+        1.0427731233060529
+      ]
+    }
+  },
+  "glm_interactions": [
+    "channel",
+    "new_business",
+    "policyholder_age_band",
+    "tenure",
+    "security_level",
+    "sum_insured"
+  ],
+  "refit_rebalance_factor": {
+    "glm": 1.0325698873078093
+  },
+  "refit_n_estimators": {
+    "glm": null
+  },
+  "trend": "none",
+  "trend_factor": 1.0,
+  "load_test": 1.0214188458769542
+}

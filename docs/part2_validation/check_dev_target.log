@@ -1,0 +1,8 @@
+motor target identical: (979968, 8)
+buildings target identical: (707726, 8)
+contents target identical: (721617, 8)
+report identical to docs/target_summary.txt: True
+motor: developed half trend 2025 = 1.0175; markets.py = 1.0175
+buildings: developed half trend 2025 = 1.0948; markets.py = 1.0948
+contents: developed half trend 2025 = 1.0636; markets.py = 1.0636
+exit 0
