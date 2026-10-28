@@ -24,7 +24,13 @@ import blend_runs as br  # noqa: E402
 
 TREND = "mixed-full"
 P2S13 = {"buildings": {"pooled_w1:cat": 0.95, "pooled_w1:lgbm": 0.05},
-         "contents": {"pooled_w0.3:glm": 0.35, "pooled_w1:lgbm": 0.65}}
+         "contents": {"pooled_w0.3:glm": 0.35, "pooled_w1:lgbm": 0.65},
+         # motor: the P2-S12 recipe; P2-S13 replaced its NB rows by the C047 segment blend, whose OOF is not local, so an
+         # adopted motor weight a is applied as (1 - a) x P2-S13 motor + a x pglm (pglm on the P2-S13 motor total)
+         "motor": dict(br.BASELINE["motor"])}
+# C052: the contents blend passed the testmix gate but lost on the public board (0.15560 vs 0.15577); its two time-fold
+# NB views were negative. Extra rule from then on: no loss on time_testmix and time_nb either.
+STRICT = ("time_testmix", "time_nb")
 PERIL = ["peril:pglm"]
 OUT = "xrun_peril"
 WORK = os.path.join(br.markets.ROOT, "work")
@@ -44,17 +50,26 @@ def main(lines, name):
         with open(os.path.join(br.run_path(OUT), f"blend_weights_{line}.json"), encoding="utf-8") as f:
             res = json.load(f)
         weights = res.get("submission_weights") or {}
-        if weights and weights != P2S13[line]:
+        gain = res.get("gain") or {}
+        strict_ok = all(gain.get(k, 0) >= 0 for k in STRICT)
+        if weights and weights != P2S13[line] and strict_ok:
             adopted[line] = weights
-        print(f"{line}: submission weights {weights}", flush=True)
+        print(f"{line}: submission weights {weights}; strict views {[(k, round(gain.get(k, 0), 5)) for k in STRICT]}"
+              f" -> {'adopted' if line in adopted else 'not adopted'}", flush=True)
     if not adopted:
         print("no line adopted: no submission written", flush=True)
         return
     with zipfile.ZipFile(P2S13_FILE) as z:
         sub = pd.read_csv(io.BytesIO(z.read(z.namelist()[0]))).set_index("row_id")
     for line, weights in adopted.items():
-        pred = br.line_prediction(line, weights, TREND)
-        old = sub.loc[pred.index, "prediction"]
+        if line == "motor":
+            a = weights.get(PERIL[0], 0.0)
+            pg = br.line_prediction(line, {PERIL[0]: 1.0}, TREND)
+            old = sub.loc[pg.index, "prediction"]
+            pred = (1 - a) * old + a * pg * old.sum() / pg.sum()
+        else:
+            pred = br.line_prediction(line, weights, TREND)
+            old = sub.loc[pred.index, "prediction"]
         print(f"{line}: {len(pred):,} rows replaced, mean {old.mean():.2f} -> {pred.mean():.2f}", flush=True)
         sub.loc[pred.index, "prediction"] = pred.to_numpy()
     sub = sub.reset_index()
