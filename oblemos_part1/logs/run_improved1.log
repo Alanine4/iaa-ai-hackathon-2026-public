@@ -1,0 +1,167 @@
+
+==========================================================================================
+LIGHTGBM TUNING BUILDINGS
+==========================================================================================
+  trial  0: D2 2023=0.1031 2024=0.1092 mean=0.1061  (best so far 0.1061)  [27s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=500 feature_fraction=0.7 bagging_fraction=0.8 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial  1: D2 2023=0.1084 2024=0.1128 mean=0.1106  (best so far 0.1106)  [19s]  tweedie_variance_power=1.5 num_leaves=7 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=1.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial  2: D2 2023=0.1050 2024=0.1036 mean=0.1043  (best so far 0.1106)  [37s]  tweedie_variance_power=1.3 num_leaves=127 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial  3: D2 2023=0.1062 2024=0.1117 mean=0.1089  (best so far 0.1106)  [21s]  tweedie_variance_power=1.2 num_leaves=15 min_data_in_leaf=100 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial  4: D2 2023=0.1097 2024=0.1133 mean=0.1115  (best so far 0.1115)  [20s]  tweedie_variance_power=1.5 num_leaves=7 min_data_in_leaf=1000 feature_fraction=0.7 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial  5: D2 2023=0.1080 2024=0.1106 mean=0.1093  (best so far 0.1115)  [30s]  tweedie_variance_power=1.2 num_leaves=15 min_data_in_leaf=100 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial  6: D2 2023=0.0902 2024=0.0972 mean=0.0937  (best so far 0.1115)  [32s]  tweedie_variance_power=1.4 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.5 bagging_fraction=0.7 lambda_l2=100.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial  7: D2 2023=0.1057 2024=0.1066 mean=0.1061  (best so far 0.1115)  [29s]  tweedie_variance_power=1.3 num_leaves=31 min_data_in_leaf=300 feature_fraction=0.5 bagging_fraction=0.9 lambda_l2=1.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial  8: D2 2023=0.0997 2024=0.1015 mean=0.1006  (best so far 0.1115)  [37s]  tweedie_variance_power=1.5 num_leaves=127 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=0.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial  9: D2 2023=0.1039 2024=0.1099 mean=0.1069  (best so far 0.1115)  [33s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=1000 feature_fraction=0.5 bagging_fraction=0.7 lambda_l2=100.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 10: D2 2023=0.1049 2024=0.1075 mean=0.1062  (best so far 0.1115)  [28s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=300 feature_fraction=0.3 bagging_fraction=0.7 lambda_l2=0.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial 11: D2 2023=0.1063 2024=0.1070 mean=0.1067  (best so far 0.1115)  [23s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=1000 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=0.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 12: D2 2023=0.1058 2024=0.1089 mean=0.1073  (best so far 0.1115)  [34s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=0.7 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 13: D2 2023=0.1038 2024=0.1070 mean=0.1054  (best so far 0.1115)  [21s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=1.0 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial 14: D2 2023=0.1102 2024=0.1138 mean=0.1120  (best so far 0.1120)  [25s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=3000 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 15: D2 2023=0.1096 2024=0.1139 mean=0.1117  (best so far 0.1120)  [23s]  tweedie_variance_power=1.3 num_leaves=7 min_data_in_leaf=100 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=100.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 16: D2 2023=0.1080 2024=0.1117 mean=0.1098  (best so far 0.1120)  [34s]  tweedie_variance_power=1.3 num_leaves=63 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 17: D2 2023=0.1043 2024=0.1071 mean=0.1057  (best so far 0.1120)  [29s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=1000 feature_fraction=0.9 bagging_fraction=1.0 lambda_l2=100.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 18: D2 2023=0.1092 2024=0.1126 mean=0.1109  (best so far 0.1120)  [29s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=10000 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=0.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 19: D2 2023=0.0992 2024=0.1026 mean=0.1009  (best so far 0.1120)  [28s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=100 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=0.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial 20: D2 2023=0.0964 2024=0.0967 mean=0.0966  (best so far 0.1120)  [34s]  tweedie_variance_power=1.4 num_leaves=127 min_data_in_leaf=1000 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 21: D2 2023=0.0911 2024=0.0956 mean=0.0934  (best so far 0.1120)  [28s]  tweedie_variance_power=1.3 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.3 bagging_fraction=0.7 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 22: D2 2023=0.1116 2024=0.1137 mean=0.1127  (best so far 0.1127)  [31s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=0.9 lambda_l2=100.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 23: D2 2023=0.1066 2024=0.1111 mean=0.1089  (best so far 0.1127)  [28s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=3000 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=0.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 24: D2 2023=0.1083 2024=0.1114 mean=0.1099  (best so far 0.1127)  [28s]  tweedie_variance_power=1.3 num_leaves=7 min_data_in_leaf=3000 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 25: D2 2023=0.1086 2024=0.1117 mean=0.1101  (best so far 0.1127)  [32s]  tweedie_variance_power=1.3 num_leaves=63 min_data_in_leaf=10000 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial 26: D2 2023=0.0911 2024=0.0984 mean=0.0947  (best so far 0.1127)  [34s]  tweedie_variance_power=1.4 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.5 bagging_fraction=0.7 lambda_l2=1.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 27: D2 2023=0.1042 2024=0.1059 mean=0.1051  (best so far 0.1127)  [30s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=1000 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=10.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 28: D2 2023=0.0991 2024=0.1038 mean=0.1014  (best so far 0.1127)  [25s]  tweedie_variance_power=1.5 num_leaves=63 min_data_in_leaf=300 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=100.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 29: D2 2023=0.1021 2024=0.1077 mean=0.1049  (best so far 0.1127)  [24s]  tweedie_variance_power=1.3 num_leaves=63 min_data_in_leaf=300 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=False
+
+  best of 30 trials: mean D2 0.1127 (trial 0 = old settings with fixes: 0.1061)
+  final LightGBM (learning rate 0.02): 726 trees, 2024 D2 0.1153 (inflation trend on)
+  [GAM frequency] lambda=   0.1: edf=  59.9  AIC=117,758.3
+  [GAM frequency] lambda=     1: edf=  59.3  AIC=117,758.3
+  [GAM frequency] lambda=    10: edf=  56.7  AIC=117,779.4
+  [GAM frequency] lambda=   100: edf=  52.5  AIC=117,842.9
+  [GAM frequency] lambda=  1000: edf=  48.5  AIC=117,912.2
+  [GAM frequency] lambda= 10000: edf=  45.7  AIC=118,090.6
+  [GAM severity] lambda=   0.1: edf=  12.0  AIC=11,942.3
+  [GAM severity] lambda=     1: edf=  11.7  AIC=11,941.7
+  [GAM severity] lambda=    10: edf=  10.4  AIC=11,940.2
+  [GAM severity] lambda=   100: edf=   8.4  AIC=11,939.4
+  [GAM severity] lambda=  1000: edf=   6.4  AIC=11,941.9
+  [GAM severity] lambda= 10000: edf=   5.0  AIC=11,958.4
+  2024 D2: LightGBM 0.1153 | Blend 0.1140  (First code: LightGBM 0.1026, Blend 0.1122)  -> best: LightGBM improved
+  2025 LightGBM total 73,476,766   [16.2 min]
+
+==========================================================================================
+LIGHTGBM TUNING CONTENTS
+==========================================================================================
+  trial  0: D2 2023=0.0822 2024=0.0870 mean=0.0846  (best so far 0.0846)  [23s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=500 feature_fraction=0.7 bagging_fraction=0.8 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial  1: D2 2023=0.0899 2024=0.0912 mean=0.0906  (best so far 0.0906)  [32s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=100 feature_fraction=0.5 bagging_fraction=0.7 lambda_l2=0.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial  2: D2 2023=0.0867 2024=0.0858 mean=0.0863  (best so far 0.0906)  [31s]  tweedie_variance_power=1.3 num_leaves=63 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=0.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial  3: D2 2023=0.0891 2024=0.0914 mean=0.0903  (best so far 0.0906)  [31s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=0.9 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial  4: D2 2023=0.0904 2024=0.0911 mean=0.0907  (best so far 0.0907)  [36s]  tweedie_variance_power=1.2 num_leaves=127 min_data_in_leaf=10000 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial  5: D2 2023=0.0902 2024=0.0887 mean=0.0894  (best so far 0.0907)  [31s]  tweedie_variance_power=1.2 num_leaves=31 min_data_in_leaf=10000 feature_fraction=0.7 bagging_fraction=1.0 lambda_l2=100.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial  6: D2 2023=0.0900 2024=0.0930 mean=0.0915  (best so far 0.0915)  [37s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=10000 feature_fraction=0.5 bagging_fraction=1.0 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial  7: D2 2023=0.0875 2024=0.0905 mean=0.0890  (best so far 0.0915)  [28s]  tweedie_variance_power=1.5 num_leaves=63 min_data_in_leaf=10000 feature_fraction=0.9 bagging_fraction=0.5 lambda_l2=0.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial  8: D2 2023=0.0882 2024=0.0917 mean=0.0899  (best so far 0.0915)  [26s]  tweedie_variance_power=1.2 num_leaves=15 min_data_in_leaf=3000 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial  9: D2 2023=0.0894 2024=0.0890 mean=0.0892  (best so far 0.0915)  [19s]  tweedie_variance_power=1.2 num_leaves=15 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial 10: D2 2023=0.0881 2024=0.0885 mean=0.0883  (best so far 0.0915)  [24s]  tweedie_variance_power=1.2 num_leaves=15 min_data_in_leaf=300 feature_fraction=0.9 bagging_fraction=0.5 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial 11: D2 2023=0.0828 2024=0.0841 mean=0.0835  (best so far 0.0915)  [22s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=100 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial 12: D2 2023=0.0898 2024=0.0925 mean=0.0911  (best so far 0.0915)  [22s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=10000 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 13: D2 2023=0.0847 2024=0.0874 mean=0.0861  (best so far 0.0915)  [35s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 14: D2 2023=0.0737 2024=0.0774 mean=0.0756  (best so far 0.0915)  [65s]  tweedie_variance_power=1.4 num_leaves=63 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=0.5 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 15: D2 2023=0.0905 2024=0.0887 mean=0.0896  (best so far 0.0915)  [64s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=300 feature_fraction=0.9 bagging_fraction=0.5 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial 16: D2 2023=0.0854 2024=0.0870 mean=0.0862  (best so far 0.0915)  [53s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=1000 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=1.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 17: D2 2023=0.0883 2024=0.0894 mean=0.0888  (best so far 0.0915)  [30s]  tweedie_variance_power=1.3 num_leaves=15 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 18: D2 2023=0.0878 2024=0.0854 mean=0.0866  (best so far 0.0915)  [24s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial 19: D2 2023=0.0836 2024=0.0863 mean=0.0849  (best so far 0.0915)  [28s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=1000 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial 20: D2 2023=0.0789 2024=0.0858 mean=0.0824  (best so far 0.0915)  [26s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=100 feature_fraction=0.3 bagging_fraction=0.9 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 21: D2 2023=0.0753 2024=0.0795 mean=0.0774  (best so far 0.0915)  [23s]  tweedie_variance_power=1.5 num_leaves=63 min_data_in_leaf=100 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 22: D2 2023=0.0897 2024=0.0924 mean=0.0911  (best so far 0.0915)  [46s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=3000 feature_fraction=0.5 bagging_fraction=1.0 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 23: D2 2023=0.0902 2024=0.0919 mean=0.0910  (best so far 0.0915)  [34s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=300 feature_fraction=0.3 bagging_fraction=0.7 lambda_l2=0.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial 24: D2 2023=0.0842 2024=0.0850 mean=0.0846  (best so far 0.0915)  [31s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=1000 feature_fraction=0.7 bagging_fraction=0.5 lambda_l2=0.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial 25: D2 2023=0.0701 2024=0.0778 mean=0.0740  (best so far 0.0915)  [29s]  tweedie_variance_power=1.3 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=0.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 26: D2 2023=0.0908 2024=0.0910 mean=0.0909  (best so far 0.0915)  [28s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=1000 feature_fraction=0.3 bagging_fraction=0.5 lambda_l2=1.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial 27: D2 2023=0.0862 2024=0.0911 mean=0.0887  (best so far 0.0915)  [29s]  tweedie_variance_power=1.4 num_leaves=15 min_data_in_leaf=100 feature_fraction=0.3 bagging_fraction=0.9 lambda_l2=1.0 max_bin=255 cat_encoding=ordered premium_relative=False
+  trial 28: D2 2023=0.0899 2024=0.0898 mean=0.0898  (best so far 0.0915)  [29s]  tweedie_variance_power=1.2 num_leaves=127 min_data_in_leaf=10000 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial 29: D2 2023=0.0907 2024=0.0926 mean=0.0916  (best so far 0.0916)  [30s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=10000 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=0.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+
+  best of 30 trials: mean D2 0.0916 (trial 0 = old settings with fixes: 0.0846)
+  final LightGBM (learning rate 0.02): 771 trees, 2024 D2 0.0940 (inflation trend on)
+  [GAM frequency] lambda=   0.1: edf=  48.0  AIC=107,495.1
+  [GAM frequency] lambda=     1: edf=  47.7  AIC=107,494.6
+  [GAM frequency] lambda=    10: edf=  46.5  AIC=107,493.0
+  [GAM frequency] lambda=   100: edf=  44.3  AIC=107,493.0
+  [GAM frequency] lambda=  1000: edf=  42.4  AIC=107,533.1
+  [GAM frequency] lambda= 10000: edf=  41.0  AIC=107,626.2
+  [GAM severity] lambda=   0.1: edf=  19.0  AIC=16,648.8
+  [GAM severity] lambda=     1: edf=  18.7  AIC=16,648.3
+  [GAM severity] lambda=    10: edf=  17.3  AIC=16,646.5
+  [GAM severity] lambda=   100: edf=  15.2  AIC=16,644.9
+  [GAM severity] lambda=  1000: edf=  13.3  AIC=16,644.8
+  [GAM severity] lambda= 10000: edf=  11.9  AIC=16,644.9
+  2024 D2: LightGBM 0.0940 | Blend 0.0928  (First code: LightGBM 0.0813, Blend 0.0902)  -> best: LightGBM improved
+  2025 LightGBM total 19,119,036   [18.2 min]
+
+==========================================================================================
+LIGHTGBM TUNING MOTOR
+==========================================================================================
+  trial  0: D2 2023=0.0788 2024=0.0852 mean=0.0820  (best so far 0.0820)  [44s]  tweedie_variance_power=1.5 num_leaves=31 min_data_in_leaf=500 feature_fraction=0.7 bagging_fraction=0.8 lambda_l2=10.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial  1: D2 2023=0.0842 2024=0.0845 mean=0.0843  (best so far 0.0843)  [48s]  tweedie_variance_power=1.4 num_leaves=15 min_data_in_leaf=300 feature_fraction=0.7 bagging_fraction=0.5 lambda_l2=10.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial  2: D2 2023=0.0879 2024=0.0844 mean=0.0861  (best so far 0.0861)  [55s]  tweedie_variance_power=1.5 num_leaves=15 min_data_in_leaf=300 feature_fraction=0.5 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial  3: D2 2023=0.0885 2024=0.0844 mean=0.0864  (best so far 0.0864)  [67s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=300 feature_fraction=0.3 bagging_fraction=0.9 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial  4: D2 2023=0.0801 2024=0.0847 mean=0.0824  (best so far 0.0864)  [59s]  tweedie_variance_power=1.4 num_leaves=63 min_data_in_leaf=3000 feature_fraction=0.9 bagging_fraction=0.5 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial  5: D2 2023=0.0815 2024=0.0853 mean=0.0834  (best so far 0.0864)  [43s]  tweedie_variance_power=1.3 num_leaves=15 min_data_in_leaf=3000 feature_fraction=0.9 bagging_fraction=1.0 lambda_l2=0.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial  6: D2 2023=0.0728 2024=0.0832 mean=0.0780  (best so far 0.0864)  [42s]  tweedie_variance_power=1.3 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial  7: D2 2023=0.0847 2024=0.0859 mean=0.0853  (best so far 0.0864)  [65s]  tweedie_variance_power=1.4 num_leaves=15 min_data_in_leaf=100 feature_fraction=0.5 bagging_fraction=0.7 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial  8: D2 2023=0.0857 2024=0.0835 mean=0.0846  (best so far 0.0864)  [56s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=300 feature_fraction=0.5 bagging_fraction=1.0 lambda_l2=0.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial  9: D2 2023=0.0787 2024=0.0846 mean=0.0816  (best so far 0.0864)  [55s]  tweedie_variance_power=1.2 num_leaves=127 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=0.5 lambda_l2=0.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 10: D2 2023=0.0815 2024=0.0823 mean=0.0819  (best so far 0.0864)  [52s]  tweedie_variance_power=1.2 num_leaves=31 min_data_in_leaf=300 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=10.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 11: D2 2023=0.0953 2024=0.0861 mean=0.0907  (best so far 0.0907)  [50s]  tweedie_variance_power=1.5 num_leaves=7 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 12: D2 2023=0.0793 2024=0.0847 mean=0.0820  (best so far 0.0907)  [58s]  tweedie_variance_power=1.5 num_leaves=63 min_data_in_leaf=300 feature_fraction=0.5 bagging_fraction=0.9 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 13: D2 2023=0.0779 2024=0.0830 mean=0.0805  (best so far 0.0907)  [52s]  tweedie_variance_power=1.3 num_leaves=127 min_data_in_leaf=300 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 14: D2 2023=0.0865 2024=0.0847 mean=0.0856  (best so far 0.0907)  [63s]  tweedie_variance_power=1.4 num_leaves=127 min_data_in_leaf=10000 feature_fraction=0.3 bagging_fraction=0.5 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 15: D2 2023=0.0755 2024=0.0846 mean=0.0801  (best so far 0.0907)  [55s]  tweedie_variance_power=1.5 num_leaves=15 min_data_in_leaf=300 feature_fraction=0.3 bagging_fraction=0.5 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 16: D2 2023=0.0888 2024=0.0855 mean=0.0872  (best so far 0.0907)  [51s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=300 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=0.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 17: D2 2023=0.0769 2024=0.0849 mean=0.0809  (best so far 0.0907)  [57s]  tweedie_variance_power=1.4 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=1.0 lambda_l2=100.0 max_bin=255 cat_encoding=alphabetical premium_relative=False
+  trial 18: D2 2023=0.0883 2024=0.0839 mean=0.0861  (best so far 0.0907)  [46s]  tweedie_variance_power=1.2 num_leaves=127 min_data_in_leaf=300 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=10.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 19: D2 2023=0.0790 2024=0.0850 mean=0.0820  (best so far 0.0907)  [53s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=0.5 lambda_l2=0.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 20: D2 2023=0.0861 2024=0.0863 mean=0.0862  (best so far 0.0907)  [57s]  tweedie_variance_power=1.4 num_leaves=15 min_data_in_leaf=10000 feature_fraction=0.7 bagging_fraction=0.7 lambda_l2=1.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 21: D2 2023=0.0804 2024=0.0856 mean=0.0830  (best so far 0.0907)  [58s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=300 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=0.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 22: D2 2023=0.0820 2024=0.0858 mean=0.0839  (best so far 0.0907)  [55s]  tweedie_variance_power=1.3 num_leaves=15 min_data_in_leaf=3000 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=0.0 max_bin=255 cat_encoding=alphabetical premium_relative=True
+  trial 23: D2 2023=0.0834 2024=0.0859 mean=0.0846  (best so far 0.0907)  [55s]  tweedie_variance_power=1.4 num_leaves=31 min_data_in_leaf=3000 feature_fraction=0.5 bagging_fraction=0.5 lambda_l2=10.0 max_bin=63 cat_encoding=ordered premium_relative=True
+  trial 24: D2 2023=0.0863 2024=0.0842 mean=0.0852  (best so far 0.0907)  [59s]  tweedie_variance_power=1.4 num_leaves=63 min_data_in_leaf=10000 feature_fraction=0.9 bagging_fraction=0.7 lambda_l2=0.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial 25: D2 2023=0.0897 2024=0.0854 mean=0.0875  (best so far 0.0907)  [76s]  tweedie_variance_power=1.4 num_leaves=7 min_data_in_leaf=1000 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=0.0 max_bin=63 cat_encoding=ordered premium_relative=False
+  trial 26: D2 2023=0.0717 2024=0.0840 mean=0.0779  (best so far 0.0907)  [48s]  tweedie_variance_power=1.4 num_leaves=127 min_data_in_leaf=100 feature_fraction=0.7 bagging_fraction=0.9 lambda_l2=10.0 max_bin=255 cat_encoding=ordered premium_relative=True
+  trial 27: D2 2023=0.0904 2024=0.0860 mean=0.0882  (best so far 0.0907)  [114s]  tweedie_variance_power=1.2 num_leaves=7 min_data_in_leaf=3000 feature_fraction=0.3 bagging_fraction=1.0 lambda_l2=10.0 max_bin=63 cat_encoding=alphabetical premium_relative=False
+  trial 28: D2 2023=0.0744 2024=0.0846 mean=0.0795  (best so far 0.0907)  [50s]  tweedie_variance_power=1.4 num_leaves=63 min_data_in_leaf=1000 feature_fraction=0.9 bagging_fraction=0.9 lambda_l2=1.0 max_bin=63 cat_encoding=alphabetical premium_relative=True
+  trial 29: D2 2023=0.0813 2024=0.0830 mean=0.0822  (best so far 0.0907)  [54s]  tweedie_variance_power=1.2 num_leaves=63 min_data_in_leaf=3000 feature_fraction=0.9 bagging_fraction=1.0 lambda_l2=100.0 max_bin=63 cat_encoding=ordered premium_relative=True
+
+  best of 30 trials: mean D2 0.0907 (trial 0 = old settings with fixes: 0.0820)
+  final LightGBM (learning rate 0.02): 841 trees, 2024 D2 0.0856 (inflation trend on)
+  [GAM frequency] lambda=   0.1: edf=  92.9  AIC=235,744.7
+  [GAM frequency] lambda=     1: edf=  92.1  AIC=235,743.3
+  [GAM frequency] lambda=    10: edf=  87.8  AIC=235,738.2
+  [GAM frequency] lambda=   100: edf=  78.8  AIC=235,733.6
+  [GAM frequency] lambda=  1000: edf=  69.0  AIC=235,771.4
+  [GAM frequency] lambda= 10000: edf=  61.4  AIC=235,894.5
+  2024 D2: LightGBM 0.0856 | Blend 0.0856  (First code: LightGBM 0.0765, Blend 0.0849)  -> best: Blend improved
+  2025 LightGBM total 97,270,645   [32.9 min]
+
+==========================================================================================
+COMPARISON - 2024 validation D2
+==========================================================================================
+line                      ALL  buildings  contents   motor
+model                                                     
+LightGBM (First code)  0.1239     0.1026    0.0813  0.0765
+LightGBM improved      0.1347     0.1153    0.0940  0.0856
+GLM                    0.1297     0.1073    0.0871  0.0836
+GAM                    0.1307     0.1095    0.0890  0.0832
+Blend (First code)     0.1326     0.1122    0.0902  0.0849
+Blend improved         0.1340     0.1140    0.0928  0.0856
+Best improved          0.1347     0.1153    0.0940  0.0856
+
+==========================================================================================
+SUBMISSIONS
+==========================================================================================
+saved submission_improved1_LightGBM.parquet    mean  302.99
+saved submission_improved1_Blend.parquet       mean  312.71
+saved submission_improved1.parquet             mean  307.30
