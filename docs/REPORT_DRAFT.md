@@ -1,10 +1,146 @@
-# Pricing 2025 claim cost for motor, buildings and contents: Part 1
+# Pricing 2025 claim cost for motor, buildings and contents in two markets
 
 ## 1. Problem and data
 
-We predict, for each of the 626,639 policy rows of 2025, the ultimate cost of claims with a loss date in the row's period, net of excess and recoveries, excluding repudiated claims. The training data has 2,409,311 policy rows for 2021 to 2024 across private motor, home buildings and home contents, plus 163,150 claims valued at 2024-12-31. Submissions are scored by Tweedie D² with power 1.5.
+We predict the 2025 claim cost of each policy row in private motor, home buildings and home contents. The target is the ultimate cost of claims with a loss date in the row's period, net of excess and recoveries. Declined claims do not count. It is a row total, not an annual rate. Scoring is Tweedie D² with power 1.5 against a constant-rate baseline.
 
-The raw tables contain ten documented quality issues, each handled in code at load time. The raw files are never edited (C007).
+Part 1 is a developed market with 2,409,311 training rows for 2021 to 2024, 163,150 claims valued at 2024-12-31 and 626,639 test rows. Part 2 is an emerging market with 2 training years and 209,063 test rows. Its construction codes, 80 occupation spellings and age bands differ from Part 1. We fix 10 documented data issues in code at load time (appendix A1), and the raw files are never edited (C007).
+
+| Item | Developed | Emerging |
+|---|---|---|
+| Motor exposure-years, 2023-24 | 399,468 | 38,969 |
+| Motor claim frequency, 2023-24 | 13.48% | 18.09% |
+| Motor mean reported severity | 3,862 CU | 2,250 CU |
+| New business in 2025 test rows | 15% | 76% |
+| Test policies seen in training | 85% | 24% |
+| Broker share of motor exposure | 25% | 70% |
+| Missing values in affected columns | about 2.5% | about 12% |
+
+## 2. Target and development
+
+A claim attaches to the row of the same policy whose period contains its loss date. The row target is incurred minus recoveries. Repudiated claims are excluded, unmatched claims are listed and left out, and totals reconcile with a difference of 0 (C005, C037).
+
+The claims file is a single snapshot, so no triangle is possible. We fit a cost-weighted reporting-lag curve per line on accident year 2021. Each row's days in force give a completeness factor, and developed cost is reported cost divided by it (C006). Motor 2024 pure premium rises from 454 reported to 585 developed, inside the 564 to 606 range of 2021 to 2023. Motor bodily injury is the slow peril: 43% of cost, 14% reported at 30 days.
+
+The emerging market has no tail of its own, so it borrows the developed accident year 2021 curves and peril shares (C037). At 365 days the motor curve reaches 0.961 for emerging 2023 against 0.922 for the curve used (appendix A4). The audit puts the resulting overstatement of the 2024 ultimate at 1.8% on motor and 2.5% on buildings (P2-F9), and we accepted it.
+
+Each claim is capped at its line's 99.5th percentile. The models learn capped cost, and a per-line load adds back the cost above the cap (C014).
+
+## 3. Modelling approach
+
+Part 1. Every model fits capped cost per unit of completeness-weighted exposure with a Tweedie loss of power 1.5 (C010). The candidates are a banded GLM, a spline GAM (C011), LightGBM, XGBoost and CatBoost (C025). Log-link LightGBM ended at 0.83 of actual cost on its own training rows, so each model is rescaled to the training total (C013). A feature policy dropped columns without frequency signal, among them `branch_id`, motor `make_model` and the cross-line counts (C026). Per-line blend weights come from out-of-fold predictions on a 0.05 grid. They are used only if they beat equal weights on both folds (C021, C030), and motor fell back to equal weights. A per-line log-linear trend takes predictions to 2025 at half its fitted size: motor 1.018, buildings 1.095, contents 1.064 (C019).
+
+Part 2. The same code runs with a market setting (C034), and a shared schema maps ages, construction codes and occupation across markets (C035). On emerging data alone (P2-S01) the GLM and GAM overfit, with buildings time-fold `d2_cal` of -10.5 and -30.7. We therefore trained on both markets together (C038). Each developed row joins the fit at weight w times exposure, with `market` as a feature. After each fit the level is re-balanced on the emerging fit rows. Pooling lifted the time-fold `d2_cal` from 0.0762 to 0.0915 on motor, 0.0410 to 0.1065 on buildings and 0.0779 to 0.1072 on contents. Validation then set w per line: 1.0 for buildings, 0.3 for motor and contents (C040).
+
+Later, 2 changes passed the test-mix gate of section 6. Contents became a blend across the 2 weight runs (P2-S12). For the 68,823 motor new-business test rows we added models trained on new-business rows of both markets. Those rows take an equal-weight blend of 12 pooled and new-business candidates, because searched weights lost the guard (C047, P2-S13). Buildings and contents keep the developed half trend (1.0948 and 1.0636), and motor uses the emerging market's own observed trend, 1.1606 (C043).
+
+| File | Recipe | Public | Private |
+|---|---|---|---|
+| S09 | Part 1 final: 5 models, guarded weights, half trend | 0.12863 | 0.13689, rank 12 of 51 |
+| P2-S01 | Emerging data only | 0.14370 | after 2026-10-31 |
+| P2-S04 | Pooled training on all lines, w = 0.3 | 0.15193 | |
+| P2-S10 | Buildings w = 1.0, motor at its own trend | 0.15414 | |
+| P2-S12 | Contents blend across 2 weight runs | 0.15474 | |
+| P2-S13 | Motor new-business segment blend | 0.15577 | |
+
+## 4. Major decisions and what was rejected
+
+Every change faced a rule fixed before the run (section 6).
+
+| Decision | Evidence | Outcome |
+|---|---|---|
+| C022 per-peril curves | Mix equals the pooled curve (max difference 5e-16) | No effect |
+| C023 peril frequency x severity | Motor `d2_cal` 0.0801 vs 0.0893 | Rejected |
+| C024 cross-line features | Gain rank 60th of 66 or lower; motor -0.001 to -0.002 | Rejected |
+| C031 `make_model` encoding | Mean +0.0003; 2024 fold fell | Rejected |
+| C032 tree re-tuning | Motor +0.0027 mean, -0.0008 on 2024 | Rejected |
+| C039 pooled tuning, 23 settings | None beat defaults on both schemes | Rejected |
+| C041 cross-run blend, raw rule | Contents +0.0018, below 0.002 | Rejected |
+| C042 GLM market interactions | Worse on all 6 folds; blend gain in-sample | Rejected |
+| C043 motor own trend 1.1606 | Motor pure premium +10.7% vs 1.75% applied; P2-S10 +0.0029 | Adopted |
+| C044 test-mix gate | Matched the public S03 to S04 step (+0.0051 vs +0.0050) | Adopted |
+| C045 new-business weighting | Contents worse on every view | Rejected |
+| C046 emerging-only re-tuning | No line passed the gate | Rejected |
+| C047 new-business segment | Motor test-mix grouped +0.0050 | Motor adopted |
+
+The motor level is the only decision taken mainly from the public board, though the 2023-trained model had also under-predicted 2024 motor by 6%. The 6 scalar probes (P2-S06 to S11) left little gain beyond the full own trend, about +14% on motor. The property lines keep the developed half trend, because the 2023 fire year (buildings 2024/2023 = 0.63) rules out their own. The risk is that a level read from about a third of the rows does not hold on the rest. On a board of that size a single line's optimal level has a sampling SD of 4.7% for motor (audit H1). The C047 buildings renewal segment passed the gate mechanically. We rejected it because its gain came from a new-business GLM on renewal rows.
+
+## 5. AI-assisted workflow
+
+We used Claude Code in 3 roles. A coordinator planned each step, fixed the decision rule before a run and chose what to submit. Workers wrote a failing test, then the code, ran the experiment and logged the change in `docs/CHANGELOG.md` (C000 to C047). A read-only auditor trained nothing and backed every finding with a script (B1 to B8 in Part 1, A13; P2-F1 to P2-F10 in Part 2, A24). `docs/AI_LOG.md` (A01 to A26) records what each step produced, how it was checked and whether we accepted, modified or rejected it.
+
+The team lead reviewed a sign-off sheet of 11 key AI decisions (`docs/HUMAN_REVIEW.md`, R01 to R11). They run from the cleaning rules (C003, C004) to the Part 2 pooled design and trend. Each item gives its evidence with file and line references. The team lead approved all 11 on 2026-10-25 in a single reply, without item-level reasons. Later Part 2 choices and the section 8 conventions (R12 to R15) were still unsigned on 2026-10-29.
+
+AI output was often corrected or rejected:
+
+- The worker showed that the coordinator's per-peril curves (C022) equal the pooled curve, so they changed nothing (A09).
+- The Part 1 audit found that motor trees overfit `make_model` and that `branch_id` lowered every model; both fed the C026 drop policy (A13, A14).
+- The C042 blend met the adoption rule (+0.0024). The coordinator still rejected it: the gain was in-sample and the new-business level shifted 21% untested (A23).
+- The Part 2 audit overturned our validation design (P2-F1) and found a diagnostic on raw exposure, since fixed (P2-F8, A24).
+- A post-hoc control after C047 scored higher on every view. We kept it as a diagnostic and did not submit it (A26).
+
+## 6. Validation and guardrails
+
+Part 1 uses 2 expanding-window folds that score 2023 and 2024. Part 2 has 1 time fold (train 2023, score 2024) and a grouped 5-fold split on `policy_id` (C036), scored on emerging rows only. `d2_cal` rescales each fold to its actual total, so it measures ranking rather than level. There are no random splits and no year feature.
+
+The adoption rules were set before the runs. A change needs a mean gain of at least 0.002 with no fold lost (C018). Searched blend weights are used only if they beat equal weights on every scheme, and this guard is code, not a hand edit (C030). Gaps under 0.0005 count as ties and the simpler option wins (P2-S11).
+
+The Part 2 audit found the main flaw in our validation (P2-F1). Validation rows were 92% renewals, while 77% of the 2025 test rows are new business. Every Part 2 choice up to P2-S05 had been tuned on renewal behaviour. Re-weighting the folds to the test mix reproduced the board. The S03 to S04 step was +0.0154 on raw grouped folds, +0.0051 on the test mix and +0.0050 in public. Since then a change must not lose on the raw time fold, the raw grouped mean or the test-mix grouped mean. It must also gain 0.002 on the raw mean or the test-mix grouped mean (C044). Weights are still searched on raw folds: 77 to 697 new-business claims per line can reject a change but cannot tune one.
+
+A SHA256 manifest, read-only attributes and a test guard every raw byte (C007). The developed files in the Part 2 release matched the Part 1 manifest (C033). Modules are written test-first, and 317 tests pass (A26). Reproduction is checked byte for byte. The current code rebuilds S09 with the SHA256 of the submitted file and P2-S05 exactly, and P2-S13 equals P2-S12 outside motor new business (C047). `reproduce.ps1` rebuilds Part 1 from the raw data, and with `-Part2` also P2-S13.
+
+A Part 1 lesson concerns the final choice. After the close our notes recorded a teammate's file as public 0.1356, 0.007 above S09 and not among the 2 selected files. The Kaggle listing shows that 0.13562 is its private score. Its public score was 0.12440, and S09 led on both boards (0.12863 and 0.13689). The choice held, but the comparison mixed 2 boards and the teammate's code never reached the repository. The Part 2 selection is therefore a team decision against a checklist. It compares scores from a single board and the 6 validation views per candidate, on files the repository rebuilds.
+
+## 7. Assumptions and limitations
+
+Assumptions in both parts: open-claim case estimates are unbiased, and the accident year 2021 reporting pattern holds for later years and for the emerging market. T and W both mean timber (C004).
+
+- The emerging market's 2 years give 1 time fold with about 500 claims per year on each property line. 2024 is also the least developed year.
+- Reporting curves are borrowed. Nothing beyond 24 months can be checked, and 20% of 2024 emerging motor claims are open.
+- The level rests partly on public-board probes: the developed half trend (P2-S02, +0.0009, below our 0.002 rule) and the motor level. Part 1 shows the risk. The private board preferred no trend to half trend by 0.0001, after the public board had preferred half by 0.0009. The S08 probe of audit B4 also flipped sign (public -0.0003, private +0.0001). The motor gain (+0.0029) is larger and agrees with the time fold.
+- New-business evidence is thin, at 37 to 697 claims per line and scheme. On new business, predicted-to-actual ratios run 0.81 to 1.01 for motor, 1.30 to 2.23 for buildings and 0.74 to 0.84 for contents. The 2 schemes disagree for motor. We made no segment level adjustment; the C047 models lifted the motor new-business level by 4%.
+
+## 8. Office premium build-up for the 20 reference policies
+
+R is the P2-S13 prediction for the row, matched on `row_id`, and is already a row total. We apply these conventions to the emerging column of `expenses.parquet`:
+
+- Cat = 0.12 R on buildings and contents, 0 on motor. The unit is a share of property risk premium, and we treat contents as property.
+- F = 85 CU per policy, charged in full and not pro-rated by exposure.
+- k = variable expense 0.15 + commission + premium tax 0.08 + target profit margin 0.08, all shares of the office premium. Commission is 0.20 for broker and 0 for direct; the comparison-site value is blank, and none of the 20 policies uses that channel.
+- P = (R + Cat + F) / (1 - k). The divisor is 0.49 for broker and 0.69 for direct. There is no minimum or maximum premium.
+
+| row_id | line | channel | NB | exposure | R | Cat | F | 1 - k | P | WP |
+|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| M00118569 | motor | direct | no | 0.9397 | 924.64 | 0.00 | 85.00 | 0.69 | 1,463.25 | 1,095.48 |
+| M00129413 | motor | broker | yes | 0.3315 | 215.61 | 0.00 | 85.00 | 0.49 | 613.49 | 354.15 |
+| M00153851 | motor | broker | yes | 0.9616 | 368.14 | 0.00 | 85.00 | 0.49 | 924.77 | 414.72 |
+| M00161473 | motor | broker | yes | 0.9644 | 1,150.52 | 0.00 | 85.00 | 0.49 | 2,521.47 | 1,131.78 |
+| M00167496 | motor | broker | yes | 0.9836 | 779.57 | 0.00 | 85.00 | 0.49 | 1,764.43 | 463.95 |
+| M00176777 | motor | broker | yes | 0.9918 | 1,080.24 | 0.00 | 85.00 | 0.49 | 2,378.05 | 443.61 |
+| M00185311 | motor | direct | yes | 0.9644 | 1,119.49 | 0.00 | 85.00 | 0.69 | 1,745.64 | 872.31 |
+| B00215707 | buildings | broker | yes | 0.9863 | 337.88 | 40.55 | 85.00 | 0.49 | 945.76 | 272.44 |
+| B00215809 | buildings | direct | yes | 0.9753 | 493.57 | 59.23 | 85.00 | 0.69 | 924.34 | 237.22 |
+| B00217584 | buildings | broker | yes | 0.9671 | 824.01 | 98.88 | 85.00 | 0.49 | 2,056.92 | 323.36 |
+| B00218282 | buildings | broker | yes | 0.9726 | 297.61 | 35.71 | 85.00 | 0.49 | 853.72 | 230.80 |
+| B00223369 | buildings | broker | yes | 0.9945 | 559.02 | 67.08 | 85.00 | 0.49 | 1,451.22 | 204.56 |
+| B00229821 | buildings | broker | yes | 0.9918 | 410.12 | 49.21 | 85.00 | 0.49 | 1,110.89 | 285.60 |
+| B00250679 | buildings | broker | yes | 0.1096 | 43.11 | 5.17 | 85.00 | 0.49 | 272.01 | 180.72 |
+| C00259568 | contents | broker | no | 1.0000 | 41.03 | 4.92 | 85.00 | 0.49 | 267.26 | 83.18 |
+| C00270331 | contents | broker | yes | 0.9726 | 36.09 | 4.33 | 85.00 | 0.49 | 255.96 | 140.29 |
+| C00283470 | contents | broker | yes | 0.9726 | 86.34 | 10.36 | 85.00 | 0.49 | 370.82 | 117.97 |
+| C00286287 | contents | broker | yes | 0.9671 | 156.12 | 18.73 | 85.00 | 0.49 | 530.32 | 269.23 |
+| C00302985 | contents | broker | yes | 0.9918 | 57.99 | 6.96 | 85.00 | 0.49 | 306.03 | 115.88 |
+| C00314425 | contents | broker | yes | 0.0685 | 5.81 | 0.70 | 85.00 | 0.49 | 186.74 | 102.87 |
+
+Amounts in CU; NB = new business; WP = written premium; source `scripts/part2_office_premium.py`. For B00229821, R 410.12 + Cat 49.21 + F 85.00 = 544.34, and 544.34 / 0.49 gives P = 1,110.89 (split by item in appendix A6). The 20 rows sum to R = 8,986.91 and P = 20,943.08 (mean 1,047.15), against 7,340.12 of written premium.
+
+Written premium is the current tariff and R is our 2025 cost estimate, so we do not expect them to match. P exceeds written premium on all 20 rows, by 1.34 to 7.09 times (median 2.89). The loadings drive most of it. A broker row with R = 0 would still cost 173.47, and F, Cat and the shares make up 36% to 97% of P. R alone exceeds written premium on 10 rows, 6 buildings and 4 motor, all new business. Our buildings new-business predictions ran 1.30 times actual on the grouped folds (77 claims), so part of that gap may be our own overstatement. Written premium does not scale with exposure (Part 1 audit; the emerging test file agrees). The 3 short rows therefore set a part-year P against an annual tariff, and F dominates them. Pro-rated by exposure, P would fall from 613.49 to 497.52 (M00129413, 0.33 years), from 272.01 to 117.56 (B00250679, 0.11) and from 186.74 to 25.15 (C00314425, 0.07).
+
+---
+
+## Appendix, not part of the 5 pages
+
+### A1. Data quality issues and treatment
 
 | Issue | Size | Treatment |
 |---|---|---|
@@ -19,125 +155,149 @@ The raw tables contain ten documented quality issues, each handled in code at lo
 | Q9 `renewal_decision` only in training | All rows | Dropped; known only after the row ends |
 | Q10 training and test drift | Median `renewal_count` 6 to 3, `vehicle_age` 7 to 9, `ncb_years` 7 to 8 | Year is not a feature; the audit found the drift internally consistent (`renewal_count` +1.0 per year) |
 
-## 2. Target construction and development
+Part 2 re-check (C033): Q1 recurs in the emerging training tables only (253 motor rows); Q2 is absent; Q3 recurs and the 5m threshold still separates; Q4 changes to the BRK, STN, WOD and MIX codes (C035); 36 claims match no row; missing values rise to about 12%; the Q8 columns are absent. `customer_service_contacts` again separates claimed rows (3.4 against 0.42 contacts) and stays out (audit H8).
 
-A claim attaches to the policy row whose period contains its loss date. The row target is incurred minus recoveries, with repudiated claims (1,711, all zero amounts) excluded (C005). The claims file is a single snapshot, so recent accident years are under-reported: 20.7% of 2024 motor claims were still open. An incurred triangle is not possible. Instead we fit a cost-weighted reporting-lag curve per line from accident year 2021, compute a completeness factor for every row from its days in force, and develop reported cost as reported divided by completeness (C006). Motor 2024 pure premium rises from 454 reported to 585 developed, inside the 564 to 606 range of 2021 to 2023. Per-peril curves (C022) show that motor bodily injury is only 14% reported at 30 days against 95% to 99% for other perils.
+### A2. Part 1 target and validation detail
 
-Each claim is capped at the 99.5th percentile of its line (motor 51,585; buildings 147,445; contents 28,449). Models learn the capped cost, and the excess is added back through a per-line load (C014). The capped share is 8.8% of motor cost, 4.2% of buildings, 2.1% of contents.
+- Repudiated claims (1,711, all zero amounts) are excluded (C005). 20.7% of 2024 motor claims were still open at 2024-12-31.
+- Per-line caps: motor 51,585, buildings 147,445, contents 28,449 CU in Part 1; 27,578, 220,808 and 28,312 CU in the emerging market (C014, C037). The capped share is 8.8%, 4.2% and 2.1% of cost by line in Part 1 and 5.0%, 4.9% and 2.1% in the emerging market.
+- Motor perils other than bodily injury are 76% to 99% reported at 30 days (`docs/target_summary.txt`).
+- Trees stop early on a random 10% of the fitting rows (C027), and the S09 refit averages 3 seeds (C029).
+- Rescaling each model to the training total raised motor validation D² from 0.066 to 0.073 (C013).
+- Per-line tuning was adopted only where the mean gain was at least 0.002: motor LightGBM gained 0.0075, motor XGBoost 0.0031, contents XGBoost 0.0024 (C015, C018).
+- The feature policy (C026) raised mean LightGBM `d2_cal` from 0.0832 to 0.0887 on motor, 0.1094 to 0.1134 on buildings and 0.0891 to 0.0936 on contents.
+- Motor searched weights lost to equal weights on the 2024 fold (0.09031 against 0.09071), so motor uses equal weights (C021, C030).
+- Validation folds compare reported cost with prediction times completeness. The final S09 blends scored a mean 2-fold `d2_cal` of 0.0919 (motor), 0.1144 (buildings) and 0.0945 (contents).
+- C023 detail: per-peril frequency by severity scored 0.0801 against 0.0893 on motor, 0.1045 against 0.1094 on buildings and 0.0879 against 0.0911 on contents. 2024 bodily injury counts were over-predicted by 1.43 (`docs/cv_freqsev.md`).
+- C031 detail: an out-of-fold target encoding of `make_model` (credibility constant 2,000 exposure-years) carried weak signal: code relativities correlated 0.18 across years, against -0.05 for shuffled codes. The equal blend gained 0.0003 on the mean and fell on 2024.
+- Audit B1 and B2: without `make_model`, motor LightGBM on the 2023 fold went from 0.08082 to 0.08868; `branch_id` lowered every model on that fold (buildings LightGBM 0.1071 to 0.1051). Audit B8: trees had stopped early on the scored fold and now stop on a random 10% of the fitting rows (C027).
 
-## 3. Modelling approach
+### A3. Part 2 validation detail
 
-Every model fits capped cost per unit of completeness-weighted exposure with a Tweedie loss of power 1.5 (C010). The candidates are a banded one-hot GLM, a spline GAM with one global ridge penalty (C011), LightGBM, XGBoost and CatBoost (C025). Three decisions came from diagnostics:
+Emerging-only against pooled training, `d2_cal` (time fold / grouped mean):
 
-- Log-link Tweedie boosting does not preserve the total: LightGBM ended at 0.83 of actual cost on its own training rows. Rescaling each model to the training total raised motor validation D² from 0.066 to 0.073 (C013).
-- Shallow trees beat deep ones. Per-line tuning was adopted only where the mean cross-validated gain was at least 0.002, a threshold fixed beforehand: motor LightGBM gained 0.0075, motor XGBoost 0.0031, contents XGBoost 0.0024 (C015, C018).
-- Developed pure premium rises over 2021 to 2024 (buildings 384 to 481), so a per-line log-linear trend scales predictions to 2025. We apply half the fitted trend (motor 1.018, buildings 1.095, contents 1.064) because the public board preferred half to none or full (C009, C019).
-
-Validation uses two expanding-window folds (train 2021-22, score 2023; train 2021-23, score 2024) on reported cost against prediction times completeness. `d2_cal` rescales each fold to its actual total, so it measures ranking, not level. The feature policy (C026) removed columns without frequency signal and raised mean LightGBM `d2_cal` from 0.0832 to 0.0887 on motor, 0.1094 to 0.1134 on buildings and 0.0891 to 0.0936 on contents. Final predictions blend the five models with per-line weights found on out-of-fold predictions (non-negative, 0.05 grid, sum 1). Searched weights are used only if they beat equal weights on both folds (C021, C030); motor falls back to equal weights (0.09031 against 0.09071 on 2024). The tree refit averages three seeds (C029). The final blends score a mean two-fold `d2_cal` of 0.0919 for motor, 0.1144 for buildings and 0.0945 for contents. Two further changes tried after S09, a target encoding of `make_model` (C031) and a re-tuning of the trees (C032), did not pass the adoption rule, so S09 is the Part 1 submission.
-
-| ID | Recipe | Public score |
-|---|---|---|
-| S01 | Equal blend of GLM, GAM, LightGBM, XGBoost; full trend (rank 19) | 0.12453 |
-| S02 | S01 with no trend | 0.12376 |
-| S03 | S01 with half trend | 0.12464 |
-| S04 | Tuned LightGBM and XGBoost, equal weights, half trend | 0.12477 |
-| S05 | Equal blend of GLM, GAM and tuned trees | 0.12464 |
-| S06 | Per-line weights from out-of-fold predictions (C021) | 0.12579 |
-| S07 | Feature policy, inner early stopping, CatBoost, guarded weights (rank 11) | 0.12851 |
-| S08 | S07 with a lower trend on buildings and contents (probe) | 0.12820 |
-| S09 | S07 recipe with seed-averaged refit | 0.12863 |
-
-The leader's score at S07 was 0.12996. Validation and leaderboard scores sit on different targets and years, so we compare scores only within a column.
-
-## 4. AI-assisted workflow
-
-We worked with Claude Code throughout (`docs/AI_LOG.md`, A01 to A19). The assistant produced a first version at each stage, and a person or an automated check decided whether to keep it.
-
-- Exploration and data quality: profiling of all 11 files, and flagging Q1 to Q10 with counts. Cleaning rules such as T/W = timber were inferred from the year split and policy transitions, then written as failing tests before implementation (A02 to A04).
-- Target and leakage: claim matching and development were designed with AI and checked by full-data reconciliation (difference 0). A scan of every column for leakage found only `customer_service_contacts` (A05, A06).
-- Modelling and debugging: models, the D² scorer and the trend factor were written test-first. A crash on a boolean column (C012) and a 9% to 18% under-prediction of tree models (C013) were each diagnosed by experiment before any fix (A07, A08).
-- Independent review: a separate read-only AI audit produced findings B1 to B8, each backed by script output (A13).
-
-Verification relied on tests written before the code (129 pass), ablations on time-based folds, and the audit. These cases show AI output being corrected or rejected:
-
-- **C022 caught as a no-op.** The per-peril reporting curves were designed to correct the mix of slow and fast perils. The implementing assistant showed numerically that a cost-share mix of per-peril curves equals the pooled curve (maximum difference 5e-16), so row completeness could not change. The code stays as an input, with no accuracy claim (A09).
-- **C023 rejected on evidence.** A per-peril frequency by severity model scored a mean `d2_cal` of 0.0801 on motor against 0.0893 for the best single model, 0.1045 against 0.1094 on buildings and 0.0879 against 0.0911 on contents. The main error was the peril mix: 2024 bodily injury counts were over-predicted by 1.43. It stayed out of the blend (A10, `docs/cv_freqsev.md`).
-- **C024 features rejected.** Cross-line and household features ranked 60th or lower of 66 by gain, and re-adding them lowered motor by 0.001 to 0.002. The loss in the full set came from `branch_id` coded as a category (A11, C026).
-- **Audit B1 and B2 fixed.** Motor trees overfit the 300-level `make_model`: without it, LightGBM on the 2023 fold went from 0.08082 to 0.08868. `branch_id` lowered every model on the 2023 fold (buildings LightGBM 0.1071 to 0.1051). Both led to the C026 drop policy (A13, A14).
-- **Audit B4 probed, not adopted.** The audit argued that the trend counts the year level twice. A probe with a lower trend on buildings and contents (S08) scored 0.12820 against 0.12851, so half trend was kept.
-- **Audit B8 fixed.** Tree models stopped early on the fold being scored while GLM and GAM did not. Early stopping now uses a random 10% of the fitting rows (C027).
-- **C031 target encoding not adopted.** An out-of-fold target encoding of `make_model` (log relativity with credibility constant 2,000 exposure-years, 5-fold within the fitting rows so no row sees its own target) was built to recover the signal lost when the raw code was dropped. The codes carry real but weak signal (cross-year correlation of code relativities 0.18 against −0.05 after shuffling). The equal blend improved by 0.0003 on the mean and fell on the 2024 fold, below the 0.002 rule, so it was not adopted and the S09 files were restored (C031, A18).
-- **C032 re-tuning not adopted.** The tree hyper-parameter search was repeated on the final feature set with inner early stopping. The best motor LightGBM setting gained 0.0027 on the mean but lost 0.0008 on the 2024 fold; the other lines gained 0.0005 to 0.0018. Nothing met the rule, so the parameters stayed (C032, A19).
-
-## 5. Guardrails and governance
-
-- **Change control.** Every change to data handling, code or assumptions has a row in `docs/CHANGELOG.md` (C000 to C032) with reason, evidence and code location. Code comments cite the same ID.
-- **AI log.** `docs/AI_LOG.md` records what the assistant did, how it was checked and whether it was accepted, modified or rejected.
-- **Raw-data protection.** A SHA256 manifest, read-only attributes and an integrity test fail if any raw byte changes (C007).
-- **Tests before code.** The suite covers cleaning, matching, development, features, models, scoring and the blend guard.
-- **Time-based validation.** Two expanding-window folds, no random splits, no `year` feature.
-- **Adoption rules fixed in advance.** A tuned setting needs a mean gain of at least 0.002 (C018). Searched blend weights are used only if they beat equal weights on both folds, and this rule is now code (C030).
-- **Restraint on the leaderboard.** Model, feature and weight choices were made on cross-validation. The leaderboard informed one parameter, the trend share (C016, C019), and one probe (S08).
-- **Reproducibility.** `reproduce.ps1` rebuilds a submission from the raw data with pinned package versions.
-- **Human review.** Some decisions are logged as pending sign-off: the T/W mapping, the C003 threshold and the bundled C026 drop of three customer columns.
-
-## 6. Assumptions and limitations
-
-Assumptions: open-claim case estimates are unbiased (C006); the reporting-lag pattern of accident year 2021 holds for later years; a year has 365 days; T and W both mean timber.
-
-Limitations, taken from the audit:
-
-- The trend may double count the year level already carried by `written_premium` and `sum_insured` (B4). The residual trend implied is 1.017, 1.048 and 1.004, against 1.018, 1.095 and 1.064 applied. The public board did not support the correction, but the gap was 0.0003 on about a third of the rows.
-- The 2025 motor large-loss load includes under-reported 2024 bodily injury and may be 1.4% low (B5). Recoveries appear only on closed claims, so open 2024 own-damage cost is about 1.4% overstated (B6). Prior-claim history is developed in cost but not in claim counts (B7).
-- Open-claim reserving for bodily injury cannot be verified from one snapshot. Quickly reported severity falls from 20.7k to 16.6k across accident years while other motor perils rise, which could be under-reserving or a mix change.
-- The customer snapshot date is unknown, so early training rows may see later information.
-- The large-loss load is uniform within a line, while buildings and contents excess concentrates in the top risk decile.
-- Blend weights were re-estimated after the early-stopping fix (C028); the hyper-parameter search was repeated on the final feature set and changed nothing (C032). The GAM uses a single penalty (C011).
-- The public score covers about 33% of the test rows. The final ranking uses the other 67% and may move.
-
-## 7. Adaptation to the new market (Part 2)
-
-### 7.1 What differs in the emerging market
-
-The emerging market has about one tenth of the developed exposure (38,969 motor exposure-years against 399,468) and only two accident years. In the 2025 test set 76% of rows are new business against 15%, and 24% of policies appear in training. Motor frequency is 34% higher (18.09% against 13.48%) and severity 42% lower (2,250 against 3,862 CU). Construction type arrives as BRK, STN, WOD and MIX, occupation as 80 free-text spellings and age as bands. About 12% of values in affected columns are missing against 2.5%.
-
-### 7.2 What we changed in the pipeline
-
-Each market is a configuration; the developed path is unchanged (C034). A common schema (C035) cuts developed ages into the emerging bands and maps the four construction codes to brick, stone, timber and non_standard. Two accident years give no tail, so we apply the developed accident year 2021 reporting curves; at 365 days the motor curve reaches 0.961 for emerging 2023 and 0.922 for the curve used. Pooled training adds every developed row at a weight times exposure, with `market` as a feature, and re-balances the level on emerging rows after each fit (C038).
-
-### 7.3 Validation design for a two-year market
-
-Two years allow one time fold (train 2023, score 2024), so we add a grouped 5-fold on `policy_id` (C036). Searched blend weights are kept only if they beat equal weights on both, and the developed-row weight is chosen per line the same way. Pooled runs score emerging rows only. The time fold is weak: about 500 claims per year on each property line, and 2024 is the least developed year.
-
-### 7.4 Results and what we adopted or rejected
-
-Emerging-only GLM and GAM over-fitted (buildings time fold `d2_cal` -10.5 and -30.7). Pooling lifted every line. The GAM was left out of pooled runs because it exceeded the memory cap on 756k rows. Tree models needed level re-balancing on emerging rows, with factors of 1.08 to 1.26 at weight 0.3 on the property lines and 1.01 to 1.10 at weight 1.0, a known limitation of pooling.
-
-| Line | Emerging only (time / grouped) | Pooled, weight 0.3 | Pooled, weight 1.0 | Adopted weight |
+| Line | Emerging only | Pooled, w = 0.3 | Pooled, w = 1.0 | Adopted w |
 |---|---|---|---|---|
 | Motor | 0.0762 / 0.0677 | 0.0915 / 0.0740 | 0.0908 / 0.0730 | 0.3 |
 | Buildings | 0.0410 / 0.0732 | 0.1065 / 0.1132 | 0.1169 / 0.1180 | 1.0 |
 | Contents | 0.0779 / 0.0934 | 0.1072 / 0.1100 | 0.1069 / 0.1128 | 0.3 |
 
-Buildings at 1.0 beat 0.3 by 0.0104 on the time fold and 0.0048 on the grouped mean. Contents at 1.0 lost 0.0003 on the time fold, so 0.3 stayed. The C039 search of 23 tree configurations on pooled contents found none better than the defaults on both columns, so nothing was adopted. The developed market's half trend (C037) was adopted after the P2-S02 probe (+0.0009).
+The GAM left the pooled runs after it exceeded the memory cap on 756k rows. Tree models needed level re-balancing on emerging rows, with factors of 1.08 to 1.26 at weight 0.3 on the property lines and 1.01 to 1.10 at weight 1.0. The P2-S12 contents blend takes GLM 0.35 from the w = 0.3 run and LightGBM 0.65 from the w = 1.0 run (C044). P2-S05 (buildings at w = 1.0) scored 0.15123 in public against 0.15193 for P2-S04, so the board disagreed with validation. We kept the validation rule (C040).
 
-| ID | Recipe | Public score |
+Audit P2-F1 evidence: Kaggle-like D² of the 3 lines stacked, each line sum-calibrated (audit H8).
+
+| Recipe | Time | Grouped | Grouped test-mix | Public |
+|---|---|---|---|---|
+| P2-S01 | 0.10971 | 0.12306 | 0.13006 | 0.14370 |
+| P2-S03 | 0.11546 | 0.12623 | 0.13421 | 0.14693 |
+| P2-S04 | 0.14179 | 0.14165 | 0.13934 | 0.15193 |
+| P2-S05 | 0.14486 | 0.14311 | 0.13973 | 0.15123 |
+
+Gains of the adopted Part 2 changes over the recipe they replaced, in the order raw time / raw grouped / test-mix time / test-mix grouped / new-business time / new-business grouped:
+
+| Change | Gains |
+|---|---|
+| P2-S12 contents blend, over the P2-S05 contents recipe | +0.0005 / +0.0032 / +0.0020 / +0.0041 / not reported / +0.0039 |
+| P2-S13 motor new-business segment, over the P2-S12 motor recipe | +0.0001 / +0.0009 / +0.0008 / +0.0050 / +0.0012 / +0.0032 |
+
+The P2-S12 grouped gains were measured on the folds the weights were searched on; its time-fold gains are out of search (C044).
+
+New-business segment check, predicted-to-actual on reported cost for the P2-S05 blend (`docs/part2_new_business_check.md`):
+
+| Line | Time fold, new / renewal | Grouped, new / renewal | New-business claims, time / grouped |
+|---|---|---|---|
+| Motor | 1.012 / 0.933 | 0.812 / 1.025 | 382 / 697 |
+| Buildings | 2.229 / 1.607 | 1.296 / 0.981 | 37 / 77 |
+| Contents | 0.737 / 1.111 | 0.837 / 1.018 | 65 / 102 |
+
+Further Part 2 limitations: buildings 2023 was a fire year (49 fire claims for 3.22m CU against 21 for 1.13m in 2024, audit H1), the large-loss load is uniform within a line, and the emerging caps rest on 36, 6 and 6 claims above the cap.
+
+### A4. Reporting curves, emerging against developed
+
+Cost-weighted cumulative share reported (`docs/part2_emerging_target_summary.txt`, C037):
+
+| Line | Days | Emerging 2023 | Developed 2023, same truncation | Developed 2021, used |
+|---|---|---|---|---|
+| Motor | 30 | 0.603 | 0.579 | 0.556 |
+| Motor | 90 | 0.774 | 0.717 | 0.723 |
+| Motor | 365 | 0.961 | 0.970 | 0.922 |
+| Buildings | 30 | 0.913 | 0.829 | 0.857 |
+| Buildings | 90 | 0.952 | 0.927 | 0.933 |
+| Buildings | 365 | 0.998 | 0.992 | 0.992 |
+| Contents | 30 | 0.961 | 0.947 | 0.949 |
+| Contents | 90 | 0.991 | 0.995 | 0.989 |
+| Contents | 365 | 0.993 | 0.996 | 0.990 |
+
+The peril mix differs most on buildings: fire is 0.454 of emerging cost against 0.237 in developed accident year 2021. Mean completeness of the 2024 motor rows is 0.7672 with the developed peril shares and 0.8202 with the emerging ones.
+
+### A5. All submissions
+
+Part 1. Private scores come from the Kaggle submissions listing after the close.
+
+| ID | Recipe | Public | Private |
+|---|---|---|---|
+| S01 | Equal blend of GLM, GAM, LightGBM, XGBoost; full trend | 0.12453 | 0.13347 |
+| S02 | S01 with no trend | 0.12376 | 0.13466 |
+| S03 | S01 with half trend | 0.12464 | 0.13456 |
+| S04 | Tuned LightGBM and XGBoost, equal weights, half trend | 0.12477 | 0.13279 |
+| S05 | Equal blend of GLM, GAM and tuned trees | 0.12464 | 0.13477 |
+| S06 | Per-line weights from out-of-fold predictions (C021) | 0.12579 | 0.13505 |
+| S07 | Feature policy, inner early stopping, CatBoost, guarded weights | 0.12851 | 0.13693 |
+| S08 | S07 with a lower trend on buildings and contents (probe) | 0.12820 | 0.13703 |
+| S09 | S07 recipe with seed-averaged refit (final) | 0.12863 | 0.13689 |
+
+Part 2, public scores (`docs/SUBMISSIONS.md`). On 2026-10-29 P2-S13 ranked 23 of 35 teams on the public board.
+
+| ID | Recipe | Public |
 |---|---|---|
 | P2-S01 | Emerging only, no trend | 0.14370 |
 | P2-S02 | P2-S01 with developed half trend | 0.14460 |
 | P2-S03 | Contents pooled | 0.14693 |
-| P2-S04 | All lines pooled, weight 0.3 | 0.15193 |
-| P2-S05 | P2-S04 with buildings at weight 1.0 | 0.15123 |
+| P2-S04 | All lines pooled, w = 0.3 | 0.15193 |
+| P2-S05 | P2-S04 with buildings at w = 1.0 | 0.15123 |
+| P2-S06 | Level probe, all lines x 1.10 | 0.15206 |
+| P2-S07 | Level probe, motor x 1.10 | 0.15362 |
+| P2-S08 | Level probe, buildings x 1.10 | 0.15029 |
+| P2-S09 | Motor at the square root of its own trend, 1.0773 | 0.15284 |
+| P2-S10 | Motor at its full own trend, 1.1606 | 0.15414 |
+| P2-S11 | P2-S10 uplift on motor new business only (tie, not adopted) | 0.15434 |
+| P2-S12 | P2-S10 with the contents blend across weight runs | 0.15474 |
+| P2-S13 | P2-S12 with the motor new-business segment blend | 0.15577 |
 
-On P2-S05 the public board disagreed with validation. It covers about a third of the rows, so we kept the validation rule (C040).
+### A6. Office premium split by item
 
-### 7.5 Office premium
+Each share-of-premium item in CU; every row adds up to P (`scripts/part2_office_premium.py`).
 
-For the 20 reference policies the office premium is P = (R + Cat + F) / (1 - k). R is our predicted row risk premium, Cat is 0.12 R on buildings and contents and 0 on motor, and F is 85 CU. Here k = 0.15 + c + 0.08 + 0.08 is variable expense, commission c (0.20 broker, 0.00 direct), premium tax and profit, so the divisor is 0.49 for broker and 0.69 for direct. The build-up table is in section 8. The team is deciding four conventions: whether F scales with exposure, whether contents counts as property for reinsurance, where premium tax enters, and the blank comparison-site commission.
+| row_id | R + Cat + F | variable expense | commission | premium tax | profit | P |
+|---|---:|---:|---:|---:|---:|---:|
+| M00118569 | 1,009.64 | 219.49 | 0.00 | 117.06 | 117.06 | 1,463.25 |
+| M00129413 | 300.61 | 92.02 | 122.70 | 49.08 | 49.08 | 613.49 |
+| M00153851 | 453.14 | 138.72 | 184.95 | 73.98 | 73.98 | 924.77 |
+| M00161473 | 1,235.52 | 378.22 | 504.29 | 201.72 | 201.72 | 2,521.47 |
+| M00167496 | 864.57 | 264.66 | 352.89 | 141.15 | 141.15 | 1,764.43 |
+| M00176777 | 1,165.24 | 356.71 | 475.61 | 190.24 | 190.24 | 2,378.05 |
+| M00185311 | 1,204.49 | 261.85 | 0.00 | 139.65 | 139.65 | 1,745.64 |
+| B00215707 | 463.42 | 141.86 | 189.15 | 75.66 | 75.66 | 945.76 |
+| B00215809 | 637.79 | 138.65 | 0.00 | 73.95 | 73.95 | 924.34 |
+| B00217584 | 1,007.89 | 308.54 | 411.38 | 164.55 | 164.55 | 2,056.92 |
+| B00218282 | 418.32 | 128.06 | 170.74 | 68.30 | 68.30 | 853.72 |
+| B00223369 | 711.10 | 217.68 | 290.24 | 116.10 | 116.10 | 1,451.22 |
+| B00229821 | 544.34 | 166.63 | 222.18 | 88.87 | 88.87 | 1,110.89 |
+| B00250679 | 133.29 | 40.80 | 54.40 | 21.76 | 21.76 | 272.01 |
+| C00259568 | 130.96 | 40.09 | 53.45 | 21.38 | 21.38 | 267.26 |
+| C00270331 | 125.42 | 38.39 | 51.19 | 20.48 | 20.48 | 255.96 |
+| C00283470 | 181.70 | 55.62 | 74.16 | 29.67 | 29.67 | 370.82 |
+| C00286287 | 259.86 | 79.55 | 106.06 | 42.43 | 42.43 | 530.32 |
+| C00302985 | 149.95 | 45.90 | 61.21 | 24.48 | 24.48 | 306.03 |
+| C00314425 | 91.50 | 28.01 | 37.35 | 14.94 | 14.94 | 186.74 |
 
-### 7.6 Limitations specific to Part 2
+### A7. Further Part 1 limitations from the audit
 
-- 76% of test rows are new business against about 8% of training exposure. A segment check (`docs/part2_new_business_check.md`) gives new-business prediction-to-actual ratios of 0.81 to 1.01 for motor, 1.30 to 2.23 for buildings and 0.74 to 0.84 for contents, on 37 to 697 claims and with the two validation schemes disagreeing for motor. We judged this too noisy to support a segment adjustment and made none.
-- The trend rests on one public-board probe of 0.0009, below our 0.002 threshold.
-- Reporting curves are borrowed, and the caps rest on 36 (motor), 6 (buildings) and 6 (contents) claims above the cap.
-- The sign-off sheet for Part 2 decisions (`docs/HUMAN_REVIEW.md`, R08 to R11) is pending; the work is logged in `docs/AI_LOG.md` A20 to A22.
+- The trend may count the year level twice (B4). The residual trend implied is 1.017, 1.048 and 1.004 against 1.018, 1.095 and 1.064 applied. S08 scored 0.0001 above S07 on the private board, within noise but in the direction of B4.
+- The 2025 motor large-loss load includes under-reported 2024 bodily injury and may be 1.4% low (B5).
+- Recoveries appear only on closed claims, so open 2024 own-damage cost is about 1.4% overstated (B6).
+- Prior-claim history is developed in cost but not in claim counts (B7).
+- Open-claim reserving for bodily injury cannot be verified from one snapshot. Quickly reported severity falls from 20.7k to 16.6k across accident years while other motor perils rise, which could be under-reserving or a mix change.
+- The customer snapshot date is unknown, so early training rows may see later information.
+- Buildings and contents cost above the cap concentrates in the top risk decile, while the load is uniform within a line.
+- The GAM uses a single penalty (C011).
