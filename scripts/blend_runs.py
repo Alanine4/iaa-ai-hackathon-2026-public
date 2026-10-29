@@ -36,6 +36,12 @@ C057: `--pred-tag s<N>` (with `--write-from`) reads the seed-averaged files pred
 glm / gam file falls back to the untagged one; a missing tagged file of any other model is an error. One log line per
 line gives the tag, the number of tagged candidate files and the fallbacks.
 
+C058: `--level-from <submission zip or csv>:<line>[,<line>]` (with `--write-from`) re-scales each listed line so that
+its total equals the total of the same rows in the given submission file. This is the C054 convention: an adopted line
+replaces a line of the current best submission at that line's confirmed level (the P2-S13 level probes). The rows of a
+line are the row_ids of its prediction and all of them must be in the file; unlisted lines are untouched. One log line
+per listed line gives the factor and the mean before and after.
+
 Usage: .venv\\Scripts\\python.exe scripts\\blend_runs.py motor,buildings,contents --runs pooled_w0.3,pooled_w1
        [--trend developed-half] [--name p2_xrun] [--step 0.05] [--out xrun] [--write]
        [--gate raw|testmix] [--candidates run:model,...] [--report-views]
@@ -43,14 +49,17 @@ Usage: .venv\\Scripts\\python.exe scripts\\blend_runs.py motor,buildings,content
        --write-from motor=<out>,buildings=<out>,contents=<out> --trend mixed-full --name <name>
        C047: [--baseline P2-S05|P2-S12] [--segment new_business]
        C057: [--pred-tag s5]   (with --write-from: read the seed-averaged pred files)
+       C058: [--level-from submissions\\part2_candidate_P2-S13_p2_c047.zip:buildings]   (with --write-from)
 Writes: output/emerging/<out>/blend_weights_<line>.json; with --write work/<name>.csv and work/<name>.zip;
         with --report-views output/emerging/<out>/views_recipes.csv
 """
 import argparse
+import io
 import json
 import os
 import sys
 import time
+import zipfile
 
 import numpy as np
 import pandas as pd
@@ -416,10 +425,46 @@ def parse_write_from(text):
     return spec
 
 
-def write_from(spec, trend, name, pred_tag=None):
+def parse_level_from(text):
+    """C058: `--level-from <submission zip or csv>:<line>[,<line>]` as (path, [lines]). The path ends at the LAST colon
+    (a Windows drive letter has one as well)."""
+    path, _, names = text.rpartition(":")
+    lines = [n.strip() for n in names.split(",")]
+    if not path or not set(lines) <= set(LINES) or len(set(lines)) != len(lines):
+        raise ValueError(f"--level-from needs <submission zip or csv>:<line>[,<line>] with lines from {LINES}, "
+                         f"got {text!r}")
+    return path, lines
+
+
+def read_level_file(path):
+    """C058: row_id -> prediction of a submission file (a zip holding one csv, or a csv); row_id is read as text."""
+    if path.lower().endswith(".zip"):
+        with zipfile.ZipFile(path) as z:
+            members = z.namelist()
+            assert len(members) == 1, f"{path}: expected one csv in the zip, found {members}"
+            frame = pd.read_csv(io.BytesIO(z.read(members[0])), dtype={"row_id": str})
+    else:
+        frame = pd.read_csv(path, dtype={"row_id": str})
+    assert frame["row_id"].is_unique, f"{path}: duplicate row_id"
+    return frame.set_index("row_id")["prediction"]
+
+
+def level_to_file(pred, reference, line, path):
+    """C058: `pred` (the rows of one line) scaled so that its total equals the total of the same rows in `reference`
+    (a row_id -> prediction series read from `path`); returns the scaled prediction and the factor."""
+    absent = pred.index.difference(reference.index)
+    assert len(absent) == 0, f"{line}: {len(absent)} of {len(pred)} row_ids are not in {path}, e.g. {list(absent[:3])}"
+    assert pred.sum() > 0, f"{line}: the prediction total is {pred.sum()}, no level factor"
+    factor = reference.loc[pred.index].sum() / pred.sum()
+    return pred * factor, factor
+
+
+def write_from(spec, trend, name, pred_tag=None, level_from=None):
     """C044: build work/<name> from the adopted `submission_weights` of one result folder per line (each written by
     an earlier evaluation run of this script), so lines may use different runs, candidates and gates; the folder name
-    `baseline` takes the line's BASELINE weights. C057: `pred_tag` reads the seed-averaged pred files (`pred_path`)."""
+    `baseline` takes the line's BASELINE weights. C057: `pred_tag` reads the seed-averaged pred files (`pred_path`).
+    C058: `level_from` = (submission file, [lines]) re-scales those lines to the file's total of their rows."""
+    reference = read_level_file(level_from[0]) if level_from else None
     by_line = {}
     for line in LINES:
         if spec[line] == "baseline":
@@ -436,6 +481,11 @@ def write_from(spec, trend, name, pred_tag=None):
                   f"untagged fallback: {fallback}", flush=True)
         print(f"{line}: from {spec[line]}: submission weights {weights}; trend {trend}; "
               f"mean {by_line[line].mean():.2f} rows {len(by_line[line]):,}", flush=True)
+        if level_from and line in level_from[1]:  # C058
+            before = by_line[line].mean()
+            by_line[line], factor = level_to_file(by_line[line], reference, line, level_from[0])
+            print(f"{line}: level from {level_from[0]}: factor {factor:.4f}, mean {before:.2f} -> "
+                  f"{by_line[line].mean():.2f}", flush=True)
     return write_submission(by_line, name)
 
 
@@ -583,9 +633,14 @@ if __name__ == "__main__":
     ap.add_argument("--pred-tag", default=None,
                     help="C057 (with --write-from): read pred_<line>_<model>_<tag>.parquet (seed-averaged files, e.g. "
                          "s5); glm / gam fall back to the untagged file, other models need the tagged file")
+    ap.add_argument("--level-from", default=None,
+                    help="C058 (with --write-from): <submission zip or csv>:<line>[,<line>]: re-scale those lines so "
+                         "that each line's total equals the total of the same rows in that file")
     a = ap.parse_args()
     if a.pred_tag and not a.write_from:
         ap.error("C057: --pred-tag needs --write-from")
+    if a.level_from and not a.write_from:
+        ap.error("C058: --level-from needs --write-from")
     if a.report_views:
         report_views(a.lines.split(","), a.out)
     elif a.write_from:
@@ -593,7 +648,11 @@ if __name__ == "__main__":
             spec = parse_write_from(a.write_from)
         except ValueError as e:
             ap.error(str(e))
-        write_from(spec, a.trend, a.name, pred_tag=a.pred_tag)
+        try:
+            level_from = parse_level_from(a.level_from) if a.level_from else None
+        except ValueError as e:
+            ap.error(str(e))
+        write_from(spec, a.trend, a.name, pred_tag=a.pred_tag, level_from=level_from)
     else:
         main(a.lines.split(","), a.runs.split(","), a.trend, a.name, a.step, a.out, a.write,
              baseline=BASELINES[a.baseline], gate=a.gate, candidates=a.candidates.split(",") if a.candidates else None,
