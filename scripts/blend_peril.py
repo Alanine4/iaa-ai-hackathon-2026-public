@@ -16,6 +16,7 @@ import os
 import sys
 import zipfile
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -41,13 +42,16 @@ def runs_of(weights):
     return sorted({c.split(":", 1)[0] for c in weights})
 
 
-def main(lines, name):
+def main(lines, name, extra=None, out=OUT):
+    """`extra`: the candidate columns added to the P2-S13 components (default PERIL); `out`: result folder.
+    C054: every adopted line is re-scaled to its P2-S13 total (the line levels were confirmed by the P2-S13 probes)."""
+    extra = extra or PERIL
     adopted = {}
     for line in lines:
-        cands = list(P2S13[line]) + PERIL
-        br.main([line], runs_of(cands), TREND, name, 0.05, OUT, False, baseline=P2S13, gate="testmix",
+        cands = list(P2S13[line]) + extra
+        br.main([line], runs_of(cands), TREND, name, 0.05, out, False, baseline=P2S13, gate="testmix",
                 candidates=cands)
-        with open(os.path.join(br.run_path(OUT), f"blend_weights_{line}.json"), encoding="utf-8") as f:
+        with open(os.path.join(br.run_path(out), f"blend_weights_{line}.json"), encoding="utf-8") as f:
             res = json.load(f)
         weights = res.get("submission_weights") or {}
         gain = res.get("gain") or {}
@@ -63,14 +67,17 @@ def main(lines, name):
         sub = pd.read_csv(io.BytesIO(z.read(z.namelist()[0]))).set_index("row_id")
     for line, weights in adopted.items():
         if line == "motor":
-            a = weights.get(PERIL[0], 0.0)
-            pg = br.line_prediction(line, {PERIL[0]: 1.0}, TREND)
+            ex = {c: w for c, w in weights.items() if c in extra and w > 0}
+            a = sum(ex.values())
+            pg = br.line_prediction(line, {c: w / a for c, w in ex.items()}, TREND)
             old = sub.loc[pg.index, "prediction"]
             pred = (1 - a) * old + a * pg * old.sum() / pg.sum()
         else:
             pred = br.line_prediction(line, weights, TREND)
             old = sub.loc[pred.index, "prediction"]
-        print(f"{line}: {len(pred):,} rows replaced, mean {old.mean():.2f} -> {pred.mean():.2f}", flush=True)
+        pred = pred * old.sum() / pred.sum()
+        print(f"{line}: {len(pred):,} rows replaced at the P2-S13 line total (mean {old.mean():.2f}), "
+              f"corr with P2-S13 {np.corrcoef(pred, old)[0, 1]:.4f}", flush=True)
         sub.loc[pred.index, "prediction"] = pred.to_numpy()
     sub = sub.reset_index()
     sub.to_csv(os.path.join(WORK, name + ".csv"), index=False)
@@ -84,5 +91,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--lines", default="contents,buildings")
     ap.add_argument("--name", default="p2_s13_peril")
+    ap.add_argument("--extra", default=",".join(PERIL), help="added candidates, e.g. oblemos:ob_glm,oblemos:ob_gam")
+    ap.add_argument("--out", default=OUT)
     a = ap.parse_args()
-    main(a.lines.split(","), a.name)
+    main(a.lines.split(","), a.name, a.extra.split(","), a.out)
