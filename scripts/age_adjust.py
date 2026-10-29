@@ -37,8 +37,7 @@ AGE = "policyholder_age_band"
 K_GRID = (25, 50, 100, 200, 400)
 OUT = os.path.join(br.markets.get("emerging").out_dir, "age_adjust")
 WORK = os.path.join(br.markets.ROOT, "work")
-# teammate's submissions/part2_candidate_P2-S13_p2_c047.zip (origin/main 443f6d5), copied to work/
-P2S13 = os.path.join(WORK, "P2-S13_p2_c047.zip")
+P2S13 = os.path.join(br.markets.ROOT, "submissions", "part2_candidate_P2-S13_p2_c047.zip")  # teammate's P2-S13
 
 
 def relativities(band, actual, pred, k):

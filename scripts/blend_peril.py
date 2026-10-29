@@ -35,7 +35,7 @@ STRICT = ("time_testmix", "time_nb")
 PERIL = ["peril:pglm"]
 OUT = "xrun_peril"
 WORK = os.path.join(br.markets.ROOT, "work")
-P2S13_FILE = os.path.join(WORK, "P2-S13_p2_c047.zip")  # teammate's submissions/part2_candidate_P2-S13_p2_c047.zip
+P2S13_FILE = os.path.join(br.markets.ROOT, "submissions", "part2_candidate_P2-S13_p2_c047.zip")  # teammate's P2-S13
 
 
 def runs_of(weights):
