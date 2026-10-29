@@ -13,11 +13,12 @@ Validation D2 = combined three-line Tweedie D2 on 2024 (`docs/validation_results
 | S06 | 2026-10-21 | `sub_blend4_weighted.zip` | Per-line blend weights from 2-fold OOF (C021): motor equal (searched weights failed the both-folds guard), buildings GAM 0.3 / LGBM 0.35 / XGB 0.35, contents GAM 0.3 / XGB 0.7; buildings GAM 5 knots; half trend | CV d2_cal weighted: buildings 0.1114, contents 0.0926 | 0.12579 | – | Submitted via CLI. +0.00102 vs S04, the largest gain so far. Leader 0.12996 |
 | S07 | 2026-10-22 | `sub_v3_weighted.zip` | C026 feature policy + C027 inner early stopping + CatBoost; per-line weights: motor equal 0.2x5 (searched weights failed the both-folds guard), buildings GAM .2 / LGBM .25 / CAT .55, contents GAM .25 / LGBM .2 / XGB .35 / CAT .2; half trend | CV d2_cal (2-fold mean): motor equal 0.0919, buildings weighted 0.1144, contents weighted 0.0945 | 0.12851 | 11 | Submitted via CLI 2026-10-22 13:35. +0.00272 vs S06 (0.12579). Leader 0.12996 |
 | S08 | 2026-10-22 | `sub_v3_trend25bc.zip` | Probe for audit finding B4: S07 with buildings and contents at trend share 0.25 (motor unchanged at 0.5) | – | 0.12820 | – | −0.00031 vs S07: lower trend on buildings/contents hurts; half trend kept for all lines. B4 (residual-trend double counting) not supported by the public board |
-| S09 | 2026-10-22 | `sub_v3_seeds.zip` | S07 recipe with seed-averaged tree refits (C029) | same OOF as S07 (refit only) | 0.12863 | – | Submitted via CLI 2026-10-22 18:19. +0.00012 vs S07; best so far. Final submission candidate |
+| S09 | 2026-10-22 | `sub_v3_seeds.zip` | S07 recipe with seed-averaged tree refits (C029) | same OOF as S07 (refit only) | 0.12863 | – | Submitted via CLI 2026-10-22 18:19. +0.00012 vs S07; best so far. Selected as the Part 1 final submission: **private score 0.13689, final rank 12 of 51** (winner 0.13923). Note for the team process: a teammate's file `submission_improved1.parquet` (public 0.13562, +0.007) submitted on 2026-10-23 was not among the two selected submissions, so its private score is unknown |
 
 # Kaggle submissions (Part 2, emerging market)
 
 Competition: iaa-ai-assisted-hackathon-2026-part-2 (deadline 2026-10-31 03:59:59 local). Public leaderboard share not stated; treated like Part 1 (about a third of the test rows).
+Standing on 2026-10-29: P2-S13 0.15577 is rank 23 of 35 teams (leader 0.17556); Kaggle final selection to be P2-S13 with P2-S12 as the second selected file.
 Validation = emerging time fold (train 2023 -> score 2024) and grouped 5-fold CV (`output/emerging/blend_weights_<line>.json`, C036).
 
 | # | Date | File | What it is | Validation (d2_cal) | Public score | Public rank | Notes |
