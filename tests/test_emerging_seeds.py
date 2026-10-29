@@ -240,6 +240,18 @@ def test_line_prediction_reads_tagged_files_and_falls_back_to_untagged_for_deter
     assert blend_runs.line_prediction("motor", weights, "none", pred_tag="s2").to_dict() == {"t1": 51.5, "t2": 102.0}
 
 
+def test_pred_path_falls_back_to_the_untagged_file_for_every_model_that_is_not_refit_per_seed(emerging_root):
+    # C059: the OBLEMOS buildings GAM (model name ob_gam, run oblemos) is deterministic but not named glm / gam
+    r = emerging_root / "oblemos"
+    _pred_file(r, "buildings", "ob_gam", [1.0, 2.0])
+    path, tagged = blend_runs.pred_path("buildings", "oblemos:ob_gam", "s3")
+    assert (path, tagged) == (str(r / "pred_buildings_ob_gam.parquet"), False)
+    assert blend_runs.pred_path("buildings", "oblemos:ob_gam") == (str(r / "pred_buildings_ob_gam.parquet"), False)
+    _pred_file(r, "buildings", "ob_gam", [3.0, 4.0], tag="s3")  # a tagged file wins when it exists
+    assert blend_runs.pred_path("buildings", "oblemos:ob_gam", "s3") == (
+        str(r / "pred_buildings_ob_gam_s3.parquet"), True)
+
+
 def test_line_prediction_fails_when_a_tree_model_has_no_tagged_file(emerging_root):
     r = emerging_root / "r"
     _pred_file(r, "motor", "xgb", [1.0, 2.0])  # untagged exists, tagged does not

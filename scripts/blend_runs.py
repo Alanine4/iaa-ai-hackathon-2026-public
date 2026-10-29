@@ -66,6 +66,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 import blend  # noqa: E402
+from oof_predictions import SEED_KWARG  # noqa: E402  (C059)
 from train_validate import LINES, clean, evaluate, load, markets  # noqa: E402
 
 KEYS = ["row_id", "scheme", "fold", "actual"]
@@ -360,8 +361,9 @@ def nb_flags_2025(line):
 
 def pred_path(line, cand, pred_tag=None):
     """C057: pred file of one candidate `<run>:<model>` and whether it is a tagged file. With a tag the file is
-    pred_<line>_<model>_<tag>.parquet; GLM / GAM are deterministic and not re-fit per seed, so a missing tagged file
-    falls back to the untagged one; a missing tagged file of any other model is an error."""
+    pred_<line>_<model>_<tag>.parquet. C059: only the models that are re-fit per seed (SEED_KWARG: lgbm, xgb, cat) have
+    a tagged file; every other model (glm, gam, the OBLEMOS ob_glm / ob_gam, ...) is deterministic, so a missing
+    tagged file falls back to the untagged one; a missing tagged file of a seeded model is an error."""
     run, model = cand.split(":", 1)
     base = os.path.join(run_path(run), f"pred_{line}_{model}")
     if pred_tag is None:
@@ -369,7 +371,8 @@ def pred_path(line, cand, pred_tag=None):
     tagged = f"{base}_{pred_tag}.parquet"
     if os.path.exists(tagged):
         return tagged, True
-    assert model in ("glm", "gam"), f"{line}: candidate {cand} has no tagged pred file {tagged}"
+    seeded = model in SEED_KWARG
+    assert not seeded, f"{line}: candidate {cand} has no tagged pred file {tagged}"
     return f"{base}.parquet", False
 
 
