@@ -117,8 +117,8 @@ def fit_predict(x, counts, expo, claims, fit_rows, pred_rows, sel, kinds):
     return out
 
 
-def main(line, kinds, trend, refit=True, dev_weight=1.0):
-    run = RUN if dev_weight == 1.0 else f"{RUN}_w{dev_weight:g}"
+def main(line, kinds, trend, refit=True, dev_weight=1.0, nb_only=False):
+    run = (RUN if dev_weight == 1.0 else f"{RUN}_w{dev_weight:g}") + ("_nbrows" if nb_only else "")
     out_dir = os.path.join(markets.get("emerging").out_dir, run)
     cache = os.path.join(out_dir, "cache")
     os.makedirs(cache, exist_ok=True)
@@ -138,11 +138,16 @@ def main(line, kinds, trend, refit=True, dev_weight=1.0):
         keep = ~dev_claim | (np.random.default_rng(fc.SEED).random(len(claims)) < dev_weight)
         claims = claims[keep].reset_index(drop=True)
     feats = list(x.columns)
+    nb_all = x["new_business"].astype(bool).to_numpy()
+    # C056 --nb-only: every fit (selection, folds, refit) on the new-business rows of both markets only (as C047 --rows nb);
+    # validation still scores every emerging row, the re-balance uses the emerging NB fit rows
+    dev_fit = dev_idx[nb_all[dev_idx]] if nb_only else dev_idx
+    em_ok = nb_all[em_idx] if nb_only else np.ones(len(em_idx), dtype=bool)
     log(f"oblemos {line}: developed weight {dev_weight:g}, developed rows {len(dev_idx):,}, emerging {len(em_idx):,}, claims {len(claims):,}, "
         f"{len(feats)} candidate features")
 
     t0 = time.time()
-    sel = select(x, counts, expo, claims, np.concatenate([dev_idx, em_idx[year == 2023]]), feats,
+    sel = select(x, counts, expo, claims, np.concatenate([dev_fit, em_idx[(year == 2023) & em_ok]]), feats,
                  os.path.join(cache, f"{line}_selection.json"))
     log(f"oblemos {line}: selection ({time.time() - t0:.0f}s) frequency {sel['frequency']}; severity {sel['severity']}; "
         f"GAM lambda freq {sel['lam_f']} sev {sel['lam_s']}")
@@ -162,7 +167,7 @@ def main(line, kinds, trend, refit=True, dev_weight=1.0):
             log(f"oblemos {line} {scheme} {k}: cached")
         else:
             t0 = time.time()
-            r = fit_predict(x, counts, expo, claims, np.concatenate([dev_idx, em_idx[fit_em]]), em_idx, sel, kinds)
+            r = fit_predict(x, counts, expo, claims, np.concatenate([dev_fit, em_idx[fit_em & em_ok]]), em_idx, sel, kinds)
             rates = {f"ob_{kd}": v for kd, v in r.items()}
             pd.DataFrame({f"rate_{n}": v for n, v in rates.items()}).to_parquet(path, index=False)
             log(f"oblemos {line} {scheme} {k}: fitted in {time.time() - t0:.0f}s")
@@ -172,7 +177,8 @@ def main(line, kinds, trend, refit=True, dev_weight=1.0):
         frame = pd.DataFrame({"row_id": t.loc[val_em, "row_id"].to_numpy(), "scheme": scheme, "fold": k,
                               "actual": actual, **val_info})
         for n in names:
-            factor = float(np.sum(y_em[fit_em] * w_em[fit_em]) / np.sum(rates[n][fit_em] * w_em[fit_em]))  # C038
+            rb = fit_em & em_ok
+            factor = float(np.sum(y_em[rb] * w_em[rb]) / np.sum(rates[n][rb] * w_em[rb]))  # C038
             frame[n] = rates[n][val_em] * factor * comp_expo[val_em] * load_f
             s = scores(actual, frame[n].to_numpy())
             v = evaluate.nb_views(actual, frame[n].to_numpy(), val_info["new_business"], val_info["exposure"],
@@ -204,7 +210,7 @@ def main(line, kinds, trend, refit=True, dev_weight=1.0):
             log(f"oblemos {line} refit: cached")
         else:
             t0 = time.time()
-            r = fit_predict(x, counts, expo, claims, np.concatenate([dev_idx, em_idx]),
+            r = fit_predict(x, counts, expo, claims, np.concatenate([dev_fit, em_idx[em_ok]]),
                             np.concatenate([em_idx, test_rows]), sel, kinds)
             rates = {f"ob_{kd}": v for kd, v in r.items()}
             pd.DataFrame({f"rate_{n}": v for n, v in rates.items()}).to_parquet(path, index=False)
@@ -213,7 +219,7 @@ def main(line, kinds, trend, refit=True, dev_weight=1.0):
         load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
         n_em = len(em_idx)
         for n in names:
-            level = float(np.sum(y_em * w_em) / np.sum(rates[n][:n_em] * w_em))
+            level = float(np.sum((y_em * w_em)[em_ok]) / np.sum((rates[n][:n_em] * w_em)[em_ok]))
             pred = rates[n][n_em:] * level * test["exposure"].to_numpy() * factor_t * load_test
             pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
                           "trend_factor": factor_t}).to_parquet(os.path.join(out_dir, f"pred_{line}_{n}.parquet"),
@@ -236,5 +242,6 @@ if __name__ == "__main__":
     ap.add_argument("--trend", default="mixed-full", choices=sorted(markets.get("emerging").trends))
     ap.add_argument("--skip-refit", action="store_true")
     ap.add_argument("--dev-weight", type=float, default=1.0)
+    ap.add_argument("--nb-only", action="store_true", help="C056: fit on new-business rows only")
     a = ap.parse_args()
-    main(a.line, a.models.split(","), a.trend, refit=not a.skip_refit, dev_weight=a.dev_weight)
+    main(a.line, a.models.split(","), a.trend, refit=not a.skip_refit, dev_weight=a.dev_weight, nb_only=a.nb_only)

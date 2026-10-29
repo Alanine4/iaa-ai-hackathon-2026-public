@@ -44,5 +44,6 @@ search and writes `work/p2_s14.zip`, which is identical to the submitted file (c
 | C052-C053 | Per-peril frequency x severity GLM | Contents 0.15560 and motor GLM swap 0.15563, both within noise; buildings weight 0. Added the strict rule: no loss on the time-fold test-mix and NB views |
 | **C054** | **OBLEMOS Part 1 GLM/GAM on the emerging market (`scripts/oblemos_emerging.py`)** | **Buildings adopted: P2-S14 0.15781**; contents and motor not adopted |
 | C055 | OBLEMOS GLM/GAM with developed rows at weight 0.3 / 0.1; buildings mix variants | Worse; adopted mix kept |
+| C056 | OBLEMOS GLM/GAM on new-business rows only, for the motor NB segment | Loses every NB view at every share |
 
 Lesson: on the public board, only candidates that gained on all six views improved the score.
