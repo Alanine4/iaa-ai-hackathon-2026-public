@@ -36,7 +36,7 @@ On screen: `docs/AI_LOG.md` (rows A09 and A18), a `docs/CHANGELOG.md` row with i
 |---|---|
 | We used Claude Code in three roles. | 我们让 Claude Code 分三种角色工作。 |
 | A coordinator plans and decides. Workers implement, and write the tests first. An independent auditor only reads and reports. | 协调者负责规划和决策；工人负责实现，并且先写测试；独立审计员只读代码和数据，只出报告。 |
-| The suite now has 317 tests. The raw data is never edited, and every fix lives in code. | 现在测试一共有 317 个。原始数据从不修改，所有修正都写在代码里。 |
+| The suite now has 340 tests. The raw data is never edited, and every fix lives in code. | 现在测试一共有 340 个。原始数据从不修改，所有修正都写在代码里。 |
 | Every change has a CHANGELOG number, and the code comments cite it. | 每一处改动都有一个 CHANGELOG 编号，代码注释里也会引用这个编号。 |
 | Every AI step is logged, with how we checked it. Our team lead signed off eleven key decisions on 25 October. | 每一步 AI 工作都记在日志里，并写明我们怎么核对的。队长在 10 月 25 日对 11 项关键决策签了字。 |
 | We also reject AI output. The coordinator designed per-peril reporting curves, C022. The worker implementing them showed they change nothing. | 我们也会否决 AI 的输出。协调者设计了按出险原因分开的报案曲线，也就是 C022。负责实现的工人用数值证明，它不会改变任何结果。 |

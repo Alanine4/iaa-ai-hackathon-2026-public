@@ -213,7 +213,7 @@ on public-board probes, described under known limitations.
 Every change to data handling, code behaviour or modelling assumptions has a row in `docs/CHANGELOG.md` with its reason,
 evidence and code location (C000 to C047). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
 the AI assistant did, how a person or a test checked it, and whether it was accepted, modified or rejected. The test suite in
-`tests/` (317 tests) covers cleaning, target matching, development, features, models, tuned parameters, scoring, the market
+`tests/` (340 tests) covers cleaning, target matching, development, features, models, tuned parameters, scoring, the market
 configuration and the Part 2 blends and validation views, and was written before the code it tests. `tests/test_raw_data_integrity.py` checks the raw files against the manifest. On 2026-10-22 an
 independent read-only audit reviewed the pipeline (`docs/AUDIT_2026-10-22.md`). Its findings B1 to B8 fed into C026 and C027;
 the remaining ones are listed below. On 2026-10-25 a second read-only audit covered the Part 2 pipeline (`docs/AUDIT_PART2.md`, findings

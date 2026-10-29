@@ -15,7 +15,7 @@ the emerging policy / target tables. Weights are still searched and guarded on t
 claims per line are too few to tune on). `--gate testmix`: adopt only if the raw time fold, the raw grouped mean AND the
 test-mix grouped mean do not lose, and the mean raw gain >= ADOPT_GAIN OR the test-mix grouped gain >= ADOPT_GAIN.
 `--candidates a:x,b:y` restricts the search to those candidates (the baseline is scored from all loaded columns).
-`--report-views` prints the four views of the submitted recipes (RECIPES) per line and for the three lines stacked
+`--report-views` prints the six views of the submitted recipes (RECIPES) per line and for the three lines stacked
 (Kaggle-like D2), on the exposure basis and on the row basis of the audit (audit_p2 a21: NB rows to 77% of rows).
 
 C047: `--baseline P2-S12` compares with the current recipe (contents pooled_w0.3 glm .35 + pooled_w1 lgbm .65; motor and
@@ -271,7 +271,7 @@ GATE_RULES = {"raw": f"mean gain over time fold and grouped mean >= {ADOPT_GAIN}
 
 def evaluate_line(folds, names, baseline, step, share, gate="raw"):
     """C036 search and guard over the candidates `names`, plus the comparison with the baseline blend on the same folds
-    (the baseline may use any loaded column). C044: all four views for blend, baseline and candidates."""
+    (the baseline may use any loaded column). C044: all six views for blend, baseline and candidates."""
     loaded = list(folds["group"][0]["preds"])
     missing = sorted(set(baseline) - set(loaded))
     assert not missing, f"baseline candidates {missing} are not in the loaded runs"
@@ -565,7 +565,7 @@ def print_segments(line, res):
 
 
 def report_views(lines, out, recipes=None):
-    """C044: the four views of each recipe per line and for the lines stacked, on the exposure basis (test file NB
+    """C044: the six views of each recipe per line and for the lines stacked, on the exposure basis (test file NB
     exposure share; the C044 definition) and on the audit's row basis (NB rows to 77% of rows, audit_p2 a21); steps
     between consecutive recipes and the check against the audit's grouped test-mix steps."""
     recipes = recipes or RECIPES
@@ -622,7 +622,7 @@ if __name__ == "__main__":
     ap.add_argument("--gate", default="raw", choices=GATES, help="C044 adoption gate")
     ap.add_argument("--candidates", default=None, help="C044: comma list of <run>:<model> to search over")
     ap.add_argument("--report-views", action="store_true",
-                    help="C044: print the four views of the RECIPES (runs taken from the recipes) and exit")
+                    help="C044: print the six views of the RECIPES (runs taken from the recipes) and exit")
     ap.add_argument("--baseline", default="P2-S05", choices=sorted(BASELINES),
                     help="C047: recipe the gate compares with (P2-S12 = current recipe)")
     ap.add_argument("--segment", default=None, choices=["new_business"],
