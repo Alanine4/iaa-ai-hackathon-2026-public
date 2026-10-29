@@ -68,7 +68,7 @@ def _script_data_dir(env_value):
     code = "import sys; sys.path[:0] = [r'%s', r'%s']; import train_validate as t; print(t.DATA); print(t.OUT)" % (
         os.path.join(ROOT, "scripts"), os.path.join(ROOT, "src"))
     out = subprocess.run([sys.executable, "-I", "-c", code], env=env, capture_output=True, text=True, check=True)
-    return [os.path.abspath(p) for p in out.stdout.split()]
+    return [os.path.abspath(p) for p in out.stdout.splitlines()]  # lines, not words: paths may hold spaces
 
 
 def test_train_validate_resolves_part1_folder_by_default():
