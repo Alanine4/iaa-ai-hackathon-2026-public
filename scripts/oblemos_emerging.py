@@ -16,6 +16,11 @@ Selection and lambdas are chosen once per line on the time fold's fit rows (deve
 stays out of the variable choice; every fold and the refit then refit the coefficients.
 Resumable: selection, every fold and the refit are cached in output/emerging/oblemos/cache/.
 
+C055 `--dev-weight w` (default 1): developed rows at weight w without changing the OBLEMOS functions. Poisson
+frequency: a row weight w equals counts and exposure both times w (w y log(mu) - w mu = y' log(mu') - mu' + const with
+y' = w y, mu' = w mu), so the developed claim_count and exposure_adj are scaled. Gamma severity has no such identity:
+a seeded random share w of the developed claims is kept (an unbiased stand-in for weight w). Run folder `oblemos_w<w>`.
+
 Usage: .venv\\Scripts\\python.exe -I -u scripts\\oblemos_emerging.py <line> [--models glm,gam] [--trend mixed-full]
 Writes: output/emerging/oblemos/oof_<line>.parquet, blend_weights_<line>.json, pred_<line>_ob_<model>.parquet
 """
@@ -112,8 +117,9 @@ def fit_predict(x, counts, expo, claims, fit_rows, pred_rows, sel, kinds):
     return out
 
 
-def main(line, kinds, trend, refit=True):
-    out_dir = os.path.join(markets.get("emerging").out_dir, RUN)
+def main(line, kinds, trend, refit=True, dev_weight=1.0):
+    run = RUN if dev_weight == 1.0 else f"{RUN}_w{dev_weight:g}"
+    out_dir = os.path.join(markets.get("emerging").out_dir, run)
     cache = os.path.join(out_dir, "cache")
     os.makedirs(cache, exist_ok=True)
     x, part, y, w, train, test, t, year = emerging_design(line, "pooled", 1.0)
@@ -125,8 +131,14 @@ def main(line, kinds, trend, refit=True):
     expo = np.concatenate([t_dev["exposure_eff"].to_numpy(), t["exposure_eff"].to_numpy(), np.ones(len(test_rows))])
     expo = np.clip(expo, 1e-4, None)  # as run_models: periods starting on the cut-off day
     claims = claim_rows(line, len(dev_idx))
+    if dev_weight != 1.0:  # C055: Poisson weight = scaled counts and exposure; Gamma: seeded share of developed claims
+        counts[dev_idx] *= dev_weight
+        expo[dev_idx] *= dev_weight
+        dev_claim = claims["pos"].to_numpy() < len(dev_idx)
+        keep = ~dev_claim | (np.random.default_rng(fc.SEED).random(len(claims)) < dev_weight)
+        claims = claims[keep].reset_index(drop=True)
     feats = list(x.columns)
-    log(f"oblemos {line}: developed rows {len(dev_idx):,}, emerging {len(em_idx):,}, claims {len(claims):,}, "
+    log(f"oblemos {line}: developed weight {dev_weight:g}, developed rows {len(dev_idx):,}, emerging {len(em_idx):,}, claims {len(claims):,}, "
         f"{len(feats)} candidate features")
 
     t0 = time.time()
@@ -178,7 +190,7 @@ def main(line, kinds, trend, refit=True):
                    **view_entries(views["time"]["single"][n], single_fold=True)} for n in names}
     cv_group = {n: {"d2_cal_folds": rep["group"]["single"][n], "d2_cal_mean": float(np.mean(rep["group"]["single"][n])),
                     **view_entries(views["group"]["single"][n])} for n in names}
-    result = {"line": line, "market": "emerging", "train_set": RUN, "developed_weight": 1.0, "weights": eq,
+    result = {"line": line, "market": "emerging", "train_set": run, "developed_weight": dev_weight, "weights": eq,
               "selection": sel, "settings": {"SCORE_RCOND": fc.SCORE_RCOND, "SELECTION_TRIES": fc.SELECTION_TRIES,
                                              "SELECTION_SAMPLE": fc.SELECTION_SAMPLE, "N_BINS": fc.N_BINS,
                                              "N_KNOTS": fc.N_KNOTS, "MIN_LEVEL_SHARE": fc.MIN_LEVEL_SHARE},
@@ -223,5 +235,6 @@ if __name__ == "__main__":
     ap.add_argument("--models", default="glm,gam")
     ap.add_argument("--trend", default="mixed-full", choices=sorted(markets.get("emerging").trends))
     ap.add_argument("--skip-refit", action="store_true")
+    ap.add_argument("--dev-weight", type=float, default=1.0)
     a = ap.parse_args()
-    main(a.line, a.models.split(","), a.trend, refit=not a.skip_refit)
+    main(a.line, a.models.split(","), a.trend, refit=not a.skip_refit, dev_weight=a.dev_weight)
