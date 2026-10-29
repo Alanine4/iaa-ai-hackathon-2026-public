@@ -41,11 +41,24 @@ C047: `--rows nb` (pooled) restricts every fit set (folds and refit) to the new-
 re-balance uses the emerging NB fit rows; validation still scores every emerging validation row and the refit predicts
 every test row. Run folder suffix `_nbrows`.
 
+C057: `--market emerging --refit-only [--seeds N]` re-fits the emerging models without the folds, from the run folder's
+blend_weights json (`refit_n_estimators`, `trend`; `--trend` is ignored), and averages N seeds (models.SEED .. SEED+N-1) of
+each tree model (GLM / GAM are deterministic and fit once). Per seed it writes the cache file
+pred_<line>_<model>_seed<SEED>.parquet (a rerun fits only the seeds without a cache file) and, for N > 1 and tree models,
+the average pred_<line>_<model>_s<N>.parquet (blend_runs.py --write-from --pred-tag s<N> reads these). The untagged
+pred_<line>_<model>.parquet of the full run is never rewritten in this mode; `--seeds 1` writes the seed-<SEED> cache file
+only (it reproduces the untagged file). The json gains refit_seeds, refit_pred_tag, refit_rebalance_factor_seeds and
+refit_only_at; every other key stays as it was. `--seeds N` > 1 needs `--refit-only` for the emerging market.
+
 Usage: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> [--models glm,gam,lgbm,xgb,cat] [--skip-refit]
                                                                [--refit-only] [--seeds N] [--te make_model]
+       C057: .venv\\Scripts\\python.exe scripts\\oof_predictions.py <line> --market emerging --train-set pooled
+             --developed-weight 1 --models lgbm,xgb,cat --refit-only --seeds 5
 Writes: output/oof_<line>.parquet, output/blend_weights_<line>.json, output/pred_<line>_<model>.parquet
+        C057 (emerging, in the run folder): pred_<line>_<model>_seed<SEED>.parquet, pred_<line>_<model>_s<N>.parquet
 """
 import argparse
+import datetime
 import json
 import os
 import sys
@@ -339,16 +352,123 @@ def view_entries(rep, single_fold=False):
             **{f"{k}_mean": float(np.mean([f[k] for f in rep])) for k in keys if k != "nb_claims"}}
 
 
+def load_refit_json(out_dir, line, names):
+    """C057: the blend_weights json of the full run in `out_dir` for `--refit-only`; it must hold the fold-derived
+    refit_n_estimators of every requested model."""
+    path = os.path.join(out_dir, f"blend_weights_{line}.json")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"C057: --refit-only needs the full run's {path}; run {line} once without --refit-only first")
+    with open(path, encoding="utf-8") as f:
+        result = json.load(f)
+    stored = result.get("refit_n_estimators", {})
+    missing = [n for n in names if n not in stored]
+    if missing:
+        raise KeyError(f"C057: {missing} not in refit_n_estimators of {path} (stored: {sorted(stored)})")
+    return result
+
+
+def refit_emerging(result, line, names, n_est, trend, train_set, design, fit_rows, nb_weight, test_share, out_dir,
+                   seeds=1, refit_only=False):
+    """C036/C057: refit every model on all training years and write the 2025 test predictions to `out_dir`; `result` (the
+    run's json dict) is updated in place.
+
+    Full run (refit_only False, seeds 1): one fit per model at the default seed, written to the untagged
+    pred_<line>_<model>.parquet; result gets refit_rebalance_factor, refit_n_estimators, trend, trend_factor, load_test.
+    Refit-only: per seed k of a tree model (GLM / GAM: one fit) the file pred_<line>_<model>_seed<SEED + k>.parquet is
+    loaded if it exists, otherwise fitted and written; for seeds > 1 the tree models' average goes to
+    pred_<line>_<model>_s<seeds>.parquet. The untagged files are never touched; result only gains refit_seeds,
+    refit_pred_tag, refit_rebalance_factor_seeds and refit_only_at."""
+    x, part, y, w, _, test, t, _ = design
+    is_dev, is_em = part == "dev", part == "em"
+    nb = x["new_business"].to_numpy()
+    factor = markets.get("emerging").trends[trend][line]  # C037
+    load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
+    fit = (is_dev | is_em) & fit_rows  # C047
+    w_fit, nb_f, nb_s = nb_weights(w, nb, fit, nb_weight, test_share)  # C045: same weighting in the refit
+    if not refit_only:
+        result["fit_rows"]["refit"] = {"developed": int((fit & is_dev).sum()), "emerging": int((fit & is_em).sum())}
+        result["nb_weight"].update(refit_factor=nb_f, refit_nb_weight_share=nb_s)
+    scale = test["exposure"].to_numpy() * factor * load_test
+    x_test = x.iloc[np.flatnonzero(part == "test")]
+    log(f"emerging {line}: large-loss load test {load_test:.4f}, trend {trend} {factor:.4f}; "
+        f"refit NB factor {nb_f:.3f}, NB share of fit weight {nb_s:.4f}")
+    rebalance = {}
+    for name in names:
+        t0 = time.time()
+        extra = {"n_estimators": n_est[name]} if n_est[name] else {}
+        if not refit_only:
+            m = emerging_model(line, name, train_set, extra or None)
+            rebalance[name] = fit_emerging(m, x, y, w_fit, fit, fit & is_em, train_set,
+                                           valid=None)  # C047: emerging NB rows with --rows nb
+            pred = m.predict(x_test) * scale
+            pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
+                          "trend_factor": factor}).to_parquet(os.path.join(out_dir, f"pred_{line}_{name}.parquet"),
+                                                              index=False)
+            log(f"emerging {line}: {name} refit (n_estimators {n_est[name]}) in {time.time() - t0:.0f}s, "
+                f"test mean {pred.mean():.2f}")
+            continue
+        n_seeds = seeds if name in SEED_KWARG else 1  # C057: GLM / GAM are deterministic
+        preds, rebalance[name] = [], {}
+        for k in range(n_seeds):
+            seed = models.SEED + k
+            cache = os.path.join(out_dir, f"pred_{line}_{name}_seed{seed}.parquet")
+            if os.path.exists(cache):
+                c = pd.read_parquet(cache)
+                assert (c["row_id"].to_numpy() == test["row_id"].to_numpy()).all() and np.allclose(
+                    c["trend_factor"], factor), f"C057: cache {cache} belongs to another run"
+                pred, rebalance[name][str(seed)] = c["prediction"].to_numpy(), float(c["rebalance_factor"].iloc[0])
+                log(f"emerging {line}: {name} seed {seed} cached, test mean {pred.mean():.2f}")
+            else:
+                t1 = time.time()
+                m = emerging_model(line, name, train_set, {**extra, **seed_param(name, seed)})
+                rebalance[name][str(seed)] = fit_emerging(m, x, y, w_fit, fit, fit & is_em, train_set, valid=None)
+                pred = m.predict(x_test) * scale
+                pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
+                              "trend_factor": factor, "seed": seed, "rebalance_factor": rebalance[name][str(seed)]}
+                             ).to_parquet(cache, index=False)
+                log(f"emerging {line}: {name} seed {seed} refit (n_estimators {n_est[name]}) in "
+                    f"{time.time() - t1:.0f}s, test mean {pred.mean():.2f}")
+            preds.append(pred)
+        pred_mean = np.mean(preds, axis=0)
+        if seeds > 1 and name in SEED_KWARG:
+            pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred_mean, "trend": trend,
+                          "trend_factor": factor, "seeds": n_seeds}).to_parquet(
+                os.path.join(out_dir, f"pred_{line}_{name}_s{seeds}.parquet"), index=False)
+        log(f"emerging {line}: {name} {n_seeds} seed(s) in {time.time() - t0:.0f}s, test mean {pred_mean.mean():.2f}")
+    if refit_only:
+        old = result.get("refit_rebalance_factor_seeds", {})
+        result.update(refit_seeds=seeds, refit_pred_tag=f"s{seeds}" if seeds > 1 else None,
+                      refit_rebalance_factor_seeds={**old, **{n: {**old.get(n, {}), **f} for n, f in rebalance.items()}},
+                      refit_only_at=datetime.datetime.now().isoformat(timespec="seconds"))
+    else:
+        result["refit_rebalance_factor"] = rebalance
+        result.update(refit_n_estimators=n_est, trend=trend, trend_factor=factor, load_test=float(load_test))
+
+
+def write_result(out_dir, line, result):
+    """C036: the run's blend_weights json."""
+    with open(os.path.join(out_dir, f"blend_weights_{line}.json"), "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2)
+    log(json.dumps(result))
+
+
 def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none", refit=True, glm_interactions=False,
-                  nb_weight=None, inner_emerging=False, rows="all", tag=None):
+                  nb_weight=None, inner_emerging=False, rows="all", tag=None, refit_only=False, seeds=1):
     if glm_interactions:  # C042: the interaction columns must reach the GLM only; tree runs keep today's frame
         assert train_set == "pooled" and list(names) == ["glm"], "C042: --glm-interactions is for pooled GLM-only runs"
     assert not inner_emerging or train_set == "pooled", "C045: --inner-emerging is for pooled runs"
     assert rows in ("all", "nb") and (rows == "all" or train_set == "pooled"), "C047: --rows nb is for pooled runs"
+    assert seeds >= 1 and (seeds == 1 or refit_only), "C057: for the emerging market several seeds need refit_only"
+    assert refit or not refit_only, "C057: refit_only is a refit"
     out_dir = run_folder(train_set, dev_weight, run_suffix(glm_interactions, nb_weight, inner_emerging, rows),
                          tag)  # C042/C045/C046/C047
-    os.makedirs(out_dir, exist_ok=True)
-    x, part, y, w, train, test, t, year = emerging_design(line, train_set, dev_weight, glm_interactions)
+    if refit_only:  # C057: the stored full run comes first, so a missing run fails before the design is built
+        result = load_refit_json(out_dir, line, names)
+        assert result.get("nb_weight", {}).get("option") == nb_weight, "C057: --nb-weight must match the stored run"
+    else:
+        os.makedirs(out_dir, exist_ok=True)
+    design = emerging_design(line, train_set, dev_weight, glm_interactions)
+    x, part, y, w, train, test, t, year = design
     is_dev, is_em = part == "dev", part == "em"
     em_idx = np.flatnonzero(is_em)  # positions of the emerging training rows, in the order of t
     assert x["new_business"].dtype == bool, "C044: new_business must be a boolean feature column"
@@ -360,6 +480,14 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
     log(f"emerging {line} [{train_set}]: features {x.shape[1]} cols, developed fit rows {is_dev.sum():,}, "
         f"emerging rows {is_em.sum():,}, test rows {len(test_rows):,}; test NB exposure share {test_share:.4f}; "
         f"NB weight {nb_weight}; early stopping on emerging rows only: {inner_emerging}; fit rows: {rows}")
+    if refit_only:  # C057: no folds, blend search or views; the stored json keeps its keys and gains the refit_* ones
+        trend_stored = result["trend"]
+        log(f"emerging {line}: refit-only, trend {trend_stored} taken from the stored run (--trend {trend} ignored); "
+            f"{seeds} seed(s) per tree model")
+        refit_emerging(result, line, names, {n: result["refit_n_estimators"][n] for n in names}, trend_stored, train_set,
+                       design, fit_rows, nb_weight, test_share, out_dir, seeds, refit_only=True)
+        write_result(out_dir, line, result)
+        return
     schemes = emerging_schemes(train, year)
     comp_expo = (t["exposure"] * t["completeness"]).to_numpy()
     # C044: per emerging training row, kept in the OOF file so the views can be recomputed offline
@@ -442,32 +570,9 @@ def emerging_main(line, names, train_set="emerging", dev_weight=0.3, trend="none
 
     if refit:
         n_est = {n: int(np.mean(best_its[n]["group"]) * 1.1) if all(best_its[n]["group"]) else None for n in names}
-        factor = markets.get("emerging").trends[trend][line]  # C037
-        load_test = t["claim_cost"].sum() / t["claim_cost_capped"].sum()
-        fit = (is_dev | is_em) & fit_rows  # C047
-        result["fit_rows"]["refit"] = {"developed": int((fit & is_dev).sum()), "emerging": int((fit & is_em).sum())}
-        w_fit, nb_f, nb_s = nb_weights(w, nb, fit, nb_weight, test_share)  # C045: same weighting in the refit
-        result["nb_weight"].update(refit_factor=nb_f, refit_nb_weight_share=nb_s)
-        scale = test["exposure"].to_numpy() * factor * load_test
-        log(f"emerging {line}: large-loss load test {load_test:.4f}, trend {trend} {factor:.4f}; "
-            f"refit NB factor {nb_f:.3f}, NB share of fit weight {nb_s:.4f}")
-        result["refit_rebalance_factor"] = {}
-        for name in names:
-            t0 = time.time()
-            m = emerging_model(line, name, train_set, {"n_estimators": n_est[name]} if n_est[name] else None)
-            result["refit_rebalance_factor"][name] = fit_emerging(m, x, y, w_fit, fit, fit & is_em, train_set,
-                                                                  valid=None)  # C047: emerging NB rows with --rows nb
-            pred = m.predict(x.iloc[test_rows]) * scale
-            pd.DataFrame({"row_id": test["row_id"].to_numpy(), "prediction": pred, "trend": trend,
-                          "trend_factor": factor}).to_parquet(os.path.join(out_dir, f"pred_{line}_{name}.parquet"),
-                                                              index=False)
-            log(f"emerging {line}: {name} refit (n_estimators {n_est[name]}) in {time.time() - t0:.0f}s, "
-                f"test mean {pred.mean():.2f}")
-        result.update(refit_n_estimators=n_est, trend=trend, trend_factor=factor, load_test=float(load_test))
+        refit_emerging(result, line, names, n_est, trend, train_set, design, fit_rows, nb_weight, test_share, out_dir)
 
-    with open(os.path.join(out_dir, f"blend_weights_{line}.json"), "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=2)
-    log(json.dumps(result))
+    write_result(out_dir, line, result)
 
 
 def parse_nb_weight(text):
@@ -493,7 +598,9 @@ if __name__ == "__main__":
     ap.add_argument("--skip-refit", action="store_true", help="only OOF predictions and blend weights")
     ap.add_argument("--refit-only", action="store_true",
                     help="skip the folds; take refit_n_estimators and weights from the existing blend_weights json")
-    ap.add_argument("--seeds", type=int, default=1, help="seeds averaged per tree model in the refit (default 1)")
+    ap.add_argument("--seeds", type=int, default=1,
+                    help="seeds averaged per tree model in the refit (default 1); C057 (emerging): N > 1 needs "
+                         "--refit-only and writes pred_<line>_<model>_s<N>.parquet")
     ap.add_argument("--te", default=None, help="C031: raw code column to target-encode, e.g. make_model (default off)")
     ap.add_argument("--glm-interactions", action="store_true",
                     help="C042 (emerging, pooled, --models glm): emerging-only GLM relativities for GLM_INTERACTIONS; "
@@ -519,10 +626,12 @@ if __name__ == "__main__":
         ap.error("C047: --rows nb needs --train-set pooled")
     assert a.seeds >= 1 and not (a.refit_only and a.skip_refit)
     if markets.get(a.market).name == "emerging":
-        assert not (a.refit_only or a.te or a.seeds != 1), "C036: --refit-only, --te and --seeds are developed-only"
+        assert not a.te, "C036: --te is developed-only"
+        if a.seeds > 1 and not a.refit_only:
+            ap.error("C057: for the emerging market --seeds N > 1 needs --refit-only")
         emerging_main(a.line, a.models.split(","), a.train_set, a.developed_weight, a.trend, refit=not a.skip_refit,
                       glm_interactions=a.glm_interactions, nb_weight=nb_weight, inner_emerging=a.inner_emerging,
-                      rows=a.rows, tag=a.tag)
+                      rows=a.rows, tag=a.tag, refit_only=a.refit_only, seeds=a.seeds)
     else:
         assert nb_weight is None and not a.inner_emerging, "C045: --nb-weight and --inner-emerging are emerging-only"
         assert a.rows == "all" and a.tag is None, "C046/C047: --rows and --tag are emerging-only"

@@ -31,12 +31,18 @@ renewal blend (`line_prediction`, `--write-from`).
 (trend factor / the file's trend_factor), checked against the emerging sample_submission like blend.py. Per line the
 submission uses the cross-run weights when they pass the adoption rule, otherwise the BASELINE weights.
 
+C057: `--pred-tag s<N>` (with `--write-from`) reads the seed-averaged files pred_<line>_<model>_s<N>.parquet written by
+`oof_predictions.py --market emerging --refit-only --seeds N`. GLM / GAM are not re-fit per seed, so a missing tagged
+glm / gam file falls back to the untagged one; a missing tagged file of any other model is an error. One log line per
+line gives the tag, the number of tagged candidate files and the fallbacks.
+
 Usage: .venv\\Scripts\\python.exe scripts\\blend_runs.py motor,buildings,contents --runs pooled_w0.3,pooled_w1
        [--trend developed-half] [--name p2_xrun] [--step 0.05] [--out xrun] [--write]
        [--gate raw|testmix] [--candidates run:model,...] [--report-views]
        .venv\\Scripts\\python.exe scripts\\blend_runs.py motor,buildings,contents
        --write-from motor=<out>,buildings=<out>,contents=<out> --trend mixed-full --name <name>
        C047: [--baseline P2-S05|P2-S12] [--segment new_business]
+       C057: [--pred-tag s5]   (with --write-from: read the seed-averaged pred files)
 Writes: output/emerging/<out>/blend_weights_<line>.json; with --write work/<name>.csv and work/<name>.zip;
         with --report-views output/emerging/<out>/views_recipes.csv
 """
@@ -343,11 +349,33 @@ def nb_flags_2025(line):
     return pd.Series(test["new_business"].to_numpy(dtype=bool), index=test["row_id"].to_numpy())
 
 
-def line_prediction(line, weights, trend):
+def pred_path(line, cand, pred_tag=None):
+    """C057: pred file of one candidate `<run>:<model>` and whether it is a tagged file. With a tag the file is
+    pred_<line>_<model>_<tag>.parquet; GLM / GAM are deterministic and not re-fit per seed, so a missing tagged file
+    falls back to the untagged one; a missing tagged file of any other model is an error."""
+    run, model = cand.split(":", 1)
+    base = os.path.join(run_path(run), f"pred_{line}_{model}")
+    if pred_tag is None:
+        return f"{base}.parquet", False
+    tagged = f"{base}_{pred_tag}.parquet"
+    if os.path.exists(tagged):
+        return tagged, True
+    assert model in ("glm", "gam"), f"{line}: candidate {cand} has no tagged pred file {tagged}"
+    return f"{base}.parquet", False
+
+
+def used_candidates(weights):
+    """C057: the candidates with a positive weight in flat or by-segment weights."""
+    flat = weights.values() if set(weights) == set(SEGMENTS) else [weights]
+    return sorted({cand for w in flat for cand, wt in w.items() if wt > 0})
+
+
+def line_prediction(line, weights, trend, pred_tag=None):
     """Blended 2025 prediction of one line from the runs' pred files, each re-expressed at `trend` (C037).
-    C047: by-segment weights take the nb blend on new-business test rows and the renewal blend on the others."""
+    C047: by-segment weights take the nb blend on new-business test rows and the renewal blend on the others.
+    C057: `pred_tag` selects the seed-averaged files (`pred_path`)."""
     if set(weights) == set(SEGMENTS):
-        parts = {s: line_prediction(line, weights[s], trend) for s in SEGMENTS}
+        parts = {s: line_prediction(line, weights[s], trend, pred_tag) for s in SEGMENTS}
         renewal = parts["renewal"].reindex(parts["nb"].index)
         nb = nb_flags_2025(line).reindex(parts["nb"].index)
         assert renewal.notna().all() and nb.notna().all(), f"{line}: segment predictions cover different rows"
@@ -357,8 +385,7 @@ def line_prediction(line, weights, trend):
     for cand, wt in weights.items():
         if wt <= 0:
             continue
-        run, model = cand.split(":", 1)
-        path = os.path.join(run_path(run), f"pred_{line}_{model}.parquet")
+        path, _ = pred_path(line, cand, pred_tag)
         assert os.path.exists(path), f"{line}: candidate {cand} has weight {wt} but no pred file {path}"
         f = pd.read_parquet(path).set_index("row_id")
         assert f["trend_factor"].nunique() == 1, f"{line} {cand}: mixed trend factors"
@@ -389,10 +416,10 @@ def parse_write_from(text):
     return spec
 
 
-def write_from(spec, trend, name):
+def write_from(spec, trend, name, pred_tag=None):
     """C044: build work/<name> from the adopted `submission_weights` of one result folder per line (each written by
     an earlier evaluation run of this script), so lines may use different runs, candidates and gates; the folder name
-    `baseline` takes the line's BASELINE weights."""
+    `baseline` takes the line's BASELINE weights. C057: `pred_tag` reads the seed-averaged pred files (`pred_path`)."""
     by_line = {}
     for line in LINES:
         if spec[line] == "baseline":
@@ -401,7 +428,12 @@ def write_from(spec, trend, name):
             path = os.path.join(markets.get("emerging").out_dir, spec[line], f"blend_weights_{line}.json")
             with open(path, encoding="utf-8") as f:
                 weights = json.load(f)["submission_weights"]
-        by_line[line] = line_prediction(line, weights, trend)
+        by_line[line] = line_prediction(line, weights, trend, pred_tag)
+        if pred_tag:  # C057
+            used = used_candidates(weights)
+            fallback = [c for c in used if not pred_path(line, c, pred_tag)[1]]
+            print(f"{line}: pred tag {pred_tag}: {len(used) - len(fallback)} of {len(used)} candidate file(s) tagged; "
+                  f"untagged fallback: {fallback}", flush=True)
         print(f"{line}: from {spec[line]}: submission weights {weights}; trend {trend}; "
               f"mean {by_line[line].mean():.2f} rows {len(by_line[line]):,}", flush=True)
     return write_submission(by_line, name)
@@ -548,7 +580,12 @@ if __name__ == "__main__":
     ap.add_argument("--write-from", default=None,
                     help="C044: motor=<out>,buildings=<out>,contents=<out>: write work/<name> from the submission_weights "
                          "of those result folders (no search; <out> = baseline: BASELINE weights) and exit")
+    ap.add_argument("--pred-tag", default=None,
+                    help="C057 (with --write-from): read pred_<line>_<model>_<tag>.parquet (seed-averaged files, e.g. "
+                         "s5); glm / gam fall back to the untagged file, other models need the tagged file")
     a = ap.parse_args()
+    if a.pred_tag and not a.write_from:
+        ap.error("C057: --pred-tag needs --write-from")
     if a.report_views:
         report_views(a.lines.split(","), a.out)
     elif a.write_from:
@@ -556,7 +593,7 @@ if __name__ == "__main__":
             spec = parse_write_from(a.write_from)
         except ValueError as e:
             ap.error(str(e))
-        write_from(spec, a.trend, a.name)
+        write_from(spec, a.trend, a.name, pred_tag=a.pred_tag)
     else:
         main(a.lines.split(","), a.runs.split(","), a.trend, a.name, a.step, a.out, a.write,
              baseline=BASELINES[a.baseline], gate=a.gate, candidates=a.candidates.split(",") if a.candidates else None,

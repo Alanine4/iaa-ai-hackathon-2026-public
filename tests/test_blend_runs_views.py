@@ -231,8 +231,8 @@ def test_parse_write_from_needs_every_line_once(text):
 
 def test_write_from_takes_the_baseline_weights_for_a_line_marked_baseline(emerging_root, monkeypatch):
     seen = {}
-    monkeypatch.setattr(blend_runs, "line_prediction", lambda line, w, trend: seen.setdefault(line, w) and pd.Series(
-        [1.0], index=[line]))
+    monkeypatch.setattr(blend_runs, "line_prediction", lambda line, w, trend, pred_tag=None: seen.setdefault(
+        line, w) and pd.Series([1.0], index=[line]))  # C057: the real function takes pred_tag too
     monkeypatch.setattr(blend_runs, "write_submission", lambda by_line, name: by_line)
     os.makedirs(emerging_root / "xc", exist_ok=True)
     with open(emerging_root / "xc" / "blend_weights_contents.json", "w", encoding="utf-8") as f:
