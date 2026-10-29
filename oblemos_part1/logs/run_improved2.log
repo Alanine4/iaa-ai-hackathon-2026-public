@@ -1,0 +1,71 @@
+
+==========================================================================================
+IMPROVED 2 - BUILDINGS
+==========================================================================================
+  LightGBM (no weather): 388 trees on 2021-2022, 599 on 2021-2023, honest 2024 D2 0.1149
+  [GAM frequency] lambda=   0.1: edf=  59.9  AIC=117,758.3
+  [GAM frequency] lambda=     1: edf=  59.3  AIC=117,758.3
+  [GAM frequency] lambda=    10: edf=  56.7  AIC=117,779.4
+  [GAM frequency] lambda=   100: edf=  52.5  AIC=117,842.9
+  [GAM frequency] lambda=  1000: edf=  48.5  AIC=117,912.2
+  [GAM frequency] lambda= 10000: edf=  45.7  AIC=118,090.6
+  [GAM severity] lambda=   0.1: edf=  12.0  AIC=11,942.3
+  [GAM severity] lambda=     1: edf=  11.7  AIC=11,941.7
+  [GAM severity] lambda=    10: edf=  10.4  AIC=11,940.2
+  [GAM severity] lambda=   100: edf=   8.4  AIC=11,939.4
+  [GAM severity] lambda=  1000: edf=   6.4  AIC=11,941.9
+  [GAM severity] lambda= 10000: edf=   5.0  AIC=11,958.4
+  honest 2024 D2: GLM 0.1073 | GAM 0.1095 | LightGBM 0.1149 | equal blend 0.1138
+  2025 LightGBM: 809 trees on 2021-2024   [2.2 min]
+
+==========================================================================================
+IMPROVED 2 - CONTENTS
+==========================================================================================
+  LightGBM (no weather): 547 trees on 2021-2022, 844 on 2021-2023, honest 2024 D2 0.0945
+  [GAM frequency] lambda=   0.1: edf=  48.0  AIC=107,495.1
+  [GAM frequency] lambda=     1: edf=  47.7  AIC=107,494.6
+  [GAM frequency] lambda=    10: edf=  46.5  AIC=107,493.0
+  [GAM frequency] lambda=   100: edf=  44.3  AIC=107,493.0
+  [GAM frequency] lambda=  1000: edf=  42.4  AIC=107,533.1
+  [GAM frequency] lambda= 10000: edf=  41.0  AIC=107,626.2
+  [GAM severity] lambda=   0.1: edf=  19.0  AIC=16,648.8
+  [GAM severity] lambda=     1: edf=  18.7  AIC=16,648.3
+  [GAM severity] lambda=    10: edf=  17.3  AIC=16,646.5
+  [GAM severity] lambda=   100: edf=  15.2  AIC=16,644.9
+  [GAM severity] lambda=  1000: edf=  13.3  AIC=16,644.8
+  [GAM severity] lambda= 10000: edf=  11.9  AIC=16,644.9
+  honest 2024 D2: GLM 0.0871 | GAM 0.0890 | LightGBM 0.0945 | equal blend 0.0932
+  2025 LightGBM: 1140 trees on 2021-2024   [2.2 min]
+
+==========================================================================================
+IMPROVED 2 - MOTOR
+==========================================================================================
+  LightGBM (no weather): 736 trees on 2021-2022, 1135 on 2021-2023, honest 2024 D2 0.0854
+  [GAM frequency] lambda=   0.1: edf=  92.9  AIC=235,744.7
+  [GAM frequency] lambda=     1: edf=  92.1  AIC=235,743.3
+  [GAM frequency] lambda=    10: edf=  87.8  AIC=235,738.2
+  [GAM frequency] lambda=   100: edf=  78.8  AIC=235,733.6
+  [GAM frequency] lambda=  1000: edf=  69.0  AIC=235,771.4
+  [GAM frequency] lambda= 10000: edf=  61.4  AIC=235,894.5
+  honest 2024 D2: GLM 0.0836 | GAM 0.0832 | LightGBM 0.0854 | equal blend 0.0857
+  2025 LightGBM: 1533 trees on 2021-2024   [4.7 min]
+
+==========================================================================================
+BLEND WEIGHTS AND COMPARISON (honest 2024 validation)
+==========================================================================================
+fitted weights: {'LightGBM': 0.7, 'GLM': 0.0, 'GAM': 0.3}
+line               ALL  buildings  contents   motor
+model                                              
+GLM             0.1297     0.1073    0.0871  0.0836
+GAM             0.1307     0.1095    0.0890  0.0832
+LightGBM        0.1345     0.1149    0.0945  0.0854
+Blend_equal     0.1340     0.1138    0.0932  0.0857
+Blend_weighted  0.1353     0.1159    0.0952  0.0862
+
+==========================================================================================
+SUBMISSIONS
+==========================================================================================
+saved submission_improved2_Blend_equal.parquet           mean  313.56   totals: buildings 77.9M, contents 18.6M, motor 99.9M
+saved submission_improved2_Blend_weighted.parquet        mean  309.50   totals: buildings 76.5M, contents 19.0M, motor 98.4M
+saved submission_improved2_LightGBM.parquet              mean  305.53   totals: buildings 75.0M, contents 19.3M, motor 97.1M
+saved submission_improved2_LightGBM_2021_2023.parquet    mean  315.22   totals: buildings 73.4M, contents 19.3M, motor 104.8M

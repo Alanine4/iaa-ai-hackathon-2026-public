@@ -1,4 +1,4 @@
-"""C047: cross-run blend of the C046 transfer run with the runs of the current best submission (P2-S12).
+"""C049: cross-run blend of the C048 transfer run with the runs of the current best submission (P2-S12).
 
 P2-S12 per line (docs/SUBMISSIONS.md): motor pooled_w0.3 glm/lgbm/xgb/cat 0.25 each, buildings pooled_w1 cat .95 /
 lgbm .05, contents pooled_w0.3 glm .35 + pooled_w1 lgbm .65 (C044), trend mixed-full. Per line the candidates are the

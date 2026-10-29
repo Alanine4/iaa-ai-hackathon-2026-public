@@ -71,27 +71,90 @@ def test_emerging_summary_ranks_by_grouped_mean_and_keeps_time_fold_and_gain_ove
 
 def test_emerging_main_writes_one_csv_row_per_fit_and_the_ranked_summary(tmp_path, monkeypatch):
     # C039: the whole loop on a synthetic design (no data files): 2 configs x (1 time + 5 grouped) schemes
-    rng = np.random.default_rng(1)
-    n_pol = 300
-    policy = np.repeat([f"P{i}" for i in range(n_pol)], 2)
-    year = np.tile([2023, 2024], n_pol)
-    n = len(policy)
-    x = pd.DataFrame({"a": rng.uniform(0, 1, n), "b": rng.normal(size=n)})
-    expo = rng.uniform(0.5, 1.0, n)
-    cost = rng.gamma(0.5, 400.0, n) * (rng.uniform(size=n) < 0.2 + 0.2 * x["a"].to_numpy())
-    t = pd.DataFrame({"row_id": np.arange(n).astype(str), "exposure": expo, "exposure_eff": expo,
-                      "completeness": 0.95, "claim_cost": cost, "claim_cost_capped": np.minimum(cost, 800.0)})
-    design = (x, np.array(["em"] * n, dtype=object), t["claim_cost_capped"].to_numpy() / expo, expo,
-              pd.DataFrame({"policy_id": policy}), None, t, year)
+    design = _synthetic_design()[0]  # C046: the design carries new_business and test rows for the views
     monkeypatch.setattr(oof_predictions, "emerging_design", lambda line, train_set, dev_weight: design)
     monkeypatch.setattr(oof_predictions, "run_dir", lambda train_set, dev_weight: str(tmp_path))
     monkeypatch.setattr(tune_cv, "ROOT", str(tmp_path))
     (tmp_path / "docs").mkdir()
     monkeypatch.setattr(tune_cv, "emerging_configs",
-                        lambda family: [("lgbm", {}), ("lgbm", dict(min_child_samples=5, n_estimators=20))])
+                        lambda family, cat_depths=None: [("lgbm", {}),
+                                                         ("lgbm", dict(min_child_samples=5, n_estimators=20))])
     tune_cv.emerging_main("trees", ["motor"])
     fits = pd.read_csv(tmp_path / "cv_trees.csv")
     assert len(fits) == 2 * 6 and set(fits["scheme"]) == {"time", "group"}
     assert {"line", "model", "config", "scheme", "fold", "d2", "d2_cal", "pred_actual", "iterations", "sec"} <= set(fits)
     md = (tmp_path / "docs" / "cv_emerging_trees.md").read_text(encoding="utf-8")
     assert "d2_cal_group" in md and "d2_cal_time" in md
+
+
+def _synthetic_design(n_pol=300, seed=1):
+    rng = np.random.default_rng(seed)
+    policy = np.repeat([f"P{i}" for i in range(n_pol)], 2)
+    year = np.tile([2023, 2024], n_pol)
+    n = len(policy)
+    nb = rng.uniform(size=n) < 0.3
+    x = pd.DataFrame({"a": rng.uniform(0, 1, n), "b": rng.normal(size=n), "new_business": nb})
+    expo = rng.uniform(0.5, 1.0, n)
+    cost = rng.gamma(0.5, 400.0, n) * (rng.uniform(size=n) < 0.2 + 0.2 * x["a"].to_numpy())
+    t = pd.DataFrame({"row_id": np.arange(n).astype(str), "exposure": expo, "exposure_eff": expo,
+                      "completeness": 0.95, "claim_cost": cost, "claim_cost_capped": np.minimum(cost, 800.0),
+                      "claim_count": (cost > 0).astype(int)})
+    x_all = pd.concat([x, x.iloc[:40].assign(new_business=np.arange(40) < 30)], ignore_index=True)
+    part = np.array(["em"] * n + ["test"] * 40, dtype=object)
+    y = np.concatenate([t["claim_cost_capped"].to_numpy() / expo, np.zeros(40)])
+    w = np.concatenate([expo, np.zeros(40)])
+    test = pd.DataFrame({"row_id": [f"T{i}" for i in range(40)], "exposure": 1.0})
+    return (x_all, part, y, w, pd.DataFrame({"policy_id": policy}), test, t, year), nb, t
+
+
+def test_emerging_main_adds_the_c044_views_per_fit_and_to_the_summary(tmp_path, monkeypatch):
+    # C046: every fit row carries the test-mix and NB-only d2_cal (C044 nb_views with the test NB exposure share)
+    design, nb, t = _synthetic_design()
+    monkeypatch.setattr(oof_predictions, "emerging_design", lambda line, train_set, dev_weight: design)
+    monkeypatch.setattr(oof_predictions, "run_dir", lambda train_set, dev_weight: str(tmp_path))
+    monkeypatch.setattr(tune_cv, "ROOT", str(tmp_path))
+    (tmp_path / "docs").mkdir()
+    monkeypatch.setattr(tune_cv, "emerging_configs",
+                        lambda family, cat_depths=None: [("lgbm", {}), ("lgbm", dict(min_child_samples=5))])
+    seen = []
+    real = tune_cv.evaluate.nb_views
+
+    def spy(actual, pred, new_business, exposure, claim_count, share):
+        seen.append(share)
+        return real(actual, pred, new_business, exposure, claim_count, share)
+    monkeypatch.setattr(tune_cv.evaluate, "nb_views", spy)
+    tune_cv.emerging_main("trees", ["motor"])
+    fits = pd.read_csv(tmp_path / "cv_trees.csv")
+    assert {"d2_cal_testmix", "d2_cal_nb", "nb_claims"} <= set(fits)
+    assert len(seen) == 12 and all(s == pytest.approx(0.75) for s in seen)  # 30 of 40 test rows NB, exposure 1
+    # the views are those of the fold's validation rows: NB claim count per fold
+    schemes = oof_predictions.emerging_schemes(design[4], design[7])
+    claims = [int(t["claim_count"].to_numpy()[val & nb].sum()) for _, _, _, val in schemes]
+    assert fits.groupby("config", sort=False)["nb_claims"].apply(list).tolist() == [claims, claims]
+    md = (tmp_path / "docs" / "cv_emerging_trees.md").read_text(encoding="utf-8")
+    for col in ("d2_cal_testmix_group", "d2_cal_nb_group", "gain_testmix_group", "gain_nb_group"):
+        assert col in md
+
+
+def test_emerging_summary_carries_the_views_and_their_gains_over_defaults():
+    rows = []
+    for cfg, raw, mix, nbv in (("{}", 0.05, 0.10, 0.20), ("{'depth': 6}", 0.06, 0.08, 0.25)):
+        for scheme, k in (("time", 0), ("group", 0), ("group", 1)):
+            rows.append(dict(line="motor", model="cat", config=cfg, scheme=scheme, fold=k, d2=raw, d2_cal=raw,
+                             d2_cal_testmix=mix + 0.01 * k, d2_cal_nb=nbv, nb_claims=10, pred_actual=1.0,
+                             iterations=100))
+    s = tune_cv.emerging_summary(pd.DataFrame(rows)).set_index("config")
+    assert s.loc["{}", "d2_cal_testmix_group"] == pytest.approx(0.105)
+    assert s.loc["{'depth': 6}", "gain_testmix_group"] == pytest.approx(-0.02)
+    assert s.loc["{'depth': 6}", "gain_nb_group"] == pytest.approx(0.05)
+    assert s.loc["{'depth': 6}", "d2_cal_testmix_time"] == pytest.approx(0.08)
+    assert s.loc["{}", "nb_claims_group"] == 20
+
+
+def test_cat_depth_cap_keeps_the_default_and_drops_its_duplicate():
+    # C046: --cat-depths 4,6 caps the CatBoost grid; depth 4 / l2 3 equals the CatBoost defaults and is skipped
+    cat = [c for m, c in tune_cv.emerging_configs("trees", cat_depths=[4, 6]) if m == "cat"]
+    assert cat[0] == {} and len(cat) == 6
+    assert {c["depth"] for c in cat[1:]} == {4, 6} and {"depth": 4, "l2_leaf_reg": 3} not in cat
+    others = [(m, c) for m, c in tune_cv.emerging_configs("trees", cat_depths=[4, 6]) if m != "cat"]
+    assert others == [(m, c) for m, c in tune_cv.emerging_configs("trees") if m != "cat"]

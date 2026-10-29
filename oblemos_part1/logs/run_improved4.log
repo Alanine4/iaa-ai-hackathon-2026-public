@@ -1,0 +1,47 @@
+
+==========================================================================================
+CATBOOST BUILDINGS
+==========================================================================================
+  setting 0 {}: 80 trees, 2024 D2 0.1126
+  setting 1 {'depth': 4, 'learning_rate': 0.1, 'l2_leaf_reg': 30}: 206 trees, 2024 D2 0.1147
+  setting 2 {'depth': 6, 'learning_rate': 0.08, 'l2_leaf_reg': 30, 'rsm': 0.5}: 146 trees, 2024 D2 0.1134
+  chosen: 206 trees | 2024 D2: GLM 0.1071 | GAM 0.1094 | LightGBM 0.1157 | CatBoost 0.1147 | Blend3 0.1140 | Blend4 0.1156 | Blend_trees33 0.1140
+  2025 CatBoost total 71.6M   [3.3 min]
+
+==========================================================================================
+CATBOOST CONTENTS
+==========================================================================================
+  setting 0 {}: 92 trees, 2024 D2 0.0915
+  setting 1 {'depth': 4, 'learning_rate': 0.1, 'l2_leaf_reg': 30}: 196 trees, 2024 D2 0.0932
+  setting 2 {'depth': 6, 'learning_rate': 0.08, 'l2_leaf_reg': 30, 'rsm': 0.5}: 164 trees, 2024 D2 0.0906
+  chosen: 196 trees | 2024 D2: GLM 0.0872 | GAM 0.0890 | LightGBM 0.0935 | CatBoost 0.0932 | Blend3 0.0927 | Blend4 0.0940 | Blend_trees33 0.0928
+  2025 CatBoost total 19.3M   [3.1 min]
+
+==========================================================================================
+CATBOOST MOTOR
+==========================================================================================
+  setting 0 {}: 212 trees, 2024 D2 0.0850
+  setting 1 {'depth': 4, 'learning_rate': 0.1, 'l2_leaf_reg': 30}: 469 trees, 2024 D2 0.0849
+  setting 2 {'depth': 6, 'learning_rate': 0.08, 'l2_leaf_reg': 30, 'rsm': 0.5}: 400 trees, 2024 D2 0.0858
+  chosen: 400 trees | 2024 D2: GLM 0.0834 | GAM 0.0831 | LightGBM 0.0857 | CatBoost 0.0858 | Blend3 0.0857 | Blend4 0.0865 | Blend_trees33 0.0858
+  2025 CatBoost total 94.7M   [8.4 min]
+
+==========================================================================================
+COMPARISON - 2024 validation D2
+==========================================================================================
+line              ALL  buildings  contents   motor
+model                                             
+GLM            0.1296     0.1071    0.0872  0.0834
+GAM            0.1306     0.1094    0.0890  0.0831
+LightGBM       0.1348     0.1157    0.0935  0.0857
+CatBoost       0.1344     0.1147    0.0932  0.0858
+Blend3         0.1340     0.1140    0.0927  0.0857
+Blend4         0.1351     0.1156    0.0940  0.0865
+Blend_trees33  0.1340     0.1140    0.0928  0.0858
+
+==========================================================================================
+SUBMISSIONS
+==========================================================================================
+saved submission_improved4_Blend_trees33.parquet mean  312.03
+saved submission_improved4_Blend4.parquet      mean  308.84
+saved submission_improved4_CatBoost.parquet    mean  296.15

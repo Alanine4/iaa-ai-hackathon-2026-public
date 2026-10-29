@@ -1,0 +1,212 @@
+
+==========================================================================================
+MODELLING BUILDINGS
+==========================================================================================
+train rows 523,725 (claims 19,695) | valid rows 184,001 | test rows 184,155
+  [frequency] forward selection on BIC, n=500,000, 60 candidates, dispersion=1.000, intercept-only BIC=122,345.7
+     + building_age                   params=  9   BIC=121,077.7
+     + flood_zone                     params=  5   BIC=120,280.3
+     + accidental_damage_cover        params=  1   BIC=119,819.6
+     + prior_claims_5y                params=  3   BIC=119,447.4
+     + construction_type              params=  3   BIC=119,255.9
+     + written_premium                params=  9   BIC=119,074.9
+     + voluntary_excess               params=  3   BIC=118,898.2
+     + missed_payments_12m            params=  3   BIC=118,777.1
+     + occupancy                      params=  1   BIC=118,709.2
+     + channel                        params=  2   BIC=118,649.5
+     + payment_method                 params=  1   BIC=118,612.4
+     + region                         params= 11   BIC=118,578.9
+     + holds_motor                    params=  1   BIC=118,564.0
+     + new_business                   params=  1   BIC=118,555.8
+     + cust_claims_prev_1y_same_line  params=  3   BIC=118,547.1
+     + property_type                  params=  3   BIC=118,541.8
+  [frequency] 16 variables selected
+  [severity] forward selection on BIC, n=19,695, 60 candidates, dispersion=3.506, intercept-only BIC=12,846.9
+     + written_premium                params=  9   BIC=12,113.9
+     + accidental_damage_cover        params=  1   BIC=12,056.2
+     + listed_building                params=  1   BIC=12,053.4
+  [severity] 3 variables selected
+  GLM fitted  (frequency AIC=123,600, BIC=124,270)
+  [GAM frequency] lambda=   0.1: edf=  59.9  AIC=117,758.3
+  [GAM frequency] lambda=     1: edf=  59.3  AIC=117,758.3
+  [GAM frequency] lambda=    10: edf=  56.7  AIC=117,779.4
+  [GAM frequency] lambda=   100: edf=  52.5  AIC=117,842.9
+  [GAM frequency] lambda=  1000: edf=  48.5  AIC=117,912.2
+  [GAM frequency] lambda= 10000: edf=  45.7  AIC=118,090.6
+  [GAM severity] lambda=   0.1: edf=  12.0  AIC=11,942.3
+  [GAM severity] lambda=     1: edf=  11.7  AIC=11,941.7
+  [GAM severity] lambda=    10: edf=  10.4  AIC=11,940.2
+  [GAM severity] lambda=   100: edf=   8.4  AIC=11,939.4
+  [GAM severity] lambda=  1000: edf=   6.4  AIC=11,941.9
+  [GAM severity] lambda= 10000: edf=   5.0  AIC=11,958.4
+  GAM fitted  (lambda freq=0.1, sev=100; edf freq=60, sev=8)
+  LightGBM fitted (227 trees)
+  top LightGBM variables: previous_insurer, written_premium, occupation, campaign_code, elevation_m, region, marketing_segment, flood_zone, sum_insured, building_age
+  severity trend +4.5% per year -> factor for 2024: 1.090
+
+     line         model     D2  D2_with_trend  pred/actual
+buildings           GLM 0.1067         0.1073       0.9227
+buildings           GAM 0.1090         0.1095       0.9334
+buildings      LightGBM 0.0970         0.1026       0.7497
+buildings         Blend 0.1104         0.1122       0.8686
+buildings Constant rate 0.0404         0.0427       0.8609
+
+  -> best model for buildings: Blend (trend on)
+  2025 predicted totals: GLM 78,766,197, GAM 79,976,604, LightGBM 64,544,411, Blend 74,429,071, Best 74,429,071   (2024 reported actual 67,353,952)   [3.6 min]
+
+==========================================================================================
+MODELLING CONTENTS
+==========================================================================================
+train rows 534,126 (claims 17,682) | valid rows 187,491 | test rows 187,498
+  [frequency] forward selection on BIC, n=500,000, 61 candidates, dispersion=1.000, intercept-only BIC=111,965.8
+     + accidental_damage_cover        params=  1   BIC=110,127.1
+     + flood_zone                     params=  5   BIC=109,678.2
+     + voluntary_excess               params=  3   BIC=109,195.1
+     + policyholder_age               params=  9   BIC=108,799.4
+     + prior_claims_5y                params=  3   BIC=108,576.2
+     + region                         params= 11   BIC=108,354.8
+     + missed_payments_12m            params=  3   BIC=108,232.5
+     + channel                        params=  2   BIC=108,136.0
+     + urban_density                  params=  3   BIC=108,103.3
+     + payment_method                 params=  1   BIC=108,073.6
+     + holds_motor                    params=  1   BIC=108,049.1
+     + new_business                   params=  1   BIC=108,039.8
+     + cust_claims_prev_1y_same_line  params=  3   BIC=108,033.4
+     + lodgers                        params=  1   BIC=108,032.6
+  [frequency] 14 variables selected
+  [severity] forward selection on BIC, n=17,682, 61 candidates, dispersion=1.739, intercept-only BIC=19,008.7
+     + flood_zone                     params=  5   BIC=18,174.2
+     + sum_insured                    params=  9   BIC=17,366.0
+     + accidental_damage_cover        params=  1   BIC=16,865.8
+     + voluntary_excess               params=  3   BIC=16,847.4
+  [severity] 4 variables selected
+  GLM fitted  (frequency AIC=114,408, BIC=114,945)
+  [GAM frequency] lambda=   0.1: edf=  48.0  AIC=107,495.1
+  [GAM frequency] lambda=     1: edf=  47.7  AIC=107,494.6
+  [GAM frequency] lambda=    10: edf=  46.5  AIC=107,493.0
+  [GAM frequency] lambda=   100: edf=  44.3  AIC=107,493.0
+  [GAM frequency] lambda=  1000: edf=  42.4  AIC=107,533.1
+  [GAM frequency] lambda= 10000: edf=  41.0  AIC=107,626.2
+  [GAM severity] lambda=   0.1: edf=  19.0  AIC=16,648.8
+  [GAM severity] lambda=     1: edf=  18.7  AIC=16,648.3
+  [GAM severity] lambda=    10: edf=  17.3  AIC=16,646.5
+  [GAM severity] lambda=   100: edf=  15.2  AIC=16,644.9
+  [GAM severity] lambda=  1000: edf=  13.3  AIC=16,644.8
+  [GAM severity] lambda= 10000: edf=  11.9  AIC=16,644.9
+  GAM fitted  (lambda freq=100, sev=1000; edf freq=44, sev=13)
+  LightGBM fitted (199 trees)
+  top LightGBM variables: previous_insurer, flood_zone, occupation, written_premium, elevation_m, campaign_code, marketing_segment, region, sum_insured, distance_to_river_km
+  severity trend +3.1% per year -> factor for 2024: 1.062
+
+    line         model     D2  D2_with_trend  pred/actual
+contents           GLM 0.0859         0.0871       0.9077
+contents           GAM 0.0878         0.0890       0.9068
+contents      LightGBM 0.0778         0.0813       0.7865
+contents         Blend 0.0884         0.0902       0.8670
+contents Constant rate 0.0307         0.0321       0.9071
+
+  -> best model for contents: Blend (trend on)
+  2025 predicted totals: GLM 18,311,673, GAM 18,310,960, LightGBM 16,812,944, Blend 17,811,859, Best 17,811,859   (2024 reported actual 17,516,036)   [2.7 min]
+
+==========================================================================================
+MODELLING MOTOR
+==========================================================================================
+train rows 725,270 (claims 84,631) | valid rows 254,698 | test rows 254,986
+  [frequency] forward selection on BIC, n=500,000, 70 candidates, dispersion=1.000, intercept-only BIC=259,995.1
+     + written_premium                params=  9   BIC=250,683.1
+     + cover_type                     params=  2   BIC=246,633.3
+     + years_licensed                 params=  9   BIC=244,763.6
+     + annual_mileage                 params=  7   BIC=243,220.4
+     + cust_claims_prev_1y_same_line  params=  4   BIC=242,105.7
+     + voluntary_excess               params=  3   BIC=240,863.4
+     + prior_claims_5y                params=  3   BIC=239,986.8
+     + ncb_years                      params=  9   BIC=239,325.5
+     + region                         params= 11   BIC=238,900.8
+     + missed_payments_12m            params=  3   BIC=238,541.2
+     + discount_applied               params=  2   BIC=238,232.8
+     + channel                        params=  2   BIC=238,216.5
+     + urban_density                  params=  3   BIC=237,924.3
+     + telematics_opt_in              params=  1   BIC=237,717.0
+     + driver_age                     params=  9   BIC=237,607.3
+     + vehicle_use                    params=  2   BIC=237,421.0
+     + payment_method                 params=  1   BIC=237,272.8
+     + new_business                   params=  1   BIC=237,195.8
+     + credit_band                    params=  4   BIC=237,122.9
+     + named_young_driver             params=  1   BIC=237,051.2
+     + n_lines_held                   params=  2   BIC=236,978.6
+     + licence_points                 params=  3   BIC=236,910.2
+     + driver_assist                  params=  1   BIC=236,876.3
+  [frequency] 23 variables selected
+  [severity] forward selection on BIC, n=84,631, 70 candidates, dispersion=3.186, intercept-only BIC=54,227.2
+     + cover_type                     params=  2   BIC=53,135.2
+     + voluntary_excess               params=  3   BIC=53,096.6
+     + driver_assist                  params=  1   BIC=53,081.1
+  [severity] 3 variables selected
+  GLM fitted  (frequency AIC=342,973, BIC=344,030)
+  [GAM frequency] lambda=   0.1: edf=  92.9  AIC=235,744.7
+  [GAM frequency] lambda=     1: edf=  92.1  AIC=235,743.3
+  [GAM frequency] lambda=    10: edf=  87.8  AIC=235,738.2
+  [GAM frequency] lambda=   100: edf=  78.8  AIC=235,733.6
+  [GAM frequency] lambda=  1000: edf=  69.0  AIC=235,771.4
+  [GAM frequency] lambda= 10000: edf=  61.4  AIC=235,894.5
+  GAM fitted  (lambda freq=100, sev=0.0; edf freq=79, sev=7)
+  LightGBM fitted (249 trees)
+  top LightGBM variables: make_model, previous_insurer, written_premium, ncb_years, driver_age, annual_mileage, years_licensed, occupation, marketing_segment, prior_claims_5y
+  severity trend -0.7% per year -> factor for 2024: 0.986
+
+ line         model     D2  D2_with_trend  pred/actual
+motor           GLM 0.0831         0.0836       1.1192
+motor           GAM 0.0828         0.0832       1.1275
+motor      LightGBM 0.0765         0.0764       0.9961
+motor         Blend 0.0846         0.0849       1.0809
+motor Constant rate 0.0296         0.0301       1.1621
+
+  -> best model for motor: Blend (trend on)
+  2025 predicted totals: GLM 101,184,145, GAM 101,453,165, LightGBM 95,573,433, Blend 97,661,876, Best 97,661,876   (2024 reported actual 90,666,976)   [7.4 min]
+
+==========================================================================================
+MODEL COMPARISON - 2024 validation, all lines
+==========================================================================================
+line              ALL  buildings  contents   motor
+model                                             
+Best           0.1326        NaN       NaN     NaN
+Blend          0.1326     0.1122    0.0902  0.0849
+Constant rate  0.0742     0.0427    0.0321  0.0301
+GAM            0.1307     0.1095    0.0890  0.0832
+GLM            0.1297     0.1073    0.0871  0.0836
+LightGBM       0.1239     0.1026    0.0813  0.0764
+
+Best (all lines) D2 = 0.1326, bootstrap standard deviation 0.0049: a leaderboard score within about +/- 0.010 of this is normal sampling noise
+
+==========================================================================================
+SUBMISSIONS
+==========================================================================================
+saved submission_GLM.parquet       mean  316.39   2024 validation D2 0.1297
+saved submission_GAM.parquet       mean  318.75   2024 validation D2 0.1307
+saved submission_LightGBM.parquet  mean  282.35   2024 validation D2 0.1239
+saved submission_Blend.parquet     mean  303.05   2024 validation D2 0.1326
+Traceback (most recent call last):
+  File "D:\iaa-hackathon\New folder\First code.py", line 957, in <module>
+    main()
+  File "D:\iaa-hackathon\New folder\First code.py", line 953, in main
+    run_models()
+  File "D:\iaa-hackathon\New folder\First code.py", line 945, in run_models
+    sub.to_parquet(path, index=False)
+  File "D:\iaa-hackathon\venv\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\iaa-hackathon\venv\Lib\site-packages\pandas\core\frame.py", line 3124, in to_parquet
+    return to_parquet(
+           ^^^^^^^^^^^
+  File "D:\iaa-hackathon\venv\Lib\site-packages\pandas\io\parquet.py", line 482, in to_parquet
+    impl.write(
+  File "D:\iaa-hackathon\venv\Lib\site-packages\pandas\io\parquet.py", line 199, in write
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ^^^^^^^^^^^^^^^^^^^^
+  File "D:\iaa-hackathon\venv\Lib\site-packages\pandas\io\parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+              ^^^^^^^^^^^
+  File "D:\iaa-hackathon\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument: 'D:\\iaa-hackathon\\New folder\\submission.parquet'

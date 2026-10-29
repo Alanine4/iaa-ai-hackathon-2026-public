@@ -19,6 +19,10 @@ grouped-fold mean d2_cal (the ranking) and the time-fold d2_cal side by side, ea
 Usage: .venv\\Scripts\\python.exe scripts\\tune_cv.py trees <line>[,<line>] --market emerging
                                                       [--train-set pooled] [--developed-weight 0.3]
 Writes: output/emerging[/pooled_w<w>]/cv_trees.csv (appended per fit) and docs/cv_emerging_trees.md (every line in the csv)
+
+C046: every fit row also carries the C044 views (`evaluate.nb_views`): `d2_cal_testmix` (validation rows re-weighted so
+new business has the 2025 test NB exposure share of the line), `d2_cal_nb` (NB rows only) and `nb_claims`; the summary
+adds their grouped means (`d2_cal_testmix_group`, `d2_cal_nb_group`), time-fold values and gains over the defaults.
 """
 import argparse
 import itertools
@@ -126,13 +130,20 @@ def grid(space):
     return [dict(zip(space, values)) for values in itertools.product(*space.values())]
 
 
-def emerging_configs(family):
-    """C039: [(model, config), ...] of the emerging-market search; each model's defaults ({}) come first."""
+CAT_DEFAULT_GRID_POINT = {"depth": 4, "l2_leaf_reg": 3}  # C046: equals the models.CAT defaults
+
+
+def emerging_configs(family, cat_depths=None):
+    """C039: [(model, config), ...] of the emerging-market search; each model's defaults ({}) come first.
+    C046: `cat_depths` caps the CatBoost depths (depth 8 is slow on motor); the capped grid skips the point equal to
+    the CatBoost defaults, which {} already fits."""
     if family != "trees":
         raise ValueError(f"C039: the emerging search covers family 'trees' only, got {family!r} "
                          "(GLM/GAM over-fit on emerging data for other reasons)")
-    spaces = (("lgbm", EMERGING_LGBM_SPACE), ("xgb", EMERGING_XGB_SPACE), ("cat", EMERGING_CAT_SPACE))
-    return [(name, cfg) for name, space in spaces for cfg in [{}] + grid(space)]
+    cat_space = EMERGING_CAT_SPACE if cat_depths is None else {**EMERGING_CAT_SPACE, "depth": list(cat_depths)}
+    spaces = (("lgbm", EMERGING_LGBM_SPACE), ("xgb", EMERGING_XGB_SPACE), ("cat", cat_space))
+    return [(name, cfg) for name, space in spaces for cfg in [{}] + grid(space)
+            if cat_depths is None or name != "cat" or cfg != CAT_DEFAULT_GRID_POINT]
 
 
 def emerging_summary(df):
@@ -141,33 +152,43 @@ def emerging_summary(df):
     df = df.drop_duplicates(["line", "model", "config", "scheme", "fold"], keep="last")  # a re-run replaces a fit
     keys = ["line", "model", "config"]
     group, time_fold = df[df["scheme"] == "group"], df[df["scheme"] == "time"]
+    views = [v for v in ("testmix", "nb") if f"d2_cal_{v}" in df]  # C046: C044 views (csv files from C046 on)
+    view_agg = {f"d2_cal_{v}_group": (f"d2_cal_{v}", "mean") for v in views}
+    if "nb_claims" in df:
+        view_agg["nb_claims_group"] = ("nb_claims", "sum")
+    view_time = {f"d2_cal_{v}": f"d2_cal_{v}_time" for v in views}
     out = (group.groupby(keys).agg(d2_cal_group=("d2_cal", "mean"), d2_cal_group_min=("d2_cal", "min"),
                                    d2_group=("d2", "mean"), pred_actual_group=("pred_actual", "mean"),
-                                   iterations=("iterations", "mean"), folds=("fold", "size")).reset_index()
-           .merge(time_fold[keys + ["d2_cal", "pred_actual"]].rename(
-               columns={"d2_cal": "d2_cal_time", "pred_actual": "pred_actual_time"}), on=keys, how="left"))
+                                   iterations=("iterations", "mean"), folds=("fold", "size"), **view_agg).reset_index()
+           .merge(time_fold[keys + ["d2_cal", "pred_actual"] + list(view_time)].rename(
+               columns={"d2_cal": "d2_cal_time", "pred_actual": "pred_actual_time", **view_time}), on=keys, how="left"))
     base = out[out["config"] == str({})].set_index(["line", "model"])
     index = pd.MultiIndex.from_frame(out[["line", "model"]])
-    for fold in ("group", "time"):
-        out[f"gain_{fold}"] = out[f"d2_cal_{fold}"] - base[f"d2_cal_{fold}"].reindex(index).to_numpy()
+    for col in ["group", "time"] + [f"{v}_group" for v in views]:
+        out[f"gain_{col}"] = out[f"d2_cal_{col}"] - base[f"d2_cal_{col}"].reindex(index).to_numpy()
     return out.sort_values(["line", "model", "d2_cal_group"], ascending=[True, True, False])
 
 
-def emerging_main(family, lines, train_set="emerging", dev_weight=0.3, models=None):
+def emerging_main(family, lines, train_set="emerging", dev_weight=0.3, models=None, cat_depths=None):
     """C039: search the emerging-market configurations of `family` on the C036 schemes (see module docstring)."""
     import oof_predictions as oof  # here, not at the top: oof_predictions imports FOLDS from this module
 
-    todo = [(n, cfg) for n, cfg in emerging_configs(family) if models is None or n in models]  # C039: --models filter
+    todo = [(n, cfg) for n, cfg in emerging_configs(family, cat_depths)
+            if models is None or n in models]  # C039: --models filter; C046: --cat-depths
     out_dir = oof.run_dir(train_set, dev_weight)
     os.makedirs(out_dir, exist_ok=True)
     csv = os.path.join(out_dir, f"cv_{family}.csv")
     for line in lines:
-        x, part, y, w, train, _, t, year = oof.emerging_design(line, train_set, dev_weight)
+        x, part, y, w, train, test, t, year = oof.emerging_design(line, train_set, dev_weight)
         is_dev, em_idx = part == "dev", np.flatnonzero(part == "em")
         comp_expo = (t["exposure"] * t["completeness"]).to_numpy()
+        # C046: C044 views per fit, as in oof_predictions.emerging_main (test NB exposure share of the line)
+        nb = x["new_business"].to_numpy(dtype=bool)
+        share = evaluate.nb_exposure_share(nb[part == "test"], test["exposure"].to_numpy())
+        nb_em, expo, claims = nb[em_idx], t["exposure"].to_numpy(), t["claim_count"].to_numpy()
         schemes = oof.emerging_schemes(train, year)
         log(f"emerging {line} [{train_set}]: {len(todo)} configs x {len(schemes)} schemes, {x.shape[1]} cols, "
-            f"emerging rows {len(em_idx):,}")
+            f"emerging rows {len(em_idx):,}; test NB exposure share {share:.4f}")
         for name, cfg in todo:
             for scheme, k, em_fit_mask, em_val_mask in schemes:
                 em_fit = np.zeros(len(x), dtype=bool)
@@ -179,11 +200,13 @@ def emerging_main(family, lines, train_set="emerging", dev_weight=0.3, models=No
                 m = oof.emerging_model(line, name, train_set, cfg)
                 oof.fit_emerging(m, x, y, w, is_dev | em_fit, em_fit, train_set, valid="inner")  # C027
                 pred = m.predict(x.iloc[em_idx[em_val_mask]]) * scale
+                v = evaluate.nb_views(actual, pred, nb_em[em_val_mask], expo[em_val_mask], claims[em_val_mask], share)
                 row = dict(line=line, model=name, config=str(cfg), scheme=scheme, fold=k,
-                           **oof.scores(actual, pred), iterations=getattr(m, "best_iteration", None),
+                           **oof.scores(actual, pred), **v, iterations=getattr(m, "best_iteration", None),
                            sec=round(time.time() - t0))
                 pd.DataFrame([row]).to_csv(csv, mode="a", header=not os.path.exists(csv), index=False)
                 log(f"{line} {name} {cfg} {scheme} {k}: d2={row['d2']:.5f} d2_cal={row['d2_cal']:.5f} "
+                    f"testmix={v['d2_cal_testmix']:.5f} nb={v['d2_cal_nb']:.5f} "
                     f"p/a={row['pred_actual']:.3f} it={row['iterations']} {row['sec']}s")
                 del m
 
@@ -210,10 +233,12 @@ if __name__ == "__main__":
     ap.add_argument("--train-set", default="emerging", choices=["emerging", "pooled"], help="C039 (emerging market)")
     ap.add_argument("--developed-weight", type=float, default=0.3, help="C039: weight multiplier on developed rows")
     ap.add_argument("--models", default=None, help="C039: comma list of model names to search (default: all)")
+    ap.add_argument("--cat-depths", default=None, help="C046: comma list of CatBoost depths to search, e.g. 4,6")
     a = ap.parse_args()
     selected = a.lines.split(",") if a.lines else LINES
     if markets.get(a.market).name == "emerging":
-        emerging_main(a.family, selected, a.train_set, a.developed_weight, a.models.split(",") if a.models else None)
+        emerging_main(a.family, selected, a.train_set, a.developed_weight, a.models.split(",") if a.models else None,
+                      [int(d) for d in a.cat_depths.split(",")] if a.cat_depths else None)
     else:
         if a.train_set != "emerging":
             ap.error("--train-set pooled is an emerging-market option")

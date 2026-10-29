@@ -72,7 +72,8 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 优化探针 C041（跨运行融合）与 C042（GLM 市场交互项）：都未达采纳标准，C042 的形式达标版因新业务水平未验证被否决；新业务分段核查证据噪声大，不做调整 — 2026-10-25，`docs/CHANGELOG.md` C041/C042、`docs/part2_new_business_check.md`、AI_LOG A23
 - [x] 水平校准（C043）：6 个标量探针（P2-S06–S11）；车险水平偏低，改用新兴市场自身完整趋势 1.1606（`mixed-full`），房屋家财不变；P2-S10 0.15414 — 2026-10-25，`docs/SUBMISSIONS.md`
 - [x] 审计对策（C044/C045）：测试比例加权视图成为门槛；新业务加权训练、只改早停、车险去 GLM 三项都否决；家财双运行融合在新门槛下采用 → P2-S12 0.15474 — 2026-10-26，`docs/AUDIT_PART2.md`、CHANGELOG C044/C045
-- [ ] Kaggle 最终选择：候选 P2-S12（0.15474）；对冲可一并勾选 P2-S11（0.15434）
+- [x] 新模型实验 C046（新兴市场树模型调参→融合候选，三线否决）、C047（新业务专用模型 + 分段融合：车险新业务段采纳，房屋续保段按设计否决）→ P2-S13 0.15577 — 2026-10-26，CHANGELOG C046/C047、`docs/part2_validation/`
+- [ ] Kaggle 最终选择：候选 P2-S13（0.15577）；对冲可一并勾选 P2-S12（0.15474）
 - [x] 发达市场默认路径复验：build_target 三条线 target 表与 `output/target_*.parquet` 完全一致、报告与 `docs/target_summary.txt` 一致；S09 融合用当前 blend.py 重现，与 `work/sub_v3_seeds.csv` SHA256 相同 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [x] 半趋势系数重算：车险 1.0175、房屋 1.0948、家财 1.0636，与 `markets.py` 一致 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [ ] GLM/GAM 在新兴市场严重过拟合（房屋时间折 D² 为负，单行预测 40 万），考虑加大正则或只用树模型

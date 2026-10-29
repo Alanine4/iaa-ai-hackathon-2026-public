@@ -1,4 +1,4 @@
-"""C046: transfer model for the emerging market (audit P2-F5, option b): a model fitted on the developed market only
+"""C048: transfer model for the emerging market (audit P2-F5, option b): a model fitted on the developed market only
 gives every emerging row a base rate; an emerging-only booster then learns the emerging departures from it.
 
 Why: in the pooled runs (C038) the developed rows carry 86-96% of the fit weight, so the trees and their early stopping
@@ -39,7 +39,7 @@ from train_validate import evaluate, log, markets, models, params  # noqa: E402
 
 RUN = "transfer"
 POWER = models.POWER
-# C046: emerging boosters. Small trees and strong regularisation: about 38k fit rows and 400-3,000 claims per fold.
+# C048: emerging boosters. Small trees and strong regularisation: about 38k fit rows and 400-3,000 claims per fold.
 BOOSTERS = {
     "tr_base": None,  # the re-levelled developed model alone
     "tr_lgbm": dict(objective="tweedie", tweedie_variance_power=POWER, learning_rate=0.02, num_leaves=4,
@@ -52,7 +52,7 @@ BOOSTERS = {
     "tr_glm_5k": dict(glm=5000.0),
     "tr_glm_20k": dict(glm=20000.0),
 }
-# C046: factors of the GLM correction. region: the base never saw the emerging codes E01-E06; the others are the largest
+# C048: factors of the GLM correction. region: the base never saw the emerging codes E01-E06; the others are the largest
 # market differences (docs/part2_market_comparison.md: channel, age mix, new business, tenure / security, cover).
 GLM_FACTORS = {
     "motor": ["region", "new_business", "channel", "driver_age_band", "urban_density", "cover_type", "fuel_type"],
@@ -64,7 +64,7 @@ GLM_FACTORS = {
 
 
 class RidgeGLM:
-    """C046: Tweedie (power 1.5) log-link GLM with an offset, one-hot factors (missing = own level, no base level) and
+    """C048: Tweedie (power 1.5) log-link GLM with an offset, one-hot factors (missing = own level, no base level) and
     an L2 penalty `lam` on every coefficient except the intercept, fitted by IRLS. With the penalty the relativities are
     shrunk towards the offset, like a credibility weight."""
 
@@ -113,7 +113,7 @@ def inner_mask(n):
     return mask
 
 
-# C046 outcome on contents: every emerging correction lost to the re-levelled base (tree boosters; ridge GLM on
+# C048 outcome on contents: every emerging correction lost to the re-levelled base (tree boosters; ridge GLM on
 # GLM_FACTORS improves monotonically with the penalty and only ties the base at 20,000 exposure-years). So the run also
 # scores developed-only bases of the other tree types (Part 1 settings), re-levelled the same way.
 BASES = {"tr_base": "lgbm", "tr_base_xgb": "xgb", "tr_base_cat": "cat"}

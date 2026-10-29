@@ -1,0 +1,156 @@
+corrected files already in D:\iaa-hackathon\New folder\prepared\improved3 (delete the folder to rebuild)
+
+==========================================================================================
+IMPROVED 3 - BUILDINGS
+==========================================================================================
+  [2021-2023 frequency] forward selection on BIC, n=500,000, 62 candidates, dispersion=1.000, intercept-only BIC=122,345.7
+     + building_age                   params=  9   BIC=121,077.7
+     + flood_zone                     params=  5   BIC=120,280.3
+     + accidental_damage_cover        params=  1   BIC=119,819.6
+     + prior_claims_5y                params=  3   BIC=119,447.4
+     + construction_type              params=  3   BIC=119,255.9
+     + written_premium                params=  9   BIC=119,074.9
+     + voluntary_excess               params=  3   BIC=118,898.2
+     + missed_payments_12m            params=  3   BIC=118,777.1
+     + occupancy                      params=  1   BIC=118,709.2
+     + channel                        params=  2   BIC=118,649.5
+     + payment_method                 params=  1   BIC=118,612.4
+     + region                         params= 11   BIC=118,578.9
+     + holds_motor                    params=  1   BIC=118,564.0
+     + new_business                   params=  1   BIC=118,555.8
+     + cust_claims_prev_cal_year_same_line params=  3   BIC=118,546.5
+     + property_type                  params=  3   BIC=118,541.3
+  [2021-2023 frequency] 16 variables selected
+  [2021-2023 severity] forward selection on BIC, n=19,695, 62 candidates, dispersion=3.499, intercept-only BIC=12,870.9
+     + written_premium                params=  9   BIC=12,136.3
+     + accidental_damage_cover        params=  1   BIC=12,078.5
+     + listed_building                params=  1   BIC=12,075.6
+  [2021-2023 severity] 3 variables selected
+  [GAM frequency] lambda=   0.1: edf=  59.9  AIC=117,757.8
+  [GAM frequency] lambda=     1: edf=  59.3  AIC=117,757.8
+  [GAM frequency] lambda=    10: edf=  56.7  AIC=117,779.0
+  [GAM frequency] lambda=   100: edf=  52.5  AIC=117,842.4
+  [GAM frequency] lambda=  1000: edf=  48.5  AIC=117,911.6
+  [GAM frequency] lambda= 10000: edf=  45.7  AIC=118,090.0
+  [GAM severity] lambda=   0.1: edf=  12.0  AIC=11,964.5
+  [GAM severity] lambda=     1: edf=  11.7  AIC=11,964.0
+  [GAM severity] lambda=    10: edf=  10.4  AIC=11,962.4
+  [GAM severity] lambda=   100: edf=   8.4  AIC=11,961.7
+  [GAM severity] lambda=  1000: edf=   6.4  AIC=11,964.2
+  [GAM severity] lambda= 10000: edf=   5.0  AIC=11,980.7
+  honest 2024 D2: GLM 0.1071 | GAM 0.1094 | LightGBM 0.1157 | Blend 0.1140
+  LightGBM gain share of the claim history variables: 0.004
+  2025 totals: GLM 78.9M, GAM 80.1M, LightGBM 73.8M, Blend 77.6M   [6.3 min]
+
+==========================================================================================
+IMPROVED 3 - CONTENTS
+==========================================================================================
+  [2021-2023 frequency] forward selection on BIC, n=500,000, 63 candidates, dispersion=1.000, intercept-only BIC=111,965.8
+     + accidental_damage_cover        params=  1   BIC=110,127.1
+     + flood_zone                     params=  5   BIC=109,678.2
+     + voluntary_excess               params=  3   BIC=109,195.1
+     + policyholder_age               params=  9   BIC=108,799.4
+     + prior_claims_5y                params=  3   BIC=108,576.2
+     + region                         params= 11   BIC=108,354.8
+     + missed_payments_12m            params=  3   BIC=108,232.5
+     + channel                        params=  2   BIC=108,136.0
+     + urban_density                  params=  3   BIC=108,103.3
+     + payment_method                 params=  1   BIC=108,073.6
+     + holds_motor                    params=  1   BIC=108,049.1
+     + new_business                   params=  1   BIC=108,039.8
+     + cust_claims_prev_1y_same_line  params=  3   BIC=108,039.6
+     + lodgers                        params=  1   BIC=108,038.9
+  [2021-2023 frequency] 14 variables selected
+  [2021-2023 severity] forward selection on BIC, n=17,682, 63 candidates, dispersion=1.738, intercept-only BIC=19,009.8
+     + flood_zone                     params=  5   BIC=18,175.3
+     + sum_insured                    params=  9   BIC=17,367.0
+     + accidental_damage_cover        params=  1   BIC=16,866.8
+     + voluntary_excess               params=  3   BIC=16,848.4
+  [2021-2023 severity] 4 variables selected
+  [GAM frequency] lambda=   0.1: edf=  48.0  AIC=107,501.3
+  [GAM frequency] lambda=     1: edf=  47.7  AIC=107,500.9
+  [GAM frequency] lambda=    10: edf=  46.5  AIC=107,499.3
+  [GAM frequency] lambda=   100: edf=  44.3  AIC=107,499.3
+  [GAM frequency] lambda=  1000: edf=  42.4  AIC=107,539.5
+  [GAM frequency] lambda= 10000: edf=  41.0  AIC=107,632.8
+  [GAM severity] lambda=   0.1: edf=  19.0  AIC=16,649.8
+  [GAM severity] lambda=     1: edf=  18.7  AIC=16,649.3
+  [GAM severity] lambda=    10: edf=  17.3  AIC=16,647.5
+  [GAM severity] lambda=   100: edf=  15.2  AIC=16,645.9
+  [GAM severity] lambda=  1000: edf=  13.3  AIC=16,645.8
+  [GAM severity] lambda= 10000: edf=  11.9  AIC=16,645.9
+  honest 2024 D2: GLM 0.0872 | GAM 0.0890 | LightGBM 0.0935 | Blend 0.0927
+  LightGBM gain share of the claim history variables: 0.002
+  2025 totals: GLM 18.3M, GAM 18.3M, LightGBM 19.2M, Blend 18.6M   [5.7 min]
+
+==========================================================================================
+IMPROVED 3 - MOTOR
+==========================================================================================
+  [2021-2023 frequency] forward selection on BIC, n=500,000, 72 candidates, dispersion=1.000, intercept-only BIC=259,995.1
+     + written_premium                params=  9   BIC=250,683.1
+     + cover_type                     params=  2   BIC=246,633.3
+     + years_licensed                 params=  9   BIC=244,763.6
+     + annual_mileage                 params=  7   BIC=243,220.4
+     + voluntary_excess               params=  3   BIC=241,859.1
+     + ncb_years                      params=  9   BIC=240,778.4
+     + prior_claims_5y                params=  3   BIC=239,846.4
+     + cust_claims_prev_cal_year_same_line params=  4   BIC=239,397.2
+     + region                         params= 11   BIC=238,964.8
+     + missed_payments_12m            params=  3   BIC=238,603.8
+     + discount_applied               params=  2   BIC=238,300.6
+     + urban_density                  params=  3   BIC=238,007.2
+     + telematics_opt_in              params=  1   BIC=237,797.5
+     + vehicle_use                    params=  2   BIC=237,610.8
+     + payment_method                 params=  1   BIC=237,461.1
+     + driver_age                     params=  9   BIC=237,349.4
+     + credit_band                    params=  4   BIC=237,275.2
+     + named_young_driver             params=  1   BIC=237,202.8
+     + licence_points                 params=  3   BIC=237,133.7
+     + n_lines_held                   params=  2   BIC=237,059.1
+     + new_business                   params=  1   BIC=237,007.5
+     + channel                        params=  2   BIC=236,969.8
+     + driver_assist                  params=  1   BIC=236,935.5
+  [2021-2023 frequency] 23 variables selected
+  [2021-2023 severity] forward selection on BIC, n=84,631, 72 candidates, dispersion=3.186, intercept-only BIC=54,227.6
+     + cover_type                     params=  2   BIC=53,135.6
+     + voluntary_excess               params=  3   BIC=53,097.1
+     + driver_assist                  params=  1   BIC=53,081.6
+  [2021-2023 severity] 3 variables selected
+  [GAM frequency] lambda=   0.1: edf=  92.9  AIC=235,807.0
+  [GAM frequency] lambda=     1: edf=  92.1  AIC=235,805.6
+  [GAM frequency] lambda=    10: edf=  87.8  AIC=235,800.5
+  [GAM frequency] lambda=   100: edf=  78.8  AIC=235,795.9
+  [GAM frequency] lambda=  1000: edf=  69.0  AIC=235,833.2
+  [GAM frequency] lambda= 10000: edf=  61.4  AIC=235,953.2
+  honest 2024 D2: GLM 0.0834 | GAM 0.0831 | LightGBM 0.0857 | Blend 0.0857
+  LightGBM gain share of the claim history variables: 0.017
+  2025 totals: GLM 101.6M, GAM 101.9M, LightGBM 96.5M, Blend 100.0M   [12.9 min]
+
+==========================================================================================
+COMPARISON - honest 2024 validation D2
+==========================================================================================
+line         ALL  buildings  contents   motor
+model                                        
+GLM       0.1296     0.1071    0.0872  0.0834
+GAM       0.1306     0.1094    0.0890  0.0831
+LightGBM  0.1348     0.1157    0.0935  0.0857
+Blend     0.1340     0.1140    0.0927  0.0857
+
+Improved 2 (old history variables, no weather in LightGBM), same validation:
+line         ALL  buildings  contents   motor
+model                                        
+GLM       0.1297     0.1073    0.0871  0.0836
+GAM       0.1307     0.1095    0.0890  0.0832
+LightGBM  0.1345     0.1149    0.0945  0.0854
+Blend     0.1340     0.1138    0.0932  0.0857
+
+Note: the 2024 score can go DOWN here. The old variable was complete in 2024 but not in 2025,
+so 2024 flattered it. The leaderboard is the real test of this fix.
+
+==========================================================================================
+SUBMISSIONS
+==========================================================================================
+saved submission_improved3_Blend.parquet         mean  313.07
+saved submission_improved3_GLM.parquet           mean  317.22
+saved submission_improved3_GAM.parquet           mean  319.61
+saved submission_improved3_LightGBM.parquet      mean  302.36

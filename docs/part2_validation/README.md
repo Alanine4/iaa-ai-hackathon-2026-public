@@ -12,4 +12,6 @@ One folder per run. `blend_weights_<line>.json` holds the fold scores (time fold
 | views_c044 | four validation views for the P2-S02/S03/S04/S05 recipes | C044 |
 
 `cv_emerging_trees_pooled_w0.3.md`: C039 tree search (nothing adopted). `check_dev_target.log`: developed path byte-identical after C034-C040. `build_target.log`: emerging target reconciliation and reporting-curve comparison (C037).
-Submission files: `submissions/part2_candidate_P2-S12_*.zip` (public 0.15474) and `submissions/part2_hedge_P2-S11_*.zip` (0.15434); all scores in `docs/SUBMISSIONS.md`.
+Submission files: `submissions/part2_candidate_P2-S13_*.zip` (public 0.15577) and `submissions/part2_hedge_P2-S12_*.zip` (0.15474); all scores in `docs/SUBMISSIONS.md`.
+| emerging_c046, xrun_c046_<line> | re-tuned emerging-only trees and their blend searches (rejected) | C046 |
+| pooled_w0.3_nbrows, pooled_w1_nbrows, xrun_c047_* | new-business-only models and segment blends (motor NB adopted, P2-S13) | C047 |
