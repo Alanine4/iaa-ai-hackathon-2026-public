@@ -58,7 +58,7 @@ On screen: `docs/REPORT_DRAFT.md` section 7.1 and the section 7.4 table (emergin
 | Motor level looked low, so we moved to the emerging market's own trend, 1.16. For motor we also added a separate new-business blend, which passed all six validation views. | 车险的整体水平偏低，所以我们改用新兴市场自己的趋势系数 1.16。另外我们给车险的新业务单独做了一套融合，它在六个验证视角上全部通过。 |
 | We rejected interaction terms, new-business weighted training, and re-tuning, because none passed the gate. | 市场交互项、按新业务加权的训练、重新调参，这几项都没有通过门槛，所以被我们否决了。 |
 
-## Segment 5, 3:45-4:35: results (116 words)
+## Segment 5, 3:45-4:35: results (119 words)
 
 On screen: the Kaggle leaderboards for Part 1 and Part 2, the Part 1 post-deadline block of `docs/SUBMISSIONS.md`, then the report's office premium formula (`docs/REPORT_DRAFT.md` section 7.5) and the build-up table for the 20 reference policies.
 
@@ -79,4 +79,4 @@ On screen: the repository file tree: `README.md`, `reproduce.ps1`, `tests/`, `do
 | One script rebuilds Part 1 from the raw data, and a market setting runs the emerging data. | 一个脚本就能从原始数据重建第一部分的结果，换一个市场设置，同一套流程也能跑新兴市场的数据。 |
 | Next, we would test a developed-model offset, an idea from our audit. | 下一步，我们想试一试把成熟市场模型的预测当作偏移量，这是审计提出来的思路。 |
 
-Total spoken words: 652 (about 4:50 at 135 words per minute).
+Total spoken words: 664 (about 4:55 at 135 words per minute, 5 seconds over the 4:50 target; trim about 10 words, segment 5 is the candidate).
