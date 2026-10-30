@@ -137,6 +137,16 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
 .c-va { grid-template-columns: minmax(0, 1.28fr) minmax(0, 1fr); }
 .c-co { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 0.8fr); }
 .dq td:nth-child(2) { color: var(--fg); } .dq td:last-child { white-space: nowrap; }
+/* Presentation mode (A40): header buttons sit on the dark bar, body.present hides the bar and widens the content */
+.top .tabs button, .fs-exit button { color: var(--head-ink); border-bottom-color: var(--head-ink-2); }
+.top .tabs button[aria-pressed="true"], .fs-exit button { border-bottom-color: var(--head-ink); }
+.top .tabs button:hover, .fs-exit button:hover { background: rgba(255, 255, 255, 0.14); }
+.top .tabs button:focus-visible, .fs-exit button:focus-visible { outline-color: var(--head-ink); }
+.fs-exit { display: none; position: fixed; top: 8px; right: 8px; z-index: 10; background: var(--head); }
+body.present .top { display: none; }
+body.present .fs-exit { display: flex; }
+body.present .wrap { max-width: none; }
+body.present .sec-head { padding-right: 64px; }
 @media (max-width: 1359px) {
   .c-pr1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .c-pr1 > :last-child { grid-column: 1 / -1; }
@@ -185,6 +195,9 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     brand: "Hackathon Evidence Board",
     context: "IAA AI-Assisted Hackathon 2026",
     authors: "Yichuan Lin · Oussama El Hadi",
+    presentLabel: "Present",
+    presentExitLabel: "Exit",
+    presentTip: "Fullscreen, header hidden; Esc or the button exits",
     metric: "Tweedie deviance D2, power 1.5",
     navHeading: "Sections",
     navHint: "Arrow keys ← → move between sections",
@@ -399,10 +412,10 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       rule: "the Area cell decides (rejected; evaluation, not adopted or probe; one part adopted), else the row's own verdict (not adopted, nothing adopted); C024 is withdrawn (removed by C026); all other rows adopted."
     },
 
-    ailog: { first: "A01", last: "A38", count: 38,
+    ailog: { first: "A01", last: "A40", count: 40,
       stages: {
         "Part 1": [["A01", "Setup"], ["A02", "EDA"], ["A03", "Data quality"], ["A04", "Cleaning rules"], ["A05", "Target & development"], ["A06", "Leakage"], ["A07", "Features & models"], ["A08", "Debugging"], ["A09", "Development"], ["A10, A12", "Models"], ["A11", "Features"], ["A13", "Audit"], ["A14", "Feature policy"], ["A15", "Training"], ["A16", "Refit"], ["A17", "Governance"], ["A18", "Feature test"], ["A19", "Tuning"]],
-        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"], ["A36", "Dashboard by video section"], ["A37", "Part 1 panels"], ["A38", "Part 1 rows"]]
+        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"], ["A36", "Dashboard by video section"], ["A37", "Part 1 panels"], ["A38", "Part 1 rows"], ["A39", "Report check"], ["A40", "Presentation mode"]]
       } },
 
     loop: [
@@ -1205,8 +1218,28 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
      --------------------------------------------------------------------------- */
   var ORDER = [DATA.overview].concat(DATA.sections);
   var BUILD = { overview: secOverview, part1: secPart1, part2: secPart2, ai: secAI };
+  /* Presentation mode (A40): Fullscreen API where available, else only the layout class; the floating Exit control shows while the header is hidden */
+  var pBtn = H("button", { type: "button", "data-present": "toggle", "data-tip": DATA.presentTip, "aria-pressed": "false", text: DATA.presentLabel });
+  var pExit = H("button", { type: "button", "data-present": "exit", text: DATA.presentExitLabel });
+  function setPresent(on) {
+    document.body.classList.toggle("present", on);
+    pBtn.setAttribute("aria-pressed", on ? "true" : "false");
+    pBtn.textContent = on ? DATA.presentExitLabel : DATA.presentLabel;
+    hideTip();
+    redrawVisible(false);
+  }
+  function togglePresent() {
+    var on = !document.body.classList.contains("present"), de = document.documentElement;
+    if (on && !document.fullscreenElement && document.fullscreenEnabled && de.requestFullscreen) Promise.resolve(de.requestFullscreen()).catch(function () {});
+    if (!on && document.fullscreenElement) document.exitFullscreen();
+    setPresent(on);
+  }
+  pBtn.addEventListener("click", togglePresent);
+  pExit.addEventListener("click", togglePresent);
+  document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement) setPresent(false); });
+  document.body.appendChild(H("div", { class: "tabs fs-exit" }, pExit));
   addK(document.getElementById("top"), [H("span", { class: "brand", text: DATA.brand }), H("span", { class: "ctx", text: DATA.context }),
-    H("span", { class: "who" }, [DATA.authors + " · ", H("b", { text: "as of " + DATA.asOf })])]);
+    H("span", { class: "who" }, [DATA.authors + " · ", H("b", { text: "as of " + DATA.asOf })]), H("span", { class: "tabs" }, pBtn)]);
   var links = ORDER.map(function (s) {
     return H("a", { href: "#" + s.token }, [H("span", { class: "nm", text: s.nav }),
       H("span", { class: "wt", text: fill(s.navSub) })]);

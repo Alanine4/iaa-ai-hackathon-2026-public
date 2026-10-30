@@ -175,13 +175,16 @@ and the top score 0.17556.}
 \label{tab:results}
 \end{table}
 
-Remaining uncertainty is mostly about level and new business. We assume unbiased case estimates, and that the accident
-year 2021 reporting pattern holds in later years and in the emerging market; there the audit puts the overstatement of
-the 2024 ultimate at 1.8\% for motor and 2.5\% for buildings (P2-F9). New-business predicted-to-actual ratios run 0.81
-to 1.01 for motor, 1.30 to 2.23 for buildings and 0.74 to 0.84 for contents, on 37 to 697 claims per line and scheme,
-too few to set a segment level. On a board of a third of the rows, one line's optimal level has a sampling standard
-deviation of 4.7\% for motor (audit H1), and in Part 1 the private board reversed the public preference for half trend
-over no trend. Appendix~\ref{app:lim} lists the other limitations.
+\subsection{Assumptions and limitations}
+
+Both parts assume that open-claim case estimates are unbiased and that the accident year 2021 reporting pattern holds
+for later years and for the emerging market; Part 1 also assumes that the construction codes T and W both mean timber.
+The emerging market gives one time fold with about 500 claims a year on each property line, its reporting curves are
+borrowed, and nothing beyond 24 months can be checked: the Part 2 audit puts the resulting overstatement of the 2024
+ultimate at 1.8\% for motor and 2.5\% for buildings (P2-F9). New-business evidence is 37 to 697 claims per line and
+scheme, enough to reject a change but not to tune one. Part of the 2025 level rests on public-board probes, the motor
+trend (+0.0029) and the half trend (+0.0009), and Part 1 showed that such a read can flip sign on the private board. The
+Part 2 private score is unknown. Appendix~\ref{app:lim} lists the remaining limitations.
 
 \subsection{Office premium for the 20 reference policies}
 
@@ -240,7 +243,7 @@ We used Claude Code in three roles. A coordinator (claude-fable-5-1) planned eac
 a run and proposed what to submit. Workers (claude-opus-5-5 and claude-sonnet-5-5) wrote a failing test, then the code,
 ran the experiment and logged the change in \code{docs/CHANGELOG.md}. Read-only auditors trained nothing and backed each
 finding with a script: 17 scripts behind B1 to B8 in Part 1 and 27 checks behind P2-F1 to P2-F10 in Part 2.
-\code{docs/AI\_LOG.md} (A01 to A38) records for every step what the AI produced, how it was checked and whether it was
+\code{docs/AI\_LOG.md} (A01 to A40) records for every step what the AI produced, how it was checked and whether it was
 accepted, modified or rejected. Our teammate ran his Part 2 experiments in his own Claude session (C048 to C056, A27).
 
 The AI worked in every stage. It profiled all 11 files against the sample submission (A02), counted each data issue
@@ -326,6 +329,7 @@ their evidence by file and line.
 
 %======================================================================
 \section{Communication and documentation (15\%)}
+\label{sec:comm}
 
 \code{README.md} gives the task, layout, pinned environment, commands, pipeline, governance and known limitations. \code{docs/CHANGELOG.md} has 62 entries (C000 to C061), each with its reason, evidence and code
 location, and code comments cite the same ids. \code{docs/SUBMISSIONS.md} lists every upload with its recipe,
@@ -348,6 +352,7 @@ Part 1 blend comes from \code{oblemos\_part1/blend\_with\_S09.py}.
 \end{center}
 
 \section{Data-quality issues and treatment}
+\label{app:first}
 \label{app:dq}
 
 \begin{fixedtable}
