@@ -24,7 +24,7 @@ the predicted risk premium, which the judges assess and the leaderboard does not
 | `data/` | The 11 raw Part 1 parquet files, the Part 2 folder (13 emerging files), a SHA256 manifest for each, and `data/README.md` |
 | `docs/` | `CHANGELOG.md`, `AI_LOG.md`, `AUDIT_2026-10-22.md`, `AUDIT_PART2.md`, `SUBMISSIONS.md`, `HUMAN_REVIEW.md` (sign-off sheet for key AI decisions, in Chinese), `OFFICE_PREMIUM_DRAFT.md` (office premium formula chain for the 20 reference policies), `COMPETITION.md`, `DATA_GUIDE.md`, `DATA_WALKTHROUGH.md`, validation and CV reports, and `references/` (archived Kaggle pages) |
 | `docs/part2_validation/` | Copy of the Part 2 validation evidence from `output/emerging/`: fold scores and blend weights per run, logs, and its own README |
-| `submissions/` | Kaggle files kept for the record: Part 1 final (S09) and the Part 1 post-deadline blend (late submission, not ranked), Part 2 candidates P2-S13 and P2-S14 and hedge P2-S12. The current Part 2 final candidate, P2-S15, is `work/p2_s15_seeds3.zip` |
+| `submissions/` | Kaggle files kept for the record: Part 1 final (S09) and the Part 1 post-deadline blend (late submission, not ranked), Part 2 candidates P2-S13, P2-S14 and P2-S15 (the final candidate) and hedge P2-S12 |
 | `output/` | Derived data and predictions written by the scripts. Part 2 files go to `output/emerging/`. Not version-controlled |
 | `work/` | Submission CSV and zip files written by `blend.py` and `blend_runs.py`. Not version-controlled |
 | `TODO.md`, `CLAUDE.md` | Progress checklist and working conventions for the AI assistant |
@@ -208,14 +208,14 @@ Part 2: level (C043). The 2025 level cannot be validated on 2023 and 2024 data. 
 trend (factor 1.1606); buildings and contents use the developed market's half trend (1.0948 and 1.0636). The choice rests
 on public-board probes, described under known limitations.
 
-Part 2: final candidate (C054, C057 to C059). P2-S15 (`work/p2_s15_seeds3.zip`, public 0.15807, rank 18 of 38 on 2026-10-30) is the P2-S14 recipe (buildings = 0.4 OBLEMOS GAM + 0.6 pooled CatBoost, C054) with 3-seed averaged
+Part 2: final candidate (C054, C057 to C059). P2-S15 (`submissions/part2_candidate_P2-S15_p2_s15_seeds3.zip`, public 0.15807, rank 18 of 38 on 2026-10-30) is the P2-S14 recipe (buildings = 0.4 OBLEMOS GAM + 0.6 pooled CatBoost, C054) with 3-seed averaged
 LightGBM, XGBoost and CatBoost test predictions (C057), the buildings total pinned to the P2-S13 total (C058) and the tag fallback fix (C059). Seed averaging does not change the out-of-fold predictions, so no fold gate applies; it was
 adopted by a rule fixed before the score was seen (keep it unless the public score falls more than 0.0005 below P2-S14, 0.15781). The hedge for the Kaggle final selection is P2-S14.
 
 ## Governance
 
 Every change to data handling, code behaviour or modelling assumptions has a row in `docs/CHANGELOG.md` with its reason,
-evidence and code location (C000 to C047). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
+evidence and code location (C000 to C060). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
 the AI assistant did, how a person or a test checked it, and whether it was accepted, modified or rejected. The test suite in
 `tests/` (340 tests) covers cleaning, target matching, development, features, models, tuned parameters, scoring, the market
 configuration and the Part 2 blends and validation views, and was written before the code it tests. `tests/test_raw_data_integrity.py` checks the raw files against the manifest. On 2026-10-22 an
@@ -265,6 +265,6 @@ recorded as a diagnostic and was not submitted.
 `docs/SUBMISSIONS.md` lists each upload with its date, file, blend recipe, validation score and public score. For Part 1 the
 final file is S09 (public 0.12863, private 0.13689, final rank 12 of 51). The Part 1 method presented in the report and video is a post-deadline blend, 0.7 S09 + 0.3 OBLEMOS
 (`oblemos_part1\blend_with_S09.py`; late submission, not ranked: public 0.12949, private 0.13718); the ranked entry remains S09. For Part 2 the final candidate is P2-S15
-(`work/p2_s15_seeds3.zip`, public 0.15807, the P2-S14 recipe with 3-seed averaged tree predictions) and the hedge is P2-S14 (`p2_s13_oblemos_buildings.zip`, public 0.15781). `submissions/` holds
+(`part2_candidate_P2-S15_p2_s15_seeds3.zip`, public 0.15807, the P2-S14 recipe with 3-seed averaged tree predictions) and the hedge is P2-S14 (`p2_s13_oblemos_buildings.zip`, public 0.15781). `submissions/` holds
 `part1_final_S09_sub_v3_seeds.zip`, `part1_post_deadline_blend_S09_oblemos_30.zip`, `part2_candidate_P2-S13_p2_c047.zip`,
-`part2_candidate_P2-S14_p2_s13_oblemos_buildings.zip` and `part2_hedge_P2-S12_p2_c044_contents_xrun.zip`.
+`part2_candidate_P2-S14_p2_s13_oblemos_buildings.zip`, `part2_candidate_P2-S15_p2_s15_seeds3.zip` and `part2_hedge_P2-S12_p2_c044_contents_xrun.zip`.

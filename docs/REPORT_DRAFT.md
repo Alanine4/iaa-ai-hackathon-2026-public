@@ -92,9 +92,9 @@ The adoption rules were set before the runs. A change needs a mean gain of at le
 
 The Part 2 audit found the main flaw in our validation (P2-F1). Validation rows were 92% renewals, while 77% of the 2025 test rows are new business. Every Part 2 choice up to P2-S05 had been tuned on renewal behaviour. Re-weighting the folds to the test mix reproduced the board. The S03 to S04 step was +0.0154 on raw grouped folds, +0.0051 on the test mix and +0.0050 in public. Since then a change must not lose on the raw time fold, the raw grouped mean or the test-mix grouped mean. It must also gain 0.002 on the raw mean or the test-mix grouped mean (C044). Weights are still searched on raw folds: 77 to 697 new-business claims per line can reject a change but cannot tune one.
 
-A SHA256 manifest, read-only attributes and a test guard every raw byte (C007). The developed files in the Part 2 release matched the Part 1 manifest (C033). Modules are written test-first, and 317 tests pass (A26). Reproduction is checked byte for byte. The current code rebuilds S09 with the SHA256 of the submitted file and P2-S05 exactly, and P2-S13 equals P2-S12 outside motor new business (C047). `reproduce.ps1` rebuilds Part 1 from the raw data, and with `-Part2` also P2-S13.
+A SHA256 manifest, read-only attributes and a test guard every raw byte (C007). The developed files in the Part 2 release matched the Part 1 manifest (C033). Modules are written test-first, and 340 tests pass (A29). Reproduction is checked byte for byte. The current code rebuilds S09 with the SHA256 of the submitted file and P2-S05 exactly, and P2-S13 equals P2-S12 outside motor new business (C047). `reproduce.ps1` rebuilds Part 1 from the raw data, and with `-Part2` also P2-S13. It does not run the later steps: the OBLEMOS buildings blend of P2-S14 (C054, `docs/PART2_OBLEMOS.md`) and the seed-averaged refit and tagged blend behind P2-S15 (C057 to C059) are run by hand with the commands recorded there.
 
-A Part 1 lesson concerns the final choice. After the close our notes recorded a teammate's file as public 0.1356, 0.007 above S09 and not among the 2 selected files. The Kaggle listing shows that 0.13562 is its private score. Its public score was 0.12440, and S09 led on both boards (0.12863 and 0.13689). The choice held, but the comparison mixed 2 boards and the teammate's code never reached the repository. The Part 2 selection is therefore a team decision against a checklist. It compares scores from a single board and the 6 validation views per candidate, on files the repository rebuilds.
+A Part 1 lesson concerns the final choice. After the close our notes recorded a teammate's file as public 0.1356, 0.007 above S09 and not among the 2 selected files. The Kaggle listing shows that 0.13562 is its private score. Its public score was 0.12440, and S09 led on both boards (0.12863 and 0.13689). The choice held, but the comparison mixed 2 boards and the teammate's code was not in the repository at the time. It is now: `oblemos_part1/` for Part 1, and `scripts/oblemos_emerging.py` with the C048 to C056 entries for Part 2 (merged 2026-10-29). The Part 2 selection is therefore a team decision against a checklist. It compares scores from a single board and the 6 validation views per candidate, on files the repository rebuilds.
 
 ## 7. Assumptions and limitations
 
@@ -107,7 +107,7 @@ Assumptions in both parts: open-claim case estimates are unbiased, and the accid
 
 ## 8. Office premium build-up for the 20 reference policies
 
-R is the P2-S13 prediction for the row, matched on `row_id`, and is already a row total. We apply these conventions to the emerging column of `expenses.parquet`:
+R is the P2-S15 prediction for the row, the final candidate (`work/p2_s15_seeds3.csv`; the tables come from `scripts/part2_office_premium.py --predictions work/p2_s15_seeds3.csv`), matched on `row_id`, and is already a row total. We apply these conventions to the emerging column of `expenses.parquet`:
 
 - Cat = 0.12 R on buildings and contents, 0 on motor. The unit is a share of property risk premium, and we treat contents as property.
 - F = 85 CU per policy, charged in full and not pro-rated by exposure.
@@ -116,30 +116,30 @@ R is the P2-S13 prediction for the row, matched on `row_id`, and is already a ro
 
 | row_id | line | channel | NB | exposure | R | Cat | F | 1 - k | P | WP |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| M00118569 | motor | direct | no | 0.9397 | 924.64 | 0.00 | 85.00 | 0.69 | 1,463.25 | 1,095.48 |
-| M00129413 | motor | broker | yes | 0.3315 | 215.61 | 0.00 | 85.00 | 0.49 | 613.49 | 354.15 |
-| M00153851 | motor | broker | yes | 0.9616 | 368.14 | 0.00 | 85.00 | 0.49 | 924.77 | 414.72 |
-| M00161473 | motor | broker | yes | 0.9644 | 1,150.52 | 0.00 | 85.00 | 0.49 | 2,521.47 | 1,131.78 |
-| M00167496 | motor | broker | yes | 0.9836 | 779.57 | 0.00 | 85.00 | 0.49 | 1,764.43 | 463.95 |
-| M00176777 | motor | broker | yes | 0.9918 | 1,080.24 | 0.00 | 85.00 | 0.49 | 2,378.05 | 443.61 |
-| M00185311 | motor | direct | yes | 0.9644 | 1,119.49 | 0.00 | 85.00 | 0.69 | 1,745.64 | 872.31 |
-| B00215707 | buildings | broker | yes | 0.9863 | 337.88 | 40.55 | 85.00 | 0.49 | 945.76 | 272.44 |
-| B00215809 | buildings | direct | yes | 0.9753 | 493.57 | 59.23 | 85.00 | 0.69 | 924.34 | 237.22 |
-| B00217584 | buildings | broker | yes | 0.9671 | 824.01 | 98.88 | 85.00 | 0.49 | 2,056.92 | 323.36 |
-| B00218282 | buildings | broker | yes | 0.9726 | 297.61 | 35.71 | 85.00 | 0.49 | 853.72 | 230.80 |
-| B00223369 | buildings | broker | yes | 0.9945 | 559.02 | 67.08 | 85.00 | 0.49 | 1,451.22 | 204.56 |
-| B00229821 | buildings | broker | yes | 0.9918 | 410.12 | 49.21 | 85.00 | 0.49 | 1,110.89 | 285.60 |
-| B00250679 | buildings | broker | yes | 0.1096 | 43.11 | 5.17 | 85.00 | 0.49 | 272.01 | 180.72 |
-| C00259568 | contents | broker | no | 1.0000 | 41.03 | 4.92 | 85.00 | 0.49 | 267.26 | 83.18 |
-| C00270331 | contents | broker | yes | 0.9726 | 36.09 | 4.33 | 85.00 | 0.49 | 255.96 | 140.29 |
-| C00283470 | contents | broker | yes | 0.9726 | 86.34 | 10.36 | 85.00 | 0.49 | 370.82 | 117.97 |
-| C00286287 | contents | broker | yes | 0.9671 | 156.12 | 18.73 | 85.00 | 0.49 | 530.32 | 269.23 |
-| C00302985 | contents | broker | yes | 0.9918 | 57.99 | 6.96 | 85.00 | 0.49 | 306.03 | 115.88 |
-| C00314425 | contents | broker | yes | 0.0685 | 5.81 | 0.70 | 85.00 | 0.49 | 186.74 | 102.87 |
+| M00118569 | motor | direct | no | 0.9397 | 922.76 | 0.00 | 85.00 | 0.69 | 1,460.52 | 1,095.48 |
+| M00129413 | motor | broker | yes | 0.3315 | 212.69 | 0.00 | 85.00 | 0.49 | 607.53 | 354.15 |
+| M00153851 | motor | broker | yes | 0.9616 | 368.16 | 0.00 | 85.00 | 0.49 | 924.81 | 414.72 |
+| M00161473 | motor | broker | yes | 0.9644 | 1,135.24 | 0.00 | 85.00 | 0.49 | 2,490.28 | 1,131.78 |
+| M00167496 | motor | broker | yes | 0.9836 | 777.40 | 0.00 | 85.00 | 0.49 | 1,760.00 | 463.95 |
+| M00176777 | motor | broker | yes | 0.9918 | 1,072.30 | 0.00 | 85.00 | 0.49 | 2,361.85 | 443.61 |
+| M00185311 | motor | direct | yes | 0.9644 | 1,105.96 | 0.00 | 85.00 | 0.69 | 1,726.03 | 872.31 |
+| B00215707 | buildings | broker | yes | 0.9863 | 342.12 | 41.05 | 85.00 | 0.49 | 955.46 | 272.44 |
+| B00215809 | buildings | direct | yes | 0.9753 | 480.49 | 57.66 | 85.00 | 0.69 | 903.11 | 237.22 |
+| B00217584 | buildings | broker | yes | 0.9671 | 825.49 | 99.06 | 85.00 | 0.49 | 2,060.29 | 323.36 |
+| B00218282 | buildings | broker | yes | 0.9726 | 391.04 | 46.92 | 85.00 | 0.49 | 1,067.27 | 230.80 |
+| B00223369 | buildings | broker | yes | 0.9945 | 515.20 | 61.82 | 85.00 | 0.49 | 1,351.08 | 204.56 |
+| B00229821 | buildings | broker | yes | 0.9918 | 387.92 | 46.55 | 85.00 | 0.49 | 1,060.14 | 285.60 |
+| B00250679 | buildings | broker | yes | 0.1096 | 38.71 | 4.65 | 85.00 | 0.49 | 261.95 | 180.72 |
+| C00259568 | contents | broker | no | 1.0000 | 40.88 | 4.91 | 85.00 | 0.49 | 266.92 | 83.18 |
+| C00270331 | contents | broker | yes | 0.9726 | 37.45 | 4.49 | 85.00 | 0.49 | 259.07 | 140.29 |
+| C00283470 | contents | broker | yes | 0.9726 | 86.59 | 10.39 | 85.00 | 0.49 | 371.39 | 117.97 |
+| C00286287 | contents | broker | yes | 0.9671 | 162.14 | 19.46 | 85.00 | 0.49 | 544.08 | 269.23 |
+| C00302985 | contents | broker | yes | 0.9918 | 60.81 | 7.30 | 85.00 | 0.49 | 312.46 | 115.88 |
+| C00314425 | contents | broker | yes | 0.0685 | 5.97 | 0.72 | 85.00 | 0.49 | 187.11 | 102.87 |
 
-Amounts in CU; NB = new business; WP = written premium; source `scripts/part2_office_premium.py`. For B00229821, R 410.12 + Cat 49.21 + F 85.00 = 544.34, and 544.34 / 0.49 gives P = 1,110.89 (split by item in appendix A6). The 20 rows sum to R = 8,986.91 and P = 20,943.08 (mean 1,047.15), against 7,340.12 of written premium.
+Amounts in CU; NB = new business; WP = written premium; source `scripts/part2_office_premium.py`. For B00229821, R 387.92 + Cat 46.55 + F 85.00 = 519.47, and 519.47 / 0.49 gives P = 1,060.14 (split by item in appendix A6). The 20 rows sum to R = 8,969.31 and P = 20,931.34 (mean 1,046.57), against 7,340.12 of written premium. Against the P2-S13 table the 20-policy total moved by less than 0.1%, while one buildings policy (B00218282) moved by a quarter, so individual quotes use the seed-averaged file.
 
-Written premium is the current tariff and R is our 2025 cost estimate, so we do not expect them to match. P exceeds written premium on all 20 rows, by 1.34 to 7.09 times (median 2.89). The loadings drive most of it. A broker row with R = 0 would still cost 173.47, and F, Cat and the shares make up 36% to 97% of P. R alone exceeds written premium on 10 rows, 6 buildings and 4 motor, all new business. Our buildings new-business predictions ran 1.30 times actual on the grouped folds (77 claims), so part of that gap may be our own overstatement. Written premium does not scale with exposure (Part 1 audit; the emerging test file agrees). The 3 short rows therefore set a part-year P against an annual tariff, and F dominates them. Pro-rated by exposure, P would fall from 613.49 to 497.52 (M00129413, 0.33 years), from 272.01 to 117.56 (B00250679, 0.11) and from 186.74 to 25.15 (C00314425, 0.07).
+Written premium is the current tariff and R is our 2025 cost estimate, so we do not expect them to match. P exceeds written premium on all 20 rows, by 1.33 to 6.60 times (median 2.92). The loadings drive most of it. A broker row with R = 0 would still cost 173.47, and F, Cat and the shares make up 36% to 97% of P. R alone exceeds written premium on 10 rows, 6 buildings and 4 motor, all new business. Our buildings new-business predictions ran 1.30 times actual on the grouped folds (77 claims), so part of that gap may be our own overstatement. Written premium does not scale with exposure (Part 1 audit; the emerging test file agrees). The 3 short rows therefore set a part-year P against an annual tariff, and F dominates them. Pro-rated by exposure, P would fall from 607.53 to 491.56 (M00129413, 0.33 years), from 261.95 to 107.49 (B00250679, 0.11) and from 187.11 to 25.52 (C00314425, 0.07).
 
 ---
 
@@ -278,26 +278,26 @@ Each share-of-premium item in CU; every row adds up to P (`scripts/part2_office_
 
 | row_id | R + Cat + F | variable expense | commission | premium tax | profit | P |
 |---|---:|---:|---:|---:|---:|---:|
-| M00118569 | 1,009.64 | 219.49 | 0.00 | 117.06 | 117.06 | 1,463.25 |
-| M00129413 | 300.61 | 92.02 | 122.70 | 49.08 | 49.08 | 613.49 |
-| M00153851 | 453.14 | 138.72 | 184.95 | 73.98 | 73.98 | 924.77 |
-| M00161473 | 1,235.52 | 378.22 | 504.29 | 201.72 | 201.72 | 2,521.47 |
-| M00167496 | 864.57 | 264.66 | 352.89 | 141.15 | 141.15 | 1,764.43 |
-| M00176777 | 1,165.24 | 356.71 | 475.61 | 190.24 | 190.24 | 2,378.05 |
-| M00185311 | 1,204.49 | 261.85 | 0.00 | 139.65 | 139.65 | 1,745.64 |
-| B00215707 | 463.42 | 141.86 | 189.15 | 75.66 | 75.66 | 945.76 |
-| B00215809 | 637.79 | 138.65 | 0.00 | 73.95 | 73.95 | 924.34 |
-| B00217584 | 1,007.89 | 308.54 | 411.38 | 164.55 | 164.55 | 2,056.92 |
-| B00218282 | 418.32 | 128.06 | 170.74 | 68.30 | 68.30 | 853.72 |
-| B00223369 | 711.10 | 217.68 | 290.24 | 116.10 | 116.10 | 1,451.22 |
-| B00229821 | 544.34 | 166.63 | 222.18 | 88.87 | 88.87 | 1,110.89 |
-| B00250679 | 133.29 | 40.80 | 54.40 | 21.76 | 21.76 | 272.01 |
-| C00259568 | 130.96 | 40.09 | 53.45 | 21.38 | 21.38 | 267.26 |
-| C00270331 | 125.42 | 38.39 | 51.19 | 20.48 | 20.48 | 255.96 |
-| C00283470 | 181.70 | 55.62 | 74.16 | 29.67 | 29.67 | 370.82 |
-| C00286287 | 259.86 | 79.55 | 106.06 | 42.43 | 42.43 | 530.32 |
-| C00302985 | 149.95 | 45.90 | 61.21 | 24.48 | 24.48 | 306.03 |
-| C00314425 | 91.50 | 28.01 | 37.35 | 14.94 | 14.94 | 186.74 |
+| M00118569 | 1,007.76 | 219.08 | 0.00 | 116.84 | 116.84 | 1,460.52 |
+| M00129413 | 297.69 | 91.13 | 121.51 | 48.60 | 48.60 | 607.53 |
+| M00153851 | 453.16 | 138.72 | 184.96 | 73.99 | 73.99 | 924.81 |
+| M00161473 | 1,220.24 | 373.54 | 498.06 | 199.22 | 199.22 | 2,490.28 |
+| M00167496 | 862.40 | 264.00 | 352.00 | 140.80 | 140.80 | 1,760.00 |
+| M00176777 | 1,157.30 | 354.28 | 472.37 | 188.95 | 188.95 | 2,361.85 |
+| M00185311 | 1,190.96 | 258.90 | 0.00 | 138.08 | 138.08 | 1,726.03 |
+| B00215707 | 468.17 | 143.32 | 191.09 | 76.44 | 76.44 | 955.46 |
+| B00215809 | 623.14 | 135.47 | 0.00 | 72.25 | 72.25 | 903.11 |
+| B00217584 | 1,009.54 | 309.04 | 412.06 | 164.82 | 164.82 | 2,060.29 |
+| B00218282 | 522.96 | 160.09 | 213.45 | 85.38 | 85.38 | 1,067.27 |
+| B00223369 | 662.03 | 202.66 | 270.22 | 108.09 | 108.09 | 1,351.08 |
+| B00229821 | 519.47 | 159.02 | 212.03 | 84.81 | 84.81 | 1,060.14 |
+| B00250679 | 128.36 | 39.29 | 52.39 | 20.96 | 20.96 | 261.95 |
+| C00259568 | 130.79 | 40.04 | 53.38 | 21.35 | 21.35 | 266.92 |
+| C00270331 | 126.94 | 38.86 | 51.81 | 20.73 | 20.73 | 259.07 |
+| C00283470 | 181.98 | 55.71 | 74.28 | 29.71 | 29.71 | 371.39 |
+| C00286287 | 266.60 | 81.61 | 108.82 | 43.53 | 43.53 | 544.08 |
+| C00302985 | 153.10 | 46.87 | 62.49 | 25.00 | 25.00 | 312.46 |
+| C00314425 | 91.68 | 28.07 | 37.42 | 14.97 | 14.97 | 187.11 |
 
 ### A7. Further Part 1 limitations from the audit
 

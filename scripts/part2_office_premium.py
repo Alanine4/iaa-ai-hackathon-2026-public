@@ -16,8 +16,10 @@ Team conventions (docs/REPORT_DRAFT.md section 8):
   P   = (R + Cat + F) / (1 - k)
 No minimum or maximum premium. written_premium (current tariff) is shown for comparison only.
 
-Run: .venv\\Scripts\\python.exe -I scripts\\part2_office_premium.py
+Run: .venv\\Scripts\\python.exe -I scripts\\part2_office_premium.py [--predictions PATH]
+Without --predictions the P2-S13 file above is used (C060 adds the option, default unchanged).
 """
+import argparse
 from pathlib import Path
 
 import numpy as np
@@ -25,7 +27,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 EMERGING = ROOT / "data" / "iaa-ai-assisted-hackathon-2026-part-2" / "emerging"
-PREDICTIONS = ROOT / "work" / "p2_c047.csv"
+PREDICTIONS = ROOT / "work" / "p2_c047.csv"  # default = P2-S13; C060: --predictions overrides it
 
 LINE_ORDER = ["motor", "buildings", "contents"]
 PROPERTY_LINES = {"buildings", "contents"}
@@ -47,16 +49,16 @@ def commission_by_channel(e):
     }
 
 
-def build_table():
+def build_table(predictions=PREDICTIONS):
     e = expense_values()
     commission = commission_by_channel(e)
 
     # Identifier columns are read as text (project convention).
     ref = pd.read_parquet(EMERGING / "reference_policies.parquet")
-    pred = pd.read_csv(PREDICTIONS, dtype={"row_id": str})
+    pred = pd.read_csv(predictions, dtype={"row_id": str})
     assert pred["row_id"].is_unique
     t = ref.merge(pred, on="row_id", how="left", validate="one_to_one")
-    assert len(t) == 20 and t["prediction"].notna().all(), "every reference row needs a P2-S13 prediction"
+    assert len(t) == 20 and t["prediction"].notna().all(), "every reference row needs a prediction"
 
     # The stored exposure must equal the C001 recomputation from the period dates (file holds 4 decimals).
     days = (pd.to_datetime(t["period_end"]) - pd.to_datetime(t["period_start"])).dt.days + 1
@@ -148,7 +150,11 @@ def print_checks(t, e):
 
 
 if __name__ == "__main__":
-    table, expenses = build_table()
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--predictions", type=Path, default=PREDICTIONS,
+                        help="CSV with columns row_id, prediction (default: the P2-S13 file)")  # C060
+    args = parser.parse_args()
+    table, expenses = build_table(args.predictions)
     print_table(table)
     print_split(table, expenses)
     print_checks(table, expenses)

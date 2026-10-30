@@ -2,13 +2,13 @@
 
 Length 5:00. Speech runs to 4:50 and the last 10 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only (left column).
 
-## Segment 1, 0:00-0:30: who we are and the task (69 words)
+## Segment 1, 0:00-0:30: who we are and the task (78 words)
 
 On screen: title card, then `README.md` section "What the competition asks".
 
 | Spoken (English) | 中文对照 |
 |---|---|
-| Hello, we are team Yichuan Lin, Yichuan Lin and Oussama El Hadi, and this is our entry to the IAA AI Assisted Hackathon 2026. | 大家好，我们是 Yichuan Lin 队，成员林逸川和 Oussama El Hadi，这是我们在 IAA AI Assisted Hackathon 2026 的参赛作品。 |
+| Hello, we are team Yichuan Lin: Yichuan Lin and Oussama El Hadi, and this is our entry to the IAA AI Assisted Hackathon 2026. | 大家好，我们是 Yichuan Lin 队，成员林逸川和 Oussama El Hadi，这是我们在 IAA AI Assisted Hackathon 2026 的参赛作品。 |
 | The task, in one sentence: predict the final claim cost of every 2025 policy row, for motor, home buildings and home contents. | 任务一句话讲完：预测 2025 年每一条保单行最终的理赔成本，涉及车险、房屋结构险和家财险。 |
 | There are two markets. Part 1 is a developed market with four years of history, and Part 2 is a smaller emerging market. | 一共有两个市场。第一部分是有四年历史数据的成熟市场，第二部分是规模小得多的新兴市场。 |
 | Entries are scored with Tweedie D squared, power 1.5. | 评分指标是 Tweedie D²，power 取 1.5。 |
