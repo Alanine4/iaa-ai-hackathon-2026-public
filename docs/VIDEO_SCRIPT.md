@@ -1,82 +1,87 @@
 # Video script: IAA AI Assisted Hackathon 2026
 
-Length 5:00. Speech runs to 4:50 and the last 10 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only (left column).
+Length 5:00. Speech runs to 4:50 and the last 10 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only. The recording is a screen capture of `docs/dashboard/index.html`, opened section by section from the "Judging criteria" navigation on the left and scrolled within each section.
 
-## Segment 1, 0:00-0:30: who we are and the task (78 words)
+## Overview, 0:00-0:25 (59 words)
 
-On screen: title card, then `README.md` section "What the competition asks".
-
-| Spoken (English) |
-|---|
-| Hello, we are team Yichuan Lin: Yichuan Lin and Oussama El Hadi, and this is our entry to the IAA AI Assisted Hackathon 2026. |
-| The task, in one sentence: predict the final claim cost of every 2025 policy row, for motor, home buildings and home contents. |
-| There are two markets. Part 1 is a developed market with four years of history, and Part 2 is a smaller emerging market. |
-| Entries are scored with Tweedie D squared, power 1.5. |
-
-## Segment 2, 0:30-1:30: approach (136 words)
-
-On screen: `docs/REPORT_DRAFT.md` sections 2 and 3 (target construction, model list), ending on the adoption-rule sentence.
+On screen: Overview. The Part 1 and Part 2 score tiles, "Automated tests" and "Change log" at the top, then "Judging criteria and weights", "What changed in the new market" and "Standing on both boards".
 
 | Spoken (English) |
 |---|
-| First, the target. We match each claim to the policy row that contains its loss date, and we subtract recoveries. |
-| Recent claims are still being reported, so we develop them with a reporting-lag curve for each line. |
-| For motor bodily injury, only 14 percent of the cost is reported after 30 days. |
-| Each claim is capped at the 99.5th percentile, and a load adds the capped excess back. |
-| Then we fit five Tweedie models: a GLM, a GAM, LightGBM, XGBoost and CatBoost, and blend them with weights chosen per line. |
-| Validation is by time, with two expanding folds, never at random. |
-| A change is adopted only if the mean gain is at least 0.002 and it loses on neither fold. |
-| We fixed that rule before running the experiments, and the blend weight check is now code. |
+| Hello, we are Yichuan Lin and Oussama El Hadi. |
+| This board follows the four judging criteria. |
+| In the new market, 76 percent of test rows are new business, against 15 percent before. |
+| Our ranked Part 1 entry scored 0.13689 on the private board, rank 12 of 51. |
+| Part 2 scored 0.15807 on the public board, rank 18 of 38. |
 
-## Segment 3, 1:30-2:30: AI-assisted workflow (127 words)
+## 1 Pricing Performance & Adaptation (40%), 0:25-2:20 (256 words)
 
-On screen: `docs/AI_LOG.md` (rows A09 and A18), a `docs/CHANGELOG.md` row with its code references, and the sign-off note in `docs/HUMAN_REVIEW.md`.
+On screen: the Pricing Performance & Adaptation section. "Public D2 by submission", "New business share", "Limitations and uncertainty", "Blend recipes: weight of each model family", then "Data quality: ten documented issues". The office premium sentence is spoken over the last panel.
+
+| Spoken (English) |
+|---|
+| In Part 2, the public score rose from 0.14370 with emerging rows only to 0.15193 with pooled training. |
+| Motor and buildings blends then lifted it to 0.15781, and three-seed trees to 0.15807. |
+| New business is 7.8 percent of motor training exposure but 76.9 percent of the 2025 test. |
+| Validation rows were 92 percent renewals, so adoption gates now include test-mix views. |
+| Limits: new-business evidence is thin, at 37 to 697 claims per view, and the Part 2 private score is unknown. |
+| Yichuan's approach blends five Tweedie models: GLM, GAM, LightGBM, XGBoost and CatBoost. Blend weights must beat equal weights on both time folds. |
+| Oussama's approach is a frequency and severity GLM with Blend4, an equal average of four models. |
+| The Part 1 blend of 0.7 S09 and 0.3 Blend4 scored 0.13718 privately: a late submission, not ranked. |
+| In Part 2 we used both. Oussama's GAM takes 0.4 of buildings, and motor new business is an equal blend of twelve candidates. |
+| Developed rows train at weight 0.3 or 1.0, and reporting curves are borrowed, because two years give no tail. |
+| Motor moved to the market's own full trend, 1.1606, after six public probes: the one decision the board led. |
+| Claims match to the policy row containing the loss date, net of recoveries. |
+| Motor bodily injury is only 14 percent reported at 30 days, so claims are developed with a reporting-lag curve, then capped at the 99.5th percentile. |
+| For 20 reference policies, office premium is risk premium plus catastrophe and fixed costs, divided by one minus the loadings. |
+
+## 2 Effective Use of AI (25%), 2:20-3:25 (148 words)
+
+On screen: the Effective Use of AI section. "The loop on every change" with "Stages in the AI log" below it, then "AI output rejected or corrected after checking" with "Independent audits of AI work", then "Change log outcomes, 61 entries" and "Human review register".
 
 | Spoken (English) |
 |---|
 | We used Claude Code in three roles. |
-| A coordinator plans and decides. Workers implement, and write the tests first. An independent auditor only reads and reports. |
-| The suite now has 341 tests. The raw data is never edited, and every fix lives in code. |
-| Every change has a CHANGELOG number, and the code comments cite it. |
-| Every AI step is logged, with how we checked it. Our team lead signed off sixteen key decisions by 30 October. |
-| We also reject AI output. The coordinator designed per-peril reporting curves, C022. The worker implementing them showed they change nothing. |
-| Four other ideas, C023, C024, C031 and C032, were rejected on validation. |
-| The audits found real issues: B1 to B8 in Part 1, and P2-F1 to F10 in Part 2. |
+| A coordinator plans and decides. Workers write the test first, then the code. Auditors only read and report. |
+| Every change follows one loop: propose, check, sign, log. The AI log holds 34 steps. |
+| We reject AI output too. Per-peril curves, C022, equal the pooled curve. A frequency times severity model, C023, fell below the best single model. |
+| Target encoding, C031, and re-tuning, C032, missed the 0.002 rule. |
+| A market interaction blend passed at plus 0.0024, but we overruled it, C042, because of an unvalidated 21 percent new-business shift. |
+| Read-only audits raised B1 to B8 and P2-F1 to P2-F10. P2-F1 found validation was mostly renewals, which led to the test-mix views. |
+| Of 61 change log entries, 43 were adopted, 3 partly, 11 evaluated but not adopted and 4 rejected or withdrawn. |
+| Our team lead signed off sixteen key decisions by 30 October. |
 
-## Segment 4, 2:30-3:45: what changed for the new market (165 words)
+## 3 Trust, Validation & Guardrails (20%), 3:25-4:15 (115 words)
 
-On screen: `docs/REPORT_DRAFT.md` section 7.1 and the section 7.4 table (emerging only against pooled), then the P2-F1 row of `docs/AUDIT_PART2.md`, then `docs/SUBMISSIONS.md` rows P2-S10 and P2-S13.
-
-| Spoken (English) |
-|---|
-| Then the second market arrived. It has about one tenth of the data, covering only two years. |
-| 76 percent of its test rows are new business, against 15 percent before. |
-| Motor frequency is 34 percent higher, and severity is 42 percent lower. |
-| So each market became a configuration, with one shared schema, and we borrowed the developed reporting curves, because two years give no tail. |
-| Pooling the developed rows into training, at a weight of 0.3, lifted contents from 0.078 to 0.107 on the time fold. |
-| Then our audit found that validation was 92 percent renewals, while the test is mostly new business. We made a test-mix check part of the gate. Weighted to the test mix, validation matched the public board. |
-| Motor level looked low, so we moved to the emerging market's own trend, 1.16. For motor we also added a separate new-business blend, which passed all six validation views. |
-| We rejected interaction terms, new-business weighted training, and re-tuning, because none passed the gate. |
-
-## Segment 5, 3:45-4:35: results (119 words)
-
-On screen: the Kaggle leaderboards for Part 1 and Part 2, the Part 1 post-deadline block of `docs/SUBMISSIONS.md`, then the report's office premium formula (`docs/REPORT_DRAFT.md` section 7.5) and the build-up table for the 20 reference policies.
+On screen: the Trust, Validation & Guardrails section. "Six-view gains in D2, last two adopted steps", "Six validation views", "Adoption gates" and "Guardrails".
 
 | Spoken (English) |
 |---|
-| In Part 1, our ranked final scored 0.13689 on the private board, rank 12 of 51. The blend we present, a late submission and not ranked, scored 0.13718. |
-| In Part 2, the public score rose from 0.14370 with emerging data only, to 0.15193 with pooled training, and now 0.15807 with seed-averaged trees. At recording time we rank 18th of 38 teams, and the leader has 0.176. |
-| For the 20 reference policies, office premium is risk premium, plus catastrophe reinsurance for property and a fixed expense of 85, divided by one minus the loadings for expense, commission, tax and profit. |
-| Our reporting curves are borrowed and the new-business evidence is thin. Part of the motor level came from leaderboard probes. |
+| The last two adopted steps gained on all six views and on the public board: buildings 0.00204, motor 0.00103. |
+| Only candidates that gained on all six improved the public score. |
+| A time fold and five policy-grouped folds are each scored raw, re-weighted to the 77 percent new-business test share, and on new-business rows only. |
+| A change needs a mean gain of at least 0.002 and no regression. |
+| Seed averaging cannot be tested on folds, so we set its keep rule before the score. |
+| We wrote 341 tests before the code, and the raw data is read-only with a SHA256 check. |
+| The rebuild script reproduces S09 and P2-S13. Logged commands reproduced P2-S14 to within one billionth. |
 
-## Segment 6, 4:35-4:50: closing (39 words)
+## 4 Communication & Documentation (15%), 4:15-4:45 (58 words)
 
-On screen: the repository file tree: `README.md`, `reproduce.ps1`, `tests/`, `docs/CHANGELOG.md`.
+On screen: the Communication & Documentation section. "Documentation set", "Repository layout", "Submissions logged" and "How a reviewer rebuilds each file".
 
 | Spoken (English) |
 |---|
-| Code, tests and the change log are in the repository. |
-| One script rebuilds Part 1 from the raw data, and a market setting runs the emerging data. |
-| Next, we would test a developed-model offset, an idea from our audit. |
+| Documentation sits beside the code: README, data guide, change log, AI log, review register, report and two audits. |
+| The repository holds code, tests, docs, data, the submitted files and Oussama's Part 1 pipeline. |
+| We logged nine Part 1 submissions plus three unranked, and fifteen in Part 2. |
+| For each file, a reviewer finds the command that rebuilds it. |
 
-Total spoken words: 664 (about 4:55 at 135 words per minute, 5 seconds over the 4:50 target; trim about 10 words, segment 5 is the candidate).
+## Closing, 4:45-4:50 (12 words)
+
+On screen: Overview again, with the Part 1 and Part 2 score tiles in view.
+
+| Spoken (English) |
+|---|
+| Code, tests and logs are in our repository. Thank you for watching. |
+
+Total spoken words: 648 (about 4:48 at 135 words per minute, 2 seconds under the 4:50 target).

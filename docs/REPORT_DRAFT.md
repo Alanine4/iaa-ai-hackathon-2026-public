@@ -72,7 +72,7 @@ The motor level is the only decision taken mainly from the public board, though 
 
 ## 5. AI-assisted workflow
 
-We used Claude Code in 3 roles. A coordinator planned each step, fixed the decision rule before a run and chose what to submit. Workers wrote a failing test, then the code, ran the experiment and logged the change in `docs/CHANGELOG.md` (C000 to C047). A read-only auditor trained nothing and backed every finding with a script (B1 to B8 in Part 1, A13; P2-F1 to P2-F10 in Part 2, A24). `docs/AI_LOG.md` (A01 to A26) records what each step produced, how it was checked and whether we accepted, modified or rejected it.
+We used Claude Code in 3 roles. A coordinator planned each step, fixed the decision rule before a run and chose what to submit. Workers wrote a failing test, then the code, ran the experiment and logged the change in `docs/CHANGELOG.md` (C000 to C047). A read-only auditor trained nothing and backed every finding with a script (B1 to B8 in Part 1, A13; P2-F1 to P2-F10 in Part 2, A24). `docs/AI_LOG.md` (A01 to A34) records what each step produced, how it was checked and whether we accepted, modified or rejected it.
 
 The team lead reviewed a sign-off sheet of 11 key AI decisions (`docs/HUMAN_REVIEW.md`, R01 to R11). They run from the cleaning rules (C003, C004) to the Part 2 pooled design and trend. Each item gives its evidence with file and line references. The team lead approved all 11 on 2026-10-25 in a single reply, without item-level reasons. Later Part 2 choices and the section 8 conventions (R12 to R16) were signed the same way on 2026-10-30, so all 16 items are signed.
 
