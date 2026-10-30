@@ -53,9 +53,9 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [ ] 最终提交前在 Kaggle 选定 Final Submission
 
 ## 阶段 4：为 Part 2 做准备
-- [ ] 把流程整理成一条命令就能重跑的脚本（换数据路径就能跑）
-- [ ] 写 README：环境、运行步骤、目录结构
-- [ ] 报告草稿：方法、决策、AI 使用、假设、局限、管控措施
+- [x] 把流程整理成一条命令就能重跑的脚本（换数据路径就能跑）（`reproduce.ps1`，README「Reproducing」两节；核对 2026-10-30）
+- [x] 写 README：环境、运行步骤、目录结构（`README.md`，核对 2026-10-30）
+- [x] 报告草稿：方法、决策、AI 使用、假设、局限、管控措施（2026-10-30，`docs/report/report.tex`，按四条评分标准排，评分部分 5 页 + 附录；`docs/REPORT_DRAFT.md` 为素材稿）
 - [ ] Part 2 数据发布后：对比新旧市场差异，再拆新的待办
 
 ## 阶段 5：Part 2 新兴市场
@@ -74,7 +74,10 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 审计对策（C044/C045）：测试比例加权视图成为门槛；新业务加权训练、只改早停、车险去 GLM 三项都否决；家财双运行融合在新门槛下采用 → P2-S12 0.15474 — 2026-10-26，`docs/AUDIT_PART2.md`、CHANGELOG C044/C045
 - [x] 新模型实验 C046（新兴市场树模型调参→融合候选，三线否决）、C047（新业务专用模型 + 分段融合：车险新业务段采纳，房屋续保段按设计否决）→ P2-S13 0.15577 — 2026-10-26，CHANGELOG C046/C047、`docs/part2_validation/`
 - [ ] Kaggle 最终选择：候选 P2-S15（0.15807，种子平均版，事先规则已通过，2026-10-30，`docs/SUBMISSIONS.md`）；对冲 P2-S14（0.15781）
-- [ ] Part 1 报告和视频把截止后融合（0.7 S09 + 0.3 OBLEMOS，迟交、不计排名，私榜 0.13718）与计入排名的 S09（私榜 0.13689，第 12 / 51）并列介绍；草稿已写入 `docs/REPORT_DRAFT.md`、`docs/VIDEO_SCRIPT.md`，定稿时保留
+- [x] Part 1 报告和视频把截止后融合（0.7 S09 + 0.3 OBLEMOS，迟交、不计排名，私榜 0.13718）与计入排名的 S09（私榜 0.13689，第 12 / 51）并列介绍；草稿已写入 `docs/REPORT_DRAFT.md`、`docs/VIDEO_SCRIPT.md`，定稿时保留（2026-10-30：报告表 3 和附录 B、仪表盘总览都已并列展示，标注 late/not ranked）
+- [ ] 把 `docs/report/report.tex` 贴进 Overleaf 编译，确认第 4 节结束在第 5 页、附录从第 6 页起（队长）
+- [ ] 队长签字 `docs/HUMAN_REVIEW.md` R12–R16
+- [ ] 用 `docs/dashboard/index.html`（或 artifact 链接）录 5 分钟视频，台词 `docs/VIDEO_SCRIPT.md`（664 词，约 4:55，建议第 5 段删约 10 词）
 - [x] 发达市场默认路径复验：build_target 三条线 target 表与 `output/target_*.parquet` 完全一致、报告与 `docs/target_summary.txt` 一致；S09 融合用当前 blend.py 重现，与 `work/sub_v3_seeds.csv` SHA256 相同 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [x] 半趋势系数重算：车险 1.0175、房屋 1.0948、家财 1.0636，与 `markets.py` 一致 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [ ] GLM/GAM 在新兴市场严重过拟合（房屋时间折 D² 为负，单行预测 40 万），考虑加大正则或只用树模型
@@ -84,7 +87,7 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 人工复核签字单：11 项 AI 关键决策 + 7 条被纠正的 AI 输出，每项附文件:行号与数字 — 2026-10-24，`docs/HUMAN_REVIEW.md`；**等队长逐项签字**，签完抄进 AI_LOG
 - [ ] 修正过时文字：`docs/DATA_GUIDE.md` 第 107–108 行 Q3/Q4 仍写"待定/未确认"，应改为 C003/C004 的结论（worker 顺手发现）
 - [x] 报告第 7 节（新市场适配：差异、流程改动、验证设计、结果表、办公室保费公式、局限），约 590 词 — 2026-10-25，`docs/REPORT_DRAFT.md`
-- [ ] 报告压到 5 页以内并加第 8 节：20 张参考保单的办公室保费表（等最终预测文件和队友定口径）
+- [x] 报告压到 5 页以内并加第 8 节（2026-10-30，`docs/report/report.tex` 第 1.4 节，保费表用 P2-S15 预测，C060）：20 张参考保单的办公室保费表（等最终预测文件和队友定口径）
 - [x] 视频脚本（5 分钟，约 700 字）（2026-10-29，`docs/VIDEO_SCRIPT.md`，测试数已改为 340）
 - [x] 邀请队友为 GitHub collaborator（OBLEMOS，写权限） — 2026-10-26
 - [x] 更正：队友 Part 1 文件的 0.1356 是私榜分，公开榜最高 0.12758，都低于 S09；S09 选择正确。队友 10/27–28 在 Part 2 交了 6 个基于 S12/S13 的变体（最高 0.15563，未超过 S13），记在 SUBMISSIONS T01–T05 — 2026-10-29
