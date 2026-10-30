@@ -13,6 +13,7 @@
   --o3: #6884a8; --o4: #93a9c4; --tip-bg: #002147; --tip-fg: #ffffff; --clear: transparent;
   --serif: "Playfair Display", Georgia, "Times New Roman", serif;
   --sans: Lato, "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono: ui-monospace, Consolas, "Courier New", monospace;
 }
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -28,10 +29,10 @@ a { color: inherit; }
 .toc { position: sticky; top: 0; align-self: start; padding-block: 14px; min-width: 0; }
 .toc-h, .over, .cap-h { font: 900 11px/1.33 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cap); margin: 0; }
 .toc ol { list-style: none; margin: 8px 0 0; padding: 0; border-left: 1px solid var(--line); }
-.toc a { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 0 4px; padding: 8px 8px 8px 10px; margin-left: -1px; border-left: 3px solid var(--clear); text-decoration: none; color: var(--fg); }
+.toc a { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 8px 8px 8px 12px; margin-left: -1px; border-left: 3px solid var(--clear); text-decoration: none; color: var(--fg); }
 .toc a:hover { background: var(--band); } .toc a:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
-.toc a[aria-current="page"] { border-left-color: var(--accent); background: var(--band); } .toc .tm { font-size: 12px; color: var(--muted); padding-top: 1px; }
-.toc .nm { font-size: 14px; font-weight: 700; line-height: 1.3; min-width: 0; } .toc .wt { grid-column: 2; font-size: 12px; color: var(--ink-2); }
+.toc a[aria-current="page"] { border-left-color: var(--accent); background: var(--band); }
+.toc .nm { font-size: 14px; font-weight: 700; line-height: 1.3; min-width: 0; } .toc .wt { font-size: 12px; color: var(--ink-2); }
 .toc .hint { margin: 12px 0 0 2px; font-size: 12px; color: var(--muted); }
 main { min-width: 0; padding-block: 10px 0; }
 .sec-head { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); align-items: end; gap: 4px 32px; border-bottom: 1px solid var(--line); padding-bottom: 7px; margin-bottom: 8px; }
@@ -93,6 +94,8 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
 .list { list-style: none; margin: 4px 0 0; padding: 0; }
 .list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.42; color: var(--ink-2); }
 .list li:first-child { border-top: 0; } .list .fig { font-weight: 700; color: var(--fg); font-size: 13.5px; white-space: nowrap; } .list.tight li { padding: 4px 0; }
+.rebuild td { vertical-align: top; } .rebuild td:nth-child(2) { color: var(--ink-2); } .rebuild code { font: 11px/1.5 var(--mono); color: var(--fg); background: var(--wash); padding: 0 3px; border-radius: 2px; white-space: nowrap; } .rebuild code.long { white-space: normal; overflow-wrap: anywhere; }
+.rebuild td:last-child { font-size: 11.5px; color: var(--muted); } .list.docs li { padding: 3px 0; font-size: 12px; }
 .list.open { margin-top: 6px; border-top: 1px solid var(--line); } .list.open li { padding: 3px 0; font-size: 12px; } .list.open li:first-child { border-top: 0; }
 .list.lim li { grid-template-columns: 92px minmax(0, 1fr); padding: 5px 0; }
 .nw { white-space: nowrap; }
@@ -146,7 +149,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
   .toc ol { display: flex; margin: 0; border-left: 0; }
   .toc a { display: block; border-left: 0; border-bottom: 3px solid var(--clear); margin: 0; padding: 6px 10px; white-space: nowrap; }
   .toc a[aria-current="page"] { border-bottom-color: var(--accent); }
-  .toc .tm, .toc .wt { display: none; }
+  .toc .wt { display: none; }
   .sec-head { grid-template-columns: minmax(0, 1fr); }
   .c-ov, .c-pr1, .c-pr2, .c-ai, .c-va, .c-co, .kpis, .tiles { grid-template-columns: minmax(0, 1fr); }
   .c-co > :last-child, .c-pr1 > :last-child { grid-column: auto; }
@@ -181,19 +184,19 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     navHint: "Arrow keys ← → move between sections",
 
     overview: {
-      token: "overview", time: "0:00", nav: "Overview", navSub: "Headline numbers",
+      token: "overview", nav: "Overview", navSub: "Headline numbers",
       title: "Same pipeline, new market",
       thesis: "The same validated pipeline, re-pointed at a new market: pooled training plus test-mix-aware validation lifted public D2 from {first} (emerging rows only) to {last}."
     },
 
     criteria: [
-      { n: 1, token: "pricing", time: "0:40", weight: 40, title: "Pricing Performance & Adaptation",
+      { n: 1, token: "pricing", weight: 40, title: "Pricing Performance & Adaptation",
         text: "Quantitative accuracy across both Week 1 & 2 dataset. Appropriate modelling choices and adaptation to emerging market differences. Clear treatment of data quality, limitations, and remaining uncertainties." },
-      { n: 2, token: "ai", time: "2:10", weight: 25, title: "Effective Use of AI",
+      { n: 2, token: "ai", weight: 25, title: "Effective Use of AI",
         text: "Meaningful integration of AI throughout the actuarial workflow (e.g., EDA, feature engineering, modeling, diagnostics, and testing). Demonstrated improvement in quality, efficiency, challenge, or reliability. Rigorous verification of AI-generated outputs." },
-      { n: 3, token: "validation", time: "3:10", weight: 20, title: "Trust, Validation & Guardrails",
+      { n: 3, token: "validation", weight: 20, title: "Trust, Validation & Guardrails",
         text: "Comprehensive validation checks, automated tests, and model diagnostics. Governance controls, reproducibility, and human review/escalation protocols." },
-      { n: 4, token: "communication", time: "4:20", weight: 15, title: "Communication & Documentation",
+      { n: 4, token: "communication", weight: 15, title: "Communication & Documentation",
         text: "Clear and concise video demo and written report explaining methodology and key decisions. Well-structured code repository with version control." }
     ],
     criteriaSource: "Kaggle overview page, Evaluation table (docs/references/kaggle_overview_page.md)",
@@ -213,7 +216,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       final: { id: "S09", file: "sub_v3_seeds.zip", priv: 0.13689, pub: 0.12863 },
       late: { label: "70% S09 + 30% Blend4", formula: "0.7 × S09 + 0.3 × OBLEMOS Blend4", date: "2026-10-28", priv: 0.13718, pub: 0.12949 },
       half: { label: "50% S09 + 50% Blend4", formula: "0.5 × S09 + 0.5 × OBLEMOS Blend4", priv: 0.13707, pub: 0.12971 },
-      oblemos: { label: "OBLEMOS Blend4 alone", priv: 0.13526, pub: 0.12736 },
+      oblemos: { label: "OBLEMOS Blend4 alone", status: "not the selected entry, not ranked", priv: 0.13526, pub: 0.12736 },
       script: "oblemos_part1/blend_with_S09.py",
       axis: { lo: 0.135, hi: 0.140, step: 0.001 }
     },
@@ -316,12 +319,12 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     ],
     gatesSource: "CHANGELOG.md C044, C053, C057 · SUBMISSIONS.md P2-S14, P2-S15",
 
-    tests: { count: 340, files: 24, date: "2026-10-30" },
+    tests: { count: 341, files: 24, date: "2026-10-30" },
     guardrails: [
       { fig: "{tests}", text: "pytest cases across {files} test files ({date}), written before the code they test." },
       { fig: "C007", text: "Raw data read-only, SHA256 manifest, integrity test on every run; every correction lives in code." },
       { fig: "IDs", text: "Identifier columns always read as text." },
-      { fig: "Rebuild", text: "reproduce.ps1 rebuilds the Part 1 submission and, with -Part2, the Part 2 chain; P2-S14 rebuilt from the scripts to a max difference of 5.1e-10 (C058)." },
+      { fig: "Rebuild", text: "reproduce.ps1 rebuilds S09 and, with -Part2, P2-S13 only; P2-S14 and P2-S15 are rebuilt by the logged commands (C054, C057 to C059); P2-S14 reproduced to a max difference of 5.1e-10 (C058)." },
       { fig: "{reviewRange}", text: "Escalation register: the AI's evidence, the question put to the team lead, and the signed decision." }
     ],
     guardSource: "README.md · CLAUDE.md · CHANGELOG.md C007, C058 · HUMAN_REVIEW.md",
@@ -392,7 +395,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     },
 
     deliverables: [
-      { k: "Written report", t: "5 graded pages ordered by the four criteria, appendix from page 6; office premium of 20 reference policies from {p2}." },
+      { k: "Written report", t: "5 graded pages in criterion order, appendix from page 6; office premium of 20 policies from {p2}." },
       { k: "Video", t: "5 minutes: approach, results, AI-assisted workflow, and how the solution changed for the new market." },
       { k: "Code repository", t: "Private git repository; every change carries a change-log ID that the code comments cite." },
       { k: "Prediction files", t: "Both weeks: Part 1 {p1} (ranked) and Part 2 {p2}." }
@@ -407,7 +410,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       ["SUBMISSIONS.md", "S01 to S09, post-deadline blend, P2-S01 to {p2final}"],
       ["docs/report/report.tex", "Written report, graded pages 1 to 5"],
       ["AUDIT_2026-10-22.md · AUDIT_PART2.md", "B1 to B8 · P2-F1 to P2-F10"],
-      ["PART2_OBLEMOS.md · oblemos_part1/", "The teammate's pipeline in both parts"]
+      ["PART2_OBLEMOS.md · oblemos_part1/", "Teammate's pipeline"]
     ],
     docsSource: "docs/ · oblemos_part1/README.md · AI_LOG.md A32",
     repo: [
@@ -421,7 +424,19 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       ["reproduce.ps1", "one-command rebuild"]
     ],
     repoSource: "README.md, Repository layout",
-    submissions: { p1: 9, p1Range: "S01 to S09", p2: 15, p2Range: "P2-S01 to P2-S15", p1Extra: "plus 3 late submissions, not ranked" }
+    rebuild: {
+      title: "How a reviewer rebuilds each file",
+      sub: "From the repository root; the Python steps run with .venv\\Scripts\\python.exe -I -u, as in README.md",
+      rows: [
+        { file: "S09", cmd: [["code", ".\\reproduce.ps1 -Name sub_repro"], ["txt", "; the refit averages 3 tree seeds, so numbers differ slightly between runs"]], src: "README.md:68, 90" },
+        { file: "P2-S13", cmd: [["code", ".\\reproduce.ps1 -Part2"]], src: "README.md:100; reproduce.ps1:29, 35" },
+        { file: "P2-S14", cmd: [["code", "scripts\\oblemos_emerging.py buildings"], ["txt", " then "], ["code", "scripts\\blend_peril.py --lines buildings --name p2_s14 --extra oblemos:ob_glm,oblemos:ob_gam --out xrun_oblemos"], ["txt", "; or blend_runs.py "], ["code", "--write-from motor=xrun_c047_motor,buildings=xrun_oblemos,contents=xrun_c044_contents_2run --trend mixed-full --level-from submissions/part2_candidate_P2-S13_p2_c047.zip:buildings --name p2_s14_check"]], src: "PART2_OBLEMOS.md:30-31; CHANGELOG.md:67 (C058)" },
+        { file: "P2-S15", cmd: [["code", "oof_predictions.py <line> --market emerging --refit-only [--seeds N]"], ["txt", " per run, as "], ["code", "--refit-only --seeds 3"], ["txt", "; then the P2-S14 write step with "], ["code", "--pred-tag s3"]], src: "CHANGELOG.md:66 (C057), 68 (C059); SUBMISSIONS.md:57" },
+        { file: "Part 1 blend", cmd: [["code", ".venv\\Scripts\\python.exe -I oblemos_part1\\blend_with_S09.py"]], src: "oblemos_part1/blend_with_S09.py:8; SUBMISSIONS.md:22" }
+      ],
+      source: "README.md · docs/PART2_OBLEMOS.md · CHANGELOG.md C057 to C059"
+    },
+    submissions: { p1: 9, p1Range: "S01 to S09", p2: 15, p2Range: "P2-S01 to P2-S15", p1Extra: "plus 3 unranked entries, 2 of them late" }
   };
 
   /* ---------------------------------------------------------------------------
@@ -657,9 +672,9 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       { cap: "Part 1 · private D2, developed market", capShort: "Part 1 · private D2", axis: P1.axis, rows: [
         { label: "Winner", status: "Part 1 private board", v: P1.winner, kind: "ref" },
         { label: P1.final.id, status: "ranked final · rank " + P1.rank + " of " + P1.teams, v: P1.final.priv, kind: "team", strong: true },
-        { label: P1.late.label, status: "late submission, not ranked", v: P1.late.priv, kind: "late", tip: P1.late.formula + " · late submission " + P1.late.date + ", not ranked" },
-        { label: P1.half.label, status: "late submission, not ranked", v: P1.half.priv, kind: "late", tip: P1.half.formula + " · late submission, not ranked" },
-        { label: P1.oblemos.label, status: "late submission, not ranked", v: P1.oblemos.priv, kind: "late", tip: "Teammate's independent pipeline alone · late submission, not ranked" }
+        { label: P1.late.label, status: "late submission, not ranked", v: P1.late.priv, kind: "unranked", tip: P1.late.formula + " · late submission " + P1.late.date + ", not ranked" },
+        { label: P1.half.label, status: "late submission, not ranked", v: P1.half.priv, kind: "unranked", tip: P1.half.formula + " · late submission, not ranked" },
+        { label: P1.oblemos.label, status: P1.oblemos.status, v: P1.oblemos.priv, kind: "unranked", tip: "Teammate's independent pipeline alone · " + P1.oblemos.status }
       ] },
       { cap: "Part 2 · public D2, emerging market, " + DATA.asOf, capShort: "Part 2 · public D2, " + DATA.asOf, axis: P2.axis, rows: [
         { label: "Top score", status: P2.teams + " teams", v: P2.top, kind: "ref" },
@@ -701,7 +716,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
         }
         var cx = X(r.v);
         svg.appendChild(S("line", { class: "guide", x1: x0, y1: r2(cy), x2: r2(cx), y2: r2(cy) }));
-        svg.appendChild(S("circle", { class: "dot" + (r.kind === "ref" ? " ctx" : r.kind === "late" ? " late" : ""), cx: r2(cx), cy: r2(cy), r: r.kind === "late" ? 4.5 : 5.5 }));
+        svg.appendChild(S("circle", { class: "dot" + (r.kind === "ref" ? " ctx" : r.kind === "unranked" ? " late" : ""), cx: r2(cx), cy: r2(cy), r: r.kind === "unranked" ? 4.5 : 5.5 }));
         svg.appendChild(S("text", { class: r.strong ? "v" : "lab", x: W, y: r2(cy + 4), "text-anchor": "end", text: f5(r.v) }));
         svg.appendChild(hit(0, ry, W, rowH, (r.tip || (r.label + " · " + r.status)) + " · D2 " + f5(r.v)));
       });
@@ -957,7 +972,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       ["Part 1", P1.final.id, "ranked final, rank " + P1.rank + " of " + P1.teams, f5(P1.final.priv), f5(P1.final.pub)],
       ["Part 1", P1.late.formula, "late submission " + P1.late.date + ", not ranked", f5(P1.late.priv), f5(P1.late.pub)],
       ["Part 1", P1.half.formula, "late submission, not ranked", f5(P1.half.priv), f5(P1.half.pub)],
-      ["Part 1", P1.oblemos.label, "late submission, not ranked", f5(P1.oblemos.priv), f5(P1.oblemos.pub)],
+      ["Part 1", P1.oblemos.label, P1.oblemos.status, f5(P1.oblemos.priv), f5(P1.oblemos.pub)],
       ["Part 1", "Winner", "Part 1 private board", f5(P1.winner), "n/a"],
       ["Part 2", P2.final.id, "final candidate, rank " + P2.rank + " of " + P2.teams + ", " + DATA.asOf, "unknown", f5(P2FINAL.v)],
       ["Part 2", P2PREV.id, "previous best, hedge", "unknown", f5(P2PREV.v)],
@@ -969,7 +984,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       sub: "Part 1 private board after the close; Part 2 public board on " + DATA.asOf,
       tabs: true, chart: H("div", null, [legend([
         { label: "Team submission", shape: "dot", color: "var(--mark)" },
-        { label: "Late submission, not ranked", shape: "ring" },
+        { label: "Not ranked (late or not selected)", shape: "ring" },
         { label: "Board reference", shape: "dot", color: "var(--context)" }
       ]), chart(drawStanding)]), table: standTable,
       source: "SUBMISSIONS.md (S09, post-deadline blend, P2-S14, P2-S15) · " + P1.script
@@ -1052,10 +1067,12 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       chart: H("div", null, [chart(drawOutcomes), legend(CL.classes.map(function (c) { return { label: c.label, color: "var(--" + c.cls + ")", n: c.ids.length }; })), H("div", { class: "tbox" }, outT)]),
       source: "CHANGELOG.md. Rule: " + CL.rule });
 
-    var rev = frame({ title: "Human review register", sub: "Each item: the AI's evidence, one question for the team lead, the decision.",
+    var revT = table([{ h: "Item" }, { h: "AI decision under review" }, { h: "Status" }],
+      REVIEW.map(function (r) { return [r[0], r[1], r[2] ? "signed " + DATA.review.signedDate : "awaiting signature"]; }));
+    var rev = frame({ title: "Human review register", sub: "Each item: the AI's evidence, one question for the team lead, the decision.", tabs: true,
       chart: H("div", null, [legend([{ label: "Signed", color: "var(--o1)" }, { label: "Awaiting signature", color: "var(--o4)" }]), chart(drawReview),
         H("ul", { class: "list tight open" }, AWAIT.map(function (r) { return H("li", null, [idTag(r[0]), H("span", { text: r[1] })]); }))]),
-      source: "HUMAN_REVIEW.md" });
+      table: revT, source: "HUMAN_REVIEW.md" });
     return [critHead(2), H("div", { class: "g c-ai" }, [loop, corr]), H("div", { class: "g c-ai" }, [out, rev])];
   }
 
@@ -1084,7 +1101,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
   function secCommunication() {
     var tiles = H("div", { class: "tiles" }, DATA.deliverables.map(function (d) { return H("div", { class: "tile" }, [H("p", { class: "k", text: d.k }), H("p", null, rich(fill(d.t)))]); }));
     var docs = H("div", { class: "frame" }, [H("h3", { text: "Documentation set" }),
-      H("ul", { class: "list tight" }, DATA.docs.map(function (d) { return H("li", null, [H("span", { class: "fig", text: d[0] }), H("span", { text: fill(d[1]) })]); })),
+      H("ul", { class: "list tight docs" }, DATA.docs.map(function (d) { return H("li", null, [H("span", { class: "fig", text: d[0] }), H("span", { text: fill(d[1]) })]); })),
       srcLine(DATA.docsSource, null, "p")]);
     var repo = H("div", { class: "frame" }, [H("h3", { text: "Repository layout" }),
       H("ul", { class: "tree" }, DATA.repo.map(function (r) { return H("li", null, [H("b", { text: r[0] }), " · " + fill(r[1])]); })),
@@ -1096,7 +1113,13 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
         H("div", null, [H("div", { class: "n", text: String(s.p2) }), H("div", { class: "t" }, rich("Part 2 · " + s.p2Range))])
       ]),
       srcLine("SUBMISSIONS.md", null, "p")]);
-    return [critHead(4), tiles, H("div", { class: "g c-co" }, [docs, repo, subs])];
+    var RB = DATA.rebuild;
+    var rebuild = frame({ title: RB.title, sub: RB.sub,
+      chart: H("div", { class: "tbox" }, table([{ h: "File" }, { h: "Command or script" }, { h: "Source" }], RB.rows.map(function (r) {
+        return [r.file, r.cmd.map(function (c) { return c[0] === "code" ? H("code", { class: c[1].length > 48 ? "long" : null, text: c[1] }) : c[1]; }), r.src];
+      }), "rebuild")),
+      source: RB.source, figure: false });
+    return [critHead(4), tiles, H("div", { class: "g c-co" }, [docs, repo, subs]), H("div", { class: "g" }, [rebuild])];
   }
 
   /* ---------------------------------------------------------------------------
@@ -1107,7 +1130,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
   addK(document.getElementById("top"), [H("span", { class: "brand", text: DATA.brand }), H("span", { class: "ctx", text: DATA.context }),
     H("span", { class: "who" }, [DATA.authors + " · ", H("b", { text: "as of " + DATA.asOf })])]);
   var links = ORDER.map(function (s) {
-    return H("a", { href: "#" + s.token }, [H("span", { class: "tm", text: s.time }), H("span", { class: "nm", text: s.nav || s.title }),
+    return H("a", { href: "#" + s.token }, [H("span", { class: "nm", text: s.nav || s.title }),
       H("span", { class: "wt", text: s.navSub || ("Criterion " + s.n + " · " + s.weight + "%") })]);
   });
   addK(document.getElementById("toc"), [H("p", { class: "toc-h", text: DATA.navHeading }), H("ol", null, links.map(function (a) { return H("li", null, a); })), H("p", { class: "hint", text: DATA.navHint })]);

@@ -311,7 +311,8 @@ six views raised the score.
 
 A SHA256 manifest, read-only file attributes and a test guard every raw byte (C007), and the developed files in the
 Part 2 release matched the Part 1 manifest (C033). The suite has 341 pytest cases in 24 files, and modules are written
-test-first. The current code rebuilds S09 with the SHA256 of the submitted file, and P2-S14, rebuilt by two
+test-first. The blend step rebuilds S09 byte for byte from the stored model predictions (same SHA256 as the upload; a
+full refit differs slightly between runs, as the tree refits are not bit-reproducible), and P2-S14, rebuilt by two
 routes, differs from the upload by at most 5.1e-10 (C058). P2-S15 keeps the row ids, row order and buildings total of
 P2-S14 (correlation 0.9991).
 
@@ -332,8 +333,8 @@ validation and scores. \code{docs/AI\_LOG.md}, \code{docs/HUMAN\_REVIEW.md} and 
 evidence board in \code{docs/dashboard/} puts the main figures on one page, and the five-minute video follows
 \code{docs/VIDEO\_SCRIPT.md}. The sign-off sheet and team notes are in Chinese; code and logs are in English.
 
-A reviewer rebuilds each file as follows. \code{reproduce.ps1} runs from the raw data to S09, whose SHA256 equals the
-upload, and with \code{-Part2} to P2-S13. \code{docs/PART2\_OBLEMOS.md} gives the two commands for P2-S14, which
+A reviewer rebuilds each file as follows. \code{reproduce.ps1} runs from the raw data to S09 (the blend step from stored predictions matches the
+upload's SHA256; a full refit differs slightly between runs) and with \code{-Part2} to P2-S13. \code{docs/PART2\_OBLEMOS.md} gives the two commands for P2-S14, which
 \code{blend\_runs.py -{}-write-from} with \code{-{}-level-from} also builds (C058). P2-S15 is that write step after a
 three-seed refit (\code{oof\_predictions.py -{}-refit-only -{}-seeds 3}), read with \code{-{}-pred-tag s3} (C057, C059). The
 Part 1 blend comes from \code{oblemos\_part1/blend\_with\_S09.py}.
