@@ -1,87 +1,94 @@
-# Video script: IAA AI Assisted Hackathon 2026
+# Video script: IAA AI Assisted Hackathon 2026 (version 3)
 
-Length 5:00. Speech runs to 4:50 and the last 10 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only. The recording is a screen capture of `docs/dashboard/index.html`, opened section by section from the "Judging criteria" navigation on the left and scrolled within each section.
+Length 5:00. Speech runs to 4:50 and the last 10 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only; the bracketed rows for Oussama's AI-assisted workflow segment are placeholders and are not counted.
 
-## Overview, 0:00-0:25 (59 words)
+The recording is a screen capture of `docs/dashboard/index.html`, opened section by section from the left navigation: Overview, "Part 1: developed market", "Part 2: emerging market" and "AI-assisted workflow" (the arrow keys move between them). The two speakers record their own segments and the cuts fall at section changes. The last 10 seconds are a buffer.
 
-On screen: Overview. The Part 1 and Part 2 score tiles, "Automated tests" and "Change log" at the top, then "Judging criteria and weights", "What changed in the new market" and "Standing on both boards".
+## Opening, Oussama El Hadi, 0:00-0:13 (29 words)
 
-| Spoken (English) |
-|---|
-| Hello, we are Yichuan Lin and Oussama El Hadi. |
-| This board follows the four judging criteria. |
-| In the new market, 76 percent of test rows are new business, against 15 percent before. |
-| Our ranked Part 1 entry scored 0.13689 on the private board, rank 12 of 51. |
-| Part 2 scored 0.15807 on the public board, rank 18 of 38. |
-
-## 1 Pricing Performance & Adaptation (40%), 0:25-2:20 (256 words)
-
-On screen: the Pricing Performance & Adaptation section. "Public D2 by submission", "New business share", "Limitations and uncertainty", "Blend recipes: weight of each model family", then "Data quality: ten documented issues". The office premium sentence is spoken over the last panel.
+On screen: the Overview section, the four score tiles and "Judging criteria and weights".
 
 | Spoken (English) |
 |---|
-| In Part 2, the public score rose from 0.14370 with emerging rows only to 0.15193 with pooled training. |
-| Motor and buildings blends then lifted it to 0.15781, and three-seed trees to 0.15807. |
-| New business is 7.8 percent of motor training exposure but 76.9 percent of the 2025 test. |
-| Validation rows were 92 percent renewals, so adoption gates now include test-mix views. |
-| Limits: new-business evidence is thin, at 37 to 697 claims per view, and the Part 2 private score is unknown. |
-| Yichuan's approach blends five Tweedie models: GLM, GAM, LightGBM, XGBoost and CatBoost. Blend weights must beat equal weights on both time folds. |
-| Oussama's approach is a frequency and severity GLM with Blend4, an equal average of four models. |
-| The Part 1 blend of 0.7 S09 and 0.3 Blend4 scored 0.13718 privately: a late submission, not ranked. |
-| In Part 2 we used both. Oussama's GAM takes 0.4 of buildings, and motor new business is an equal blend of twelve candidates. |
-| Developed rows train at weight 0.3 or 1.0, and reporting curves are borrowed, because two years give no tail. |
-| Motor moved to the market's own full trend, 1.1606, after six public probes: the one decision the board led. |
-| Claims match to the policy row containing the loss date, net of recoveries. |
-| Motor bodily injury is only 14 percent reported at 30 days, so claims are developed with a reporting-lag curve, then capped at the 99.5th percentile. |
-| For 20 reference policies, office premium is risk premium plus catastrophe and fixed costs, divided by one minus the loadings. |
+| Hello, we are Oussama El Hadi and Yichuan Lin. In five minutes: our approach, our results, our AI-assisted workflow, and what changed when the new market data was introduced. |
 
-## 2 Effective Use of AI (25%), 2:20-3:25 (148 words)
+## Part 1: developed market, Oussama El Hadi, 0:13-1:38 (191 words)
 
-On screen: the Effective Use of AI section. "The loop on every change" with "Stages in the AI log" below it, then "AI output rejected or corrected after checking" with "Independent audits of AI work", then "Change log outcomes, 62 entries" and "Human review register".
+On screen: the "Part 1: developed market" section. Rows 1 and 2 over "Data quality: ten documented issues"; rows 3 and 4 over "Target and development, Part 1"; rows 5, 7 and 8 over "Oussama's Part 1 pipeline" (row 8 points at its "Claim history" row, row 7 at its validation table); row 6 over "Blend recipe, Part 1: weight of each model family"; row 9 over "Standing on both boards".
 
 | Spoken (English) |
 |---|
-| We used Claude Code in three roles. |
-| A coordinator plans and decides. Workers write the test first, then the code. Auditors only read and report. |
-| Every change follows one loop: propose, check, sign, log. The AI log holds 35 steps. |
-| We reject AI output too. Per-peril curves, C022, equal the pooled curve. A frequency times severity model, C023, fell below the best single model. |
-| Target encoding, C031, and re-tuning, C032, missed the 0.002 rule. |
-| A market interaction blend passed at plus 0.0024, but we overruled it, C042, because of an unvalidated 21 percent new-business shift. |
-| Read-only audits raised B1 to B8 and P2-F1 to P2-F10. P2-F1 found validation was mostly renewals, which led to the test-mix views. |
-| Of 62 change log entries, 44 were adopted, 3 partly, 11 evaluated but not adopted and 4 rejected or withdrawn. |
-| Our team lead signed off sixteen key decisions by 30 October. |
+| In Part 1, we predict the ultimate 2025 claim cost of every motor, buildings and contents policy. |
+| We started with a data audit: exposure in mixed units, sums insured a thousand times too large and 600 duplicate claims, all fixed in code. |
+| Claims stop at the end of 2024, so only 77 percent of 2024 motor cost is reported. Bodily injury is slowest: 14 percent at 30 days. |
+| We develop it with a reporting curve from 2021 losses, and cap claims at the 99.5th percentile with a load, so no single claim sets a rating factor. |
+| We built two pipelines. Oussama's models frequency and severity with a GLM selected by BIC and a spline GAM, then averages them with LightGBM and CatBoost. |
+| Yichuan's fits five Tweedie models on pure premium, and blend weights must beat equal weights on both time folds. |
+| Both validate on a later year, never a random split. |
+| The leaderboard caught one gap validation missed: 2025 claim history is incomplete, so I count only claims known on 1 January. |
+| S09, our ranked entry, scored 0.13689 privately. Blended 70/30 with Oussama's Blend4, it reaches 0.13718, as a late submission. |
 
-## 3 Trust, Validation & Guardrails (20%), 3:25-4:15 (115 words)
+## Part 2: emerging market, Yichuan Lin, 1:38-3:18 (226 words)
 
-On screen: the Trust, Validation & Guardrails section. "Six-view gains in D2, last two adopted steps", "Six validation views", "Adoption gates" and "Guardrails".
-
-| Spoken (English) |
-|---|
-| The last two adopted steps gained on all six views and on the public board: buildings 0.00204, motor 0.00103. |
-| Only candidates that gained on all six improved the public score. |
-| A time fold and five policy-grouped folds are each scored raw, re-weighted to the 77 percent new-business test share, and on new-business rows only. |
-| A change needs a mean gain of at least 0.002 and no regression. |
-| Seed averaging cannot be tested on folds, so we set its keep rule before the score. |
-| We wrote 342 tests before the code, and the raw data is read-only with a SHA256 check. |
-| The rebuild script reproduces S09 and P2-S13. Logged commands reproduced P2-S14 to within one billionth. |
-
-## 4 Communication & Documentation (15%), 4:15-4:45 (58 words)
-
-On screen: the Communication & Documentation section. "Documentation set", "Repository layout", "Submissions logged" and "How a reviewer rebuilds each file".
+On screen: the "Part 2: emerging market" section. "What changed in the new market" and "New business share" for the opening lines and the data sentence; "Public D2 by submission" for the training sentences; "Six validation views" and "Adoption gates" for the validation sentences; "Blend recipe, Part 2: weight of each model family" and "Six-view gains in D2, last two adopted steps" for the gate sentences and the motor trend; "Limitations and uncertainty" for the last two sentences. Office premium has no panel; it is spoken over the recipe panel.
 
 | Spoken (English) |
 |---|
-| Documentation sits beside the code: README, data guide, change log, AI log, review register, report and two audits. |
-| The repository holds code, tests, docs, data, the submitted files and Oussama's Part 1 pipeline. |
-| We logged nine Part 1 submissions plus three unranked, and fifteen in Part 2. |
-| For each file, a reviewer finds the command that rebuilds it. |
+| Part 2 moved the same pipeline to the emerging market. |
+| Five Tweedie models per line, blended by weights that must beat equal weights on every fold. |
+| Three things changed. |
+| First, the data: two training years instead of four, and 76 percent of the 2025 test rows are new business. |
+| Second, training. |
+| On emerging rows alone the GLM and GAM overfit. |
+| So we pooled both markets: developed rows enter at a weight set by validation, market is a feature, and the level is re-balanced on emerging rows. |
+| The public score rose from 0.14370 to 0.15193. |
+| Third, validation. |
+| Our audit found that validation rows were 92 percent renewals. |
+| So every fold is now also scored re-weighted to the test mix, and on new-business rows only: six views. |
+| A change must gain on average 0.002 and lose on none. |
+| Under that gate, contents became a blend across two training runs, motor new business an equal blend of twelve candidates, and buildings 0.4 Oussama's GAM plus 0.6 CatBoost. |
+| Motor moved to the market's own trend, 1.1606, after six public probes: the one decision the board led. |
+| Office premium adds catastrophe and fixed costs and divides by one minus the loadings. |
+| Our final file, P2-S15, scores 0.15807 on the public board, rank 18 of 38. |
+| The private score is unknown, and new-business evidence is thin: 37 to 697 claims per view. |
 
-## Closing, 4:45-4:50 (12 words)
+## AI-assisted workflow, first half, Oussama El Hadi, 3:18-3:54 (0 words so far, about 80 to come)
 
-On screen: Overview again, with the Part 1 and Part 2 score tiles in view.
+Note: this segment is about 80 words, still to be written by Oussama. The third row is the one judges listen for.
+
+On screen: the "AI-assisted workflow" section, "The loop on every change" with "Stages in the AI log".
 
 | Spoken (English) |
 |---|
-| Code, tests and logs are in our repository. Thank you for watching. |
+| [Oussama: which parts of the Part 1 pipeline the AI wrote, one sentence] |
+| [Oussama: how each piece was re-run on the 2024 validation before it entered Blend4] |
+| [Oussama: one concrete case where the AI proposed X, the check showed Y, and he kept, changed or dropped it] |
+| [Oussama: what the AI changed for him and what it did not decide] |
 
-Total spoken words: 648 (about 4:48 at 135 words per minute, 2 seconds under the 4:50 target).
+## AI-assisted workflow, second half, Yichuan Lin, 3:54-4:41 (107 words)
+
+On screen: the "AI-assisted workflow" section. "The loop on every change", then "AI output rejected or corrected after checking" with "Independent audits of AI work", then "Human review register" and "Guardrails".
+
+| Spoken (English) |
+|---|
+| Our AI-assisted workflow used Claude Code in three roles. |
+| A coordinator planned each step and fixed the decision rule before any run. |
+| Workers wrote a failing test first, then the code. |
+| An auditor only read and reported, and never trained a model. |
+| Every change went through one loop: propose, check, sign, log. |
+| We rejected AI output when the check failed. |
+| Per-peril reporting curves changed nothing, so they were dropped. |
+| One blend passed our rule and we still overruled it, because its gain was in-sample. |
+| The audit found our validation set was 92 percent renewals. |
+| That finding became the test-mix gates. |
+| Sixteen key decisions carry a human signature. |
+
+## Closing, Yichuan Lin, 4:41-4:48 (14 words)
+
+On screen: the Overview section again, with the score tiles in view.
+
+| Spoken (English) |
+|---|
+| Code, tests, logs and the report are in our repository. Thank you for watching. |
+
+Total spoken words: 567 written (4:12 at 135 words per minute), plus about 80 words still to come for Oussama's AI-assisted workflow segment: about 647 words and 4:48 in all, 2 seconds under the 4:50 target.

@@ -133,7 +133,7 @@ $519.47 / 0.49 = 1{,}060.14$. The 20 policies total $R = 8{,}969.31$ and $P = 20
 We used Claude Code in three roles. A coordinator (claude-fable-5-1) planned each step, wrote the decision rule before
 a run and proposed what to submit; workers (claude-opus-5-5, claude-sonnet-5-5) wrote a failing test, then the code,
 ran the experiment and logged the change; read-only auditors backed each finding with a script (B1 to B8, P2-F1 to
-P2-F10). \texttt{docs/AI\_LOG.md} (A01 to A36) records each step's output, check and status. Checks stopped or corrected
+P2-F10). \texttt{docs/AI\_LOG.md} (A01 to A37) records each step's output, check and status. Checks stopped or corrected
 several AI proposals (Appendix~\ref{ov:app-ai}): the coordinator rejected a market-interaction blend that passed the rule
 (+0.0024) but moved the new-business level 21\% untested (A23); a buildings renewal segment that passed the gate was
 rejected because its gain came from a new-business-only GLM (A26); a note that read a private score as public was
@@ -166,7 +166,7 @@ routes, differs from the upload by at most 5.1e-10 (C058).
 
 \texttt{README.md} gives the task, layout, commands and known limitations. In \texttt{docs/},
 \texttt{CHANGELOG.md} logs each change (C000 to C061) with reason, evidence and code location;
-\texttt{AI\_LOG.md} (A01 to A36) is the AI record; \texttt{HUMAN\_REVIEW.md} lists the signed decisions R01 to R16;
+\texttt{AI\_LOG.md} (A01 to A37) is the AI record; \texttt{HUMAN\_REVIEW.md} lists the signed decisions R01 to R16;
 \texttt{dashboard/index.html} is the evidence board; \texttt{VIDEO\_SCRIPT.md} is the video script. \texttt{reproduce.ps1} rebuilds S09 from the raw data, and with \texttt{-Part2} also P2-S13.
 
 %==================== PASTE BLOCK 6: after Block 5, as the last graded section ====================

@@ -234,15 +234,41 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       sub: "Built by Oussama El Hadi (OBLEMOS) apart from the main pipeline; the scripts are kept as they were run",
       stages: [
         { fig: "Prepare", text: "Exposure from the dates; sum_insured and construction codes fixed; about 600 duplicate claims removed; late-reported claims (IBNR) by shrinking the exposure; each claim capped at the line's 99.5th percentile with a loading; customer_service_contacts dropped as leaky" },
+        { fig: "Claim history", text: "Improved 3: cust_claims_prev_1y counts only claims reported before 1 January of the row's year, so 2025 rows see what training rows saw" },
         { fig: "GLM", text: "Poisson frequency × Gamma severity, written as its own IRLS; numeric variables binned; forward selection on BIC by score test" },
         { fig: "Blend4", text: "(GLM + GAM + LightGBM + CatBoost) / 4, an equal average; the GAM on P-splines, LightGBM and CatBoost with a Tweedie loss" },
         { fig: "Validation", text: "Fit on 2021 to 2023, scored on 2024 with Tweedie D2" },
         { fig: "With {p1}", text: "Put on {p1}'s level per line, so the blend changes the ranking of rows, not the line totals; correlation of the two predictions 0.965" }
       ],
       scoresHead: "Kaggle Part 1 scores",
+      valHead: "Oussama's 2024 validation, Tweedie D2",
+      valCols: ["Model", "All lines", "Buildings", "Contents", "Motor"],
+      val: [
+        ["GLM", [0.1296, 0.1071, 0.0872, 0.0834]],
+        ["GAM", [0.1306, 0.1094, 0.0890, 0.0831]],
+        ["LightGBM", [0.1348, 0.1157, 0.0935, 0.0857]],
+        ["CatBoost", [0.1344, 0.1147, 0.0932, 0.0858]],
+        ["Blend4", [0.1351, 0.1156, 0.0940, 0.0865]]
+      ],
+      valBold: "Blend4",
       lateStatus: "late submission, not ranked",
       finalStatus: "the ranked entry, rank {p1Rank} of {p1Teams}",
-      source: "oblemos_part1/README.md · SUBMISSIONS.md, post-deadline blend · REPORT_DRAFT.md section 3"
+      source: "oblemos_part1/README.md · oblemos_part1/Part_1_briefing_and_video_script.pdf · oblemos_part1/logs/run_improved4.log · SUBMISSIONS.md, post-deadline blend · REPORT_DRAFT.md section 3"
+    },
+
+    target: {
+      title: "Target and development, Part 1",
+      sub: "The target is each row's ultimate claim cost, built from one claims snapshot at the end of 2024",
+      stages: [
+        { fig: "Matching", text: "A claim attaches to the row of the same policy whose period contains its loss date; the target is incurred minus recoveries; repudiated claims (1,711, all zero amounts) are excluded; unmatched claims are listed and left out; totals reconcile with a difference of 0 (C005, C037)" },
+        { fig: "Development", text: "The claims file is one snapshot, so a cost-weighted reporting-lag curve per line is fitted on accident year 2021; each row's days in force give a completeness factor, and developed cost is reported cost divided by it (C006). Motor 2024 pure premium: 454 reported, 585 developed. Motor bodily injury is 43% of cost and 14% reported at 30 days; 20.7% of 2024 motor claims were still open at 2024-12-31" },
+        { fig: "Large losses", text: "Each claim capped at its line's 99.5th percentile; the cost above the cap is added back as a per-line load (C014)" },
+        { fig: "Trend", text: "Per-line log-linear trend to 2025, applied at half its fitted size (C019); the public board chose the half: full 0.12453 (S01), none 0.12376 (S02), half 0.12464 (S03) (C016)" }
+      ],
+      linesHead: "By line",
+      linesCols: ["Line", "Cap (CU)", "Cost above cap", "Half trend"],
+      lines: [["Motor", 51585, 8.8, 1.018], ["Buildings", 147445, 4.2, 1.095], ["Contents", 28449, 2.1, 1.064]],
+      source: "REPORT_DRAFT.md sections 2 and 3, A2, A5 · target_summary.txt · CHANGELOG.md C005, C006, C014, C016, C019, C037"
     },
 
     p2: {
@@ -365,10 +391,10 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       rule: "the Area cell decides (rejected; evaluation, not adopted or probe; one part adopted), else the row's own verdict (not adopted, nothing adopted); C024 is withdrawn (removed by C026); all other rows adopted."
     },
 
-    ailog: { first: "A01", last: "A36", count: 36,
+    ailog: { first: "A01", last: "A37", count: 37,
       stages: {
         "Part 1": [["A01", "Setup"], ["A02", "EDA"], ["A03", "Data quality"], ["A04", "Cleaning rules"], ["A05", "Target & development"], ["A06", "Leakage"], ["A07", "Features & models"], ["A08", "Debugging"], ["A09", "Development"], ["A10, A12", "Models"], ["A11", "Features"], ["A13", "Audit"], ["A14", "Feature policy"], ["A15", "Training"], ["A16", "Refit"], ["A17", "Governance"], ["A18", "Feature test"], ["A19", "Tuning"]],
-        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"], ["A36", "Dashboard by video section"]]
+        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"], ["A36", "Dashboard by video section"], ["A37", "Part 1 panels"]]
       } },
 
     loop: [
@@ -935,6 +961,9 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     ]);
   }
   function sectionHead(s) { return secHead(s.over, s.nav, fill(s.text)); }
+  function stageList(stages) {
+    return H("ul", { class: "list lim" }, stages.map(function (s) { return H("li", null, [H("span", { class: "fig", text: fill(s.fig) }), H("span", { text: fill(s.text) })]); }));
+  }
 
   /* Blend recipe, one panel per part; rowText words a line's weights for the table view */
   function recipeWeights(segs) {
@@ -1009,10 +1038,23 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       [P1.late.label, OB.lateStatus, f5(P1.late.priv), f5(P1.late.pub)],
       [P1.final.id, fill(OB.finalStatus), f5(P1.final.priv), f5(P1.final.pub)]
     ]);
+    /* Validation table: the blend row is bold where it is the best in its column */
+    var valBest = OB.valCols.slice(1).map(function (c, j) { return Math.max.apply(null, OB.val.map(function (r) { return r[1][j]; })); });
+    var valT = table(OB.valCols.map(function (h, j) { return { h: h, num: j > 0 }; }), OB.val.map(function (r) {
+      return [r[0]].concat(r[1].map(function (v, j) { return r[0] === OB.valBold && v === valBest[j] ? H("b", { text: v.toFixed(4) }) : v.toFixed(4); }));
+    }));
     var ob = frame({ title: OB.title, sub: OB.sub, figure: false,
-      chart: [H("ul", { class: "list lim" }, OB.stages.map(function (s) { return H("li", null, [H("span", { class: "fig", text: fill(s.fig) }), H("span", { text: fill(s.text) })]); })),
-        H("h4", { style: "margin-top:8px", text: OB.scoresHead }), H("div", { class: "tbox" }, obT)],
+      chart: [stageList(OB.stages),
+        H("h4", { style: "margin-top:8px", text: OB.scoresHead }), H("div", { class: "tbox" }, obT),
+        H("h4", { style: "margin-top:8px", text: OB.valHead }), H("div", { class: "tbox" }, valT)],
       source: OB.source + " · " + P1.script });
+
+    var TG = DATA.target;
+    var tgT = table(TG.linesCols.map(function (h, j) { return { h: h, num: j > 0 }; }),
+      TG.lines.map(function (l) { return [l[0], int(l[1]), pct(l[2]), l[3].toFixed(3)]; }));
+    var tg = frame({ title: TG.title, sub: TG.sub, figure: false,
+      chart: [stageList(TG.stages), H("h4", { style: "margin-top:8px", text: TG.linesHead }), H("div", { class: "tbox" }, tgT)],
+      source: TG.source });
 
     var rec = recipePanel(DATA.recipes.p1, function (r) { return recipeWeights(r.segs); }, DATA.recipes.p1Note);
 
@@ -1042,7 +1084,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       chart: H("div", { class: "tbox" }, table([{ h: "Q" }, { h: "Issue" }, { h: "Treatment" }, { h: "Log" }],
         DATA.dq.map(function (q) { return [q[0], q[1], q[2], /^C\d+$/.test(q[3]) ? idTag(q[3]) : q[3]]; }), "dq")),
       source: DATA.dqSource, cls: "a-dq" });
-    return [sectionHead(sec), H("div", { class: "g c-ov" }, [H("div", { class: "colstack" }, [ob, rec]), H("div", { class: "colstack" }, [stand, dq])])];
+    return [sectionHead(sec), H("div", { class: "g c-ov" }, [dq, tg]), H("div", { class: "g c-ov" }, [ob, H("div", { class: "colstack" }, [rec, stand])])];
   }
 
   function secPart2(sec) {
