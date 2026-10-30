@@ -1,6 +1,6 @@
 # Video script: IAA AI Assisted Hackathon 2026
 
-Length 5:00. Speech runs to 4:45 and the last 15 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only (left column).
+Length 5:00. Speech runs to 4:50 and the last 10 seconds are a buffer. Pace is about 135 words per minute. Word counts count the spoken column only (left column).
 
 ## Segment 1, 0:00-0:30: who we are and the task (69 words)
 
@@ -58,18 +58,18 @@ On screen: `docs/REPORT_DRAFT.md` section 7.1 and the section 7.4 table (emergin
 | Motor level looked low, so we moved to the emerging market's own trend, 1.16. For motor we also added a separate new-business blend, which passed all six validation views. | 车险的整体水平偏低，所以我们改用新兴市场自己的趋势系数 1.16。另外我们给车险的新业务单独做了一套融合，它在六个验证视角上全部通过。 |
 | We rejected interaction terms, new-business weighted training, and re-tuning, because none passed the gate. | 市场交互项、按新业务加权的训练、重新调参，这几项都没有通过门槛，所以被我们否决了。 |
 
-## Segment 5, 3:45-4:30: results (101 words)
+## Segment 5, 3:45-4:35: results (116 words)
 
-On screen: the Kaggle leaderboards for Part 1 and Part 2, then the report's office premium formula (`docs/REPORT_DRAFT.md` section 7.5) and the build-up table for the 20 reference policies.
+On screen: the Kaggle leaderboards for Part 1 and Part 2, the Part 1 post-deadline block of `docs/SUBMISSIONS.md`, then the report's office premium formula (`docs/REPORT_DRAFT.md` section 7.5) and the build-up table for the 20 reference policies.
 
 | Spoken (English) | 中文对照 |
 |---|---|
-| In Part 1, our final submission scored 0.13689 on the private board, rank 12 of 51. | 第一部分，我们的最终提交在私榜得到 0.13689，名列 51 支队伍中的第 12。 |
-| In Part 2, the public score rose from 0.14370 with emerging data only, to 0.15193 with pooled training, and now 0.15577. At recording time we rank 23rd of 35 teams, and the leader has 0.176. | 第二部分，公榜分数从只用新兴市场数据的 0.14370，升到合并训练后的 0.15193，现在是 0.15577。录制时我们排在 35 支队伍中的第 23，榜首是 0.176。 |
+| In Part 1, our ranked final scored 0.13689 on the private board, rank 12 of 51. The blend we present, a late submission and not ranked, scored 0.13718. | 第一部分，我们计入排名的最终提交在私榜得到 0.13689，名列 51 支队伍中的第 12。我们在报告里介绍的融合版本是截止后的迟交提交，不计排名，得分 0.13718。 |
+| In Part 2, the public score rose from 0.14370 with emerging data only, to 0.15193 with pooled training, and now 0.15807 with seed-averaged trees. At recording time we rank 18th of 38 teams, and the leader has 0.176. | 第二部分，公榜分数从只用新兴市场数据的 0.14370，升到合并训练后的 0.15193，现在用种子平均的树模型达到 0.15807。录制时我们排在 38 支队伍中的第 18，榜首是 0.176。 |
 | For the 20 reference policies, office premium is risk premium, plus catastrophe reinsurance for property and a fixed expense of 85, divided by one minus the loadings for expense, commission, tax and profit. | 对那 20 张参考保单，办公室保费等于风险保费，加上财产险的巨灾再保险成本和 85 的固定费用，再除以 1 减去变动费用、佣金、税和利润这几项的比例之和。 |
 | Our reporting curves are borrowed and the new-business evidence is thin. Part of the motor level came from leaderboard probes. | 局限有两点：报案曲线是借来的，新业务的证据很少；车险的整体水平有一部分来自对公榜的试探提交。 |
 
-## Segment 6, 4:30-4:45: closing (39 words)
+## Segment 6, 4:35-4:50: closing (39 words)
 
 On screen: the repository file tree: `README.md`, `reproduce.ps1`, `tests/`, `docs/CHANGELOG.md`.
 
@@ -79,4 +79,4 @@ On screen: the repository file tree: `README.md`, `reproduce.ps1`, `tests/`, `do
 | One script rebuilds Part 1 from the raw data, and a market setting runs the emerging data. | 一个脚本就能从原始数据重建第一部分的结果，换一个市场设置，同一套流程也能跑新兴市场的数据。 |
 | Next, we would test a developed-model offset, an idea from our audit. | 下一步，我们想试一试把成熟市场模型的预测当作偏移量，这是审计提出来的思路。 |
 
-Total spoken words: 637 (about 4:42 at 135 words per minute).
+Total spoken words: 652 (about 4:50 at 135 words per minute).

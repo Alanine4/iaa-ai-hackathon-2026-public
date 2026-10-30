@@ -37,11 +37,16 @@ Later, 2 changes passed the test-mix gate of section 6. Contents became a blend 
 | File | Recipe | Public | Private |
 |---|---|---|---|
 | S09 | Part 1 final: 5 models, guarded weights, half trend | 0.12863 | 0.13689, rank 12 of 51 |
+| S09 blend | Post-deadline blend, 0.7 S09 + 0.3 teammate model (OBLEMOS Blend4); late submission, not ranked | 0.12949 | 0.13718 |
 | P2-S01 | Emerging data only | 0.14370 | after 2026-10-31 |
 | P2-S04 | Pooled training on all lines, w = 0.3 | 0.15193 | |
 | P2-S10 | Buildings w = 1.0, motor at its own trend | 0.15414 | |
 | P2-S12 | Contents blend across 2 weight runs | 0.15474 | |
 | P2-S13 | Motor new-business segment blend | 0.15577 | |
+| P2-S14 | Buildings blended with the teammate's Part 1 GAM (C054) | 0.15781 | |
+| P2-S15 | P2-S14 recipe with 3-seed averaged tree predictions (C057); final candidate | 0.15807 | |
+
+S09 is the ranked Part 1 entry. The Part 1 method we present is a post-deadline blend of 0.7 S09 and 0.3 of a teammate's model, OBLEMOS Blend4, put on S09's level per line (`oblemos_part1/blend_with_S09.py`). It was scored as a late submission, so it is not ranked. The final Part 2 candidate, P2-S15, is the P2-S14 recipe with LightGBM, XGBoost and CatBoost test predictions averaged over 3 seeds (C057). Seed averaging leaves the out-of-fold predictions unchanged, so no validation gate applies. We adopted it by a rule fixed before the score was seen: keep it unless the public score falls more than 0.0005 below P2-S14. Its public score is 0.15807, 0.00026 above P2-S14, which is under our 0.0005 tie band.
 
 ## 4. Major decisions and what was rejected
 
@@ -245,8 +250,9 @@ Part 1. Private scores come from the Kaggle submissions listing after the close.
 | S07 | Feature policy, inner early stopping, CatBoost, guarded weights | 0.12851 | 0.13693 |
 | S08 | S07 with a lower trend on buildings and contents (probe) | 0.12820 | 0.13703 |
 | S09 | S07 recipe with seed-averaged refit (final) | 0.12863 | 0.13689 |
+| S09 blend | 0.7 S09 + 0.3 teammate model (OBLEMOS Blend4), post-deadline, late submission, not ranked | 0.12949 | 0.13718 |
 
-Part 2, public scores (`docs/SUBMISSIONS.md`). On 2026-10-29 P2-S13 ranked 23 of 35 teams on the public board.
+Part 2, public scores (`docs/SUBMISSIONS.md`). On 2026-10-29 P2-S13 ranked 23 of 35 teams on the public board. On 2026-10-30 P2-S15 ranked 18 of 38 (median 0.15773).
 
 | ID | Recipe | Public |
 |---|---|---|
@@ -263,6 +269,8 @@ Part 2, public scores (`docs/SUBMISSIONS.md`). On 2026-10-29 P2-S13 ranked 23 of
 | P2-S11 | P2-S10 uplift on motor new business only (tie, not adopted) | 0.15434 |
 | P2-S12 | P2-S10 with the contents blend across weight runs | 0.15474 |
 | P2-S13 | P2-S12 with the motor new-business segment blend | 0.15577 |
+| P2-S14 | P2-S13 with buildings = 0.4 teammate Part 1 GAM + 0.6 pooled CatBoost, at the P2-S13 buildings total (C054) | 0.15781 |
+| P2-S15 | P2-S14 recipe with 3-seed averaged LightGBM, XGBoost and CatBoost test predictions (C057); final candidate | 0.15807 |
 
 ### A6. Office premium split by item
 
