@@ -21,7 +21,7 @@ Private scores published after the close (Kaggle CLI, 2026-10-29): S01 0.13347, 
 
 Recipe: prediction = 0.7 x S09 + 0.3 x OBLEMOS Blend4. Blend4 (`oblemos_part1/submissions/part1_oblemos_improved4_Blend4.zip`, the teammate's model) is first put on S09's level per line (row_id prefix B / C / M), so the blend changes the ranking of the rows and not the line totals. Script: `oblemos_part1/blend_with_S09.py` (writes `work/part1_blend_S09_oblemos_30.csv` and the 0.5 variant; 626,639 rows, mean 345.72); repository copy `submissions/part1_post_deadline_blend_S09_oblemos_30.zip`. The file scored on Kaggle was the teammate's upload `part1_blend_S09_yours_30.csv` (2026-10-28 14:19 UTC, late submission). Its bytes are not in the repository, so identity with the repository copy is not verified. Two weights were built, 0.3 and 0.5, and both were scored after the close.
 
-| Entry (all late submissions except S09) | Public | Private | Private vs S09 |
+| Entry (S09 is the ranked entry; the others were not selected or were late, and are not ranked) | Public | Private | Private vs S09 |
 |---|---|---|---|
 | S09, the ranked Part 1 entry (rank 12 of 51) | 0.12863 | 0.13689 | – |
 | OBLEMOS alone | 0.12736 | 0.13526 | -0.00163 |
@@ -35,7 +35,7 @@ The team lead decided on 2026-10-30 that the 0.7 / 0.3 blend is the Part 1 metho
 
 Competition: iaa-ai-assisted-hackathon-2026-part-2 (deadline 2026-10-31 03:59:59 local). Public leaderboard share not stated; treated like Part 1 (about a third of the test rows).
 Standing on 2026-10-29: P2-S13 0.15577 is rank 23 of 35 teams (leader 0.17556).
-Standing on 2026-10-30: P2-S15 0.15807 is rank 18 of 38 teams (median 0.15773); Kaggle final selection to be P2-S15, with P2-S14 (0.15781) as the hedge.
+Standing on 2026-10-30: P2-S15 0.15807 is rank 18 of 38 teams (median 0.15773, leader 0.17556); Kaggle final selection to be P2-S15, with P2-S14 (0.15781) as the hedge.
 Validation = emerging time fold (train 2023 -> score 2024) and grouped 5-fold CV (`output/emerging/blend_weights_<line>.json`, C036).
 
 | # | Date | File | What it is | Validation (d2_cal) | Public score | Public rank | Notes |

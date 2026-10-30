@@ -1,0 +1,1175 @@
+<title>Hackathon Evidence Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700&display=swap">
+<style>
+:root {
+  color-scheme: light; --bg: #ffffff; --fg: #1d3d63; --ink-2: #5b5b5b; --muted: #767676;
+  --cap: #577291; --head: #002147; --head-ink: #ffffff; --head-ink-2: #a4b6ca; --accent: #ce261e;
+  --focus: #0073e6; --band: #f0f4fa; --wash: #ebeef2; --line: #e7e7e7; --grid: #ececec;
+  --axis: #a1a1a1; --context: #a1a1a1; --on-fill: #ffffff; --mark: #1d3d63; --s1: #286bbb;
+  --s2: #00875e; --s3: #b16214; --s4: #6d3e91; --s5: #970046; --o1: #1d3d63; --o2: #42618a;
+  --o3: #6884a8; --o4: #93a9c4; --tip-bg: #002147; --tip-fg: #ffffff; --clear: transparent;
+  --serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --sans: Lato, "Helvetica Neue", Arial, system-ui, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--sans); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.top { background: var(--head); color: var(--head-ink); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+.top-in { max-width: 1600px; margin: 0 auto; min-height: 40px; display: flex; align-items: center; flex-wrap: wrap; gap: 2px 20px; padding-block: 4px; }
+.top-in > * { min-width: 0; }
+.brand { font: 600 19px/1.1 var(--serif); letter-spacing: -0.01em; }
+.ctx { font: 900 11px/1.3 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--head-ink-2); }
+.who { margin-left: auto; font-size: 13px; color: var(--head-ink-2); } .who b { color: var(--head-ink); font-weight: 700; }
+.wrap { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 0 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 14px; }
+.toc { position: sticky; top: 0; align-self: start; padding-block: 14px; min-width: 0; }
+.toc-h, .over, .cap-h { font: 900 11px/1.33 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cap); margin: 0; }
+.toc ol { list-style: none; margin: 8px 0 0; padding: 0; border-left: 1px solid var(--line); }
+.toc a { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 0 4px; padding: 8px 8px 8px 10px; margin-left: -1px; border-left: 3px solid var(--clear); text-decoration: none; color: var(--fg); }
+.toc a:hover { background: var(--band); } .toc a:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.toc a[aria-current="page"] { border-left-color: var(--accent); background: var(--band); } .toc .tm { font-size: 12px; color: var(--muted); padding-top: 1px; }
+.toc .nm { font-size: 14px; font-weight: 700; line-height: 1.3; min-width: 0; } .toc .wt { grid-column: 2; font-size: 12px; color: var(--ink-2); }
+.toc .hint { margin: 12px 0 0 2px; font-size: 12px; color: var(--muted); }
+main { min-width: 0; padding-block: 10px 0; }
+.sec-head { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); align-items: end; gap: 4px 32px; border-bottom: 1px solid var(--line); padding-bottom: 7px; margin-bottom: 8px; }
+.sec-head > div { min-width: 0; }
+h1 { font: 600 28px/1.15 var(--serif); letter-spacing: -0.01em; margin: 3px 0 0; color: var(--fg); }
+.crit { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); max-width: 104ch; }
+.g { display: grid; gap: 12px; margin-bottom: 12px; min-width: 0; } .g > * { min-width: 0; }
+section > .g:last-child { margin-bottom: 0; }
+.frame { margin: 0; border: 1px solid var(--line); background: var(--bg); padding: 9px 13px 7px; display: flex; flex-direction: column; min-width: 0; }
+.frame h3 { font: 600 16.5px/1.3 var(--serif); margin: 0; color: var(--fg); } .frame h4 { font: 700 13px/1.3 var(--sans); margin: 0 0 2px; color: var(--fg); }
+.sub { margin: 1px 0 6px; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+.note { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--ink-2); } .note b { color: var(--fg); }
+.src { margin: 0; margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.src > span { min-width: 0; } .src b { font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 3px 14px; margin: 2px 0 6px; padding: 0; list-style: none; font-size: 12px; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; min-width: 0; } .legend .n { color: var(--fg); font-weight: 700; }
+.sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; flex: none; } .sw.dot { border-radius: 50%; width: 10px; height: 10px; }
+.sw.ring { border-radius: 50%; width: 10px; height: 10px; background: var(--bg); border: 2px solid var(--mark); }
+.chart { min-width: 0; width: 100%; }
+.viz { display: block; overflow: visible; } .viz text { font-family: var(--sans); font-size: 12px; fill: var(--ink-2); } .viz .lab { fill: var(--fg); }
+.viz .b { font-weight: 700; } .viz .v { fill: var(--fg); font-weight: 700; } .viz .big { font-size: 13.5px; }
+.viz .mut { fill: var(--muted); font-size: 11px; font-weight: 400; }
+.viz .cap { fill: var(--cap); font-size: 10.5px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+.viz .in { fill: var(--on-fill); font-size: 11px; font-weight: 700; pointer-events: none; } .viz .in.dk { fill: var(--fg); }
+.viz .halo { paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; } .viz .base { stroke: var(--axis); stroke-width: 1; }
+.viz .gl { stroke: var(--grid); stroke-width: 1; } .viz .guide { stroke: var(--line); stroke-width: 1; } .viz .ref { stroke: var(--fg); stroke-width: 1.5; }
+.viz .ln { fill: none; stroke: var(--mark); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.viz .dot { fill: var(--mark); stroke: var(--bg); stroke-width: 2; } .viz .dot.ctx { fill: var(--context); }
+.viz .dot.late { fill: var(--bg); stroke: var(--mark); stroke-width: 2; }
+.viz .node { fill: var(--band); } .viz .arw { fill: none; stroke: var(--muted); stroke-width: 1.5; } .viz .ahd { fill: var(--muted); } .viz .band { fill: var(--clear); }
+.mk { fill: var(--mark); } .mc { fill: var(--context); }
+.m1 { fill: var(--s1); } .m2 { fill: var(--s2); } .m3 { fill: var(--s3); } .m4 { fill: var(--s4); } .m5 { fill: var(--s5); }
+.o1 { fill: var(--o1); } .o2 { fill: var(--o2); } .o3 { fill: var(--o3); } .o4 { fill: var(--o4); }
+.row-link { cursor: pointer; } .row-link:focus { outline: none; }
+.row-link:hover .band, .row-link:focus-visible .band { fill: var(--band); } .row-link:focus-visible .band { stroke: var(--focus); stroke-width: 2; }
+.hit, .cell { cursor: default; } rect.hit { fill: var(--clear); } .hit:focus, .cell:focus { outline: none; }
+.hit:focus-visible, .cell:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+path.hit:hover, .cell:hover { opacity: 0.82; }
+rect.hit:hover { fill: var(--band); fill-opacity: 0.35; }
+.fh { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; } .fh > h3 { min-width: 0; padding-top: 2px; }
+.tabs { display: flex; gap: 2px; flex: none; }
+.tabs button { font: 700 11.5px/1 var(--sans); color: var(--ink-2); background: none; border: 0; border-bottom: 2px solid var(--line); padding: 6px 8px 5px; cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); }
+.tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.tbox { overflow-x: auto; min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.dq { font-size: 11.5px; line-height: 1.3; } .dq td { padding: 3px 6px; } .dq th { padding: 4px 6px; }
+th { text-align: left; font-weight: 700; font-size: 11.5px; color: var(--fg); padding: 5px 7px; border-bottom: 1px solid var(--axis); background: var(--bg); }
+td { padding: 4px 7px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
+td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.num, th.num { text-align: right; white-space: nowrap; } td.ids { font-size: 11.5px; }
+.id { font-weight: 700; font-size: 11.5px; color: var(--fg); background: var(--wash); padding: 1px 5px; border-radius: 2px; white-space: nowrap; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.kpi { padding: 10px 16px 10px 0; min-width: 0; } .kpi + .kpi { border-left: 1px solid var(--line); padding-left: 16px; }
+.kpi .val { font: 700 38px/1.1 var(--sans); font-variant-numeric: proportional-nums; color: var(--fg); margin: 4px 0 2px; }
+.kpi .what { font-size: 14px; font-weight: 700; color: var(--fg); margin: 0; } .kpi .meta { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); margin: 3px 0 0; }
+.kpi .late { margin: 7px 0 0; padding: 5px 8px; background: var(--band); border-left: 3px solid var(--mark); font-size: 12px; line-height: 1.4; color: var(--fg); }
+.kpi .late b { display: block; font-size: 10.5px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cap); }
+.spark { display: block; margin: 2px 0 0; }
+.list { list-style: none; margin: 4px 0 0; padding: 0; }
+.list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.42; color: var(--ink-2); }
+.list li:first-child { border-top: 0; } .list .fig { font-weight: 700; color: var(--fg); font-size: 13.5px; white-space: nowrap; } .list.tight li { padding: 4px 0; }
+.list.open { margin-top: 6px; border-top: 1px solid var(--line); } .list.open li { padding: 3px 0; font-size: 12px; } .list.open li:first-child { border-top: 0; }
+.list.lim li { grid-template-columns: 92px minmax(0, 1fr); padding: 5px 0; }
+.nw { white-space: nowrap; }
+.mkt td:first-child { font-weight: 400; color: var(--ink-2); white-space: normal; min-width: 8.5em; } .mkt td { color: var(--fg); }
+.mkt th:not(:first-child), .mkt td:not(:first-child) { text-align: right; white-space: nowrap; }
+.colstack { display: grid; gap: 12px; align-content: start; min-width: 0; } .colstack > * { min-width: 0; }
+.list strong { color: var(--fg); }
+.callout { margin: 8px 0 0; padding: 6px 10px; background: var(--band); border-left: 3px solid var(--fg); font-size: 12.5px; line-height: 1.42; color: var(--fg); }
+.chips { display: flex; flex-wrap: wrap; gap: 3px; list-style: none; margin: 0; padding: 0; }
+.chips li { font-size: 11.5px; line-height: 1.25; color: var(--fg); background: var(--wash); padding: 1px 6px; border-radius: 2px; min-width: 0; }
+.chips li:focus { outline: none; } .chips li:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.chips-row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 0 8px; align-items: start; margin-top: 5px; } .chips-row .cap-h { padding-top: 3px; }
+.counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 6px 0 4px; }
+.counts > div { min-width: 0; border-top: 1px solid var(--line); padding-top: 4px; }
+.counts .n { font: 700 26px/1.1 var(--sans); font-variant-numeric: proportional-nums; color: var(--fg); } .counts .t { font-size: 12px; color: var(--ink-2); }
+.gates { list-style: none; margin: 2px 0 0; padding: 0; }
+.gates li { padding: 7px 0; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.42; color: var(--ink-2); } .gates li:first-child { border-top: 0; }
+.gates b { display: block; font-size: 13px; color: var(--fg); }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 12px; }
+.tile { border-top: 3px solid var(--fg); padding: 8px 0 0; min-width: 0; } .tile .k { font: 600 21px/1.2 var(--serif); color: var(--fg); margin: 0; }
+.tile p { margin: 4px 0 0; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.tree { list-style: none; margin: 4px 0 0; padding: 0; font-size: 12.5px; }
+.tree li { padding: 5px 0 5px 14px; border-left: 1px solid var(--axis); position: relative; color: var(--ink-2); }
+.tree li::before { content: ""; position: absolute; left: 0; top: 15px; width: 9px; border-top: 1px solid var(--axis); } .tree b { color: var(--fg); }
+.big-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 4px; } .big-pair > div { min-width: 0; }
+.big-pair .n { font: 700 40px/1.1 var(--sans); font-variant-numeric: proportional-nums; color: var(--fg); } .big-pair .t { font-size: 13px; color: var(--ink-2); }
+.big-pair .x { font-size: 12px; color: var(--fg); margin-top: 4px; }
+#tip { position: fixed; z-index: 20; max-width: 320px; padding: 6px 9px; background: var(--tip-bg); color: var(--tip-fg); font-size: 12.5px; line-height: 1.35; border-radius: 2px; pointer-events: none; }
+.c-ov { grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); }
+.c-pr1 { grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.8fr) minmax(0, 1.3fr); }
+.c-pr2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+.c-ai { grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr); }
+.c-va { grid-template-columns: minmax(0, 1.28fr) minmax(0, 1fr); }
+.c-co { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 0.8fr); }
+.dq td:nth-child(2) { color: var(--fg); } .dq td:last-child { white-space: nowrap; }
+@media (max-width: 1359px) {
+  .c-pr1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .c-pr1 > :last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 1180px) {
+  .c-co { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .c-co > :last-child { grid-column: 1 / -1; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:nth-child(3) { border-left: 0; padding-left: 0; }
+  .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); }
+  .toc { z-index: 5; background: var(--bg); padding-block: 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .toc-h, .toc .hint { display: none; }
+  .toc ol { display: flex; margin: 0; border-left: 0; }
+  .toc a { display: block; border-left: 0; border-bottom: 3px solid var(--clear); margin: 0; padding: 6px 10px; white-space: nowrap; }
+  .toc a[aria-current="page"] { border-bottom-color: var(--accent); }
+  .toc .tm, .toc .wt { display: none; }
+  .sec-head { grid-template-columns: minmax(0, 1fr); }
+  .c-ov, .c-pr1, .c-pr2, .c-ai, .c-va, .c-co, .kpis, .tiles { grid-template-columns: minmax(0, 1fr); }
+  .c-co > :last-child, .c-pr1 > :last-child { grid-column: auto; }
+  .list.lim li { grid-template-columns: minmax(0, 1fr); }
+  .kpi, .kpi + .kpi, .kpi:nth-child(3) { border-left: 0; padding-left: 0; }
+  .kpi + .kpi { border-top: 1px solid var(--line); }
+  .counts { grid-template-columns: minmax(0, 1fr); }
+  .who { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+<div class="top" role="banner"><div class="top-in" id="top"></div></div>
+<div class="wrap">
+<nav class="toc" id="toc" aria-label="Sections"></nav>
+<main id="main"></main>
+</div>
+<div id="tip" role="tooltip" hidden></div>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------------------
+     DATA: every number, label and series on the board. Edit here only.
+     --------------------------------------------------------------------------- */
+  var DATA = {
+    asOf: "2026-10-30",
+    brand: "Hackathon Evidence Board",
+    context: "IAA AI-Assisted Hackathon 2026",
+    authors: "Yichuan Lin · Oussama El Hadi",
+    metric: "Tweedie deviance D2, power 1.5",
+    navHeading: "Judging criteria",
+    navHint: "Arrow keys ← → move between sections",
+
+    overview: {
+      token: "overview", time: "0:00", nav: "Overview", navSub: "Headline numbers",
+      title: "Same pipeline, new market",
+      thesis: "The same validated pipeline, re-pointed at a new market: pooled training plus test-mix-aware validation lifted public D2 from {first} (emerging rows only) to {last}."
+    },
+
+    criteria: [
+      { n: 1, token: "pricing", time: "0:40", weight: 40, title: "Pricing Performance & Adaptation",
+        text: "Quantitative accuracy across both Week 1 & 2 dataset. Appropriate modelling choices and adaptation to emerging market differences. Clear treatment of data quality, limitations, and remaining uncertainties." },
+      { n: 2, token: "ai", time: "2:10", weight: 25, title: "Effective Use of AI",
+        text: "Meaningful integration of AI throughout the actuarial workflow (e.g., EDA, feature engineering, modeling, diagnostics, and testing). Demonstrated improvement in quality, efficiency, challenge, or reliability. Rigorous verification of AI-generated outputs." },
+      { n: 3, token: "validation", time: "3:10", weight: 20, title: "Trust, Validation & Guardrails",
+        text: "Comprehensive validation checks, automated tests, and model diagnostics. Governance controls, reproducibility, and human review/escalation protocols." },
+      { n: 4, token: "communication", time: "4:20", weight: 15, title: "Communication & Documentation",
+        text: "Clear and concise video demo and written report explaining methodology and key decisions. Well-structured code repository with version control." }
+    ],
+    criteriaSource: "Kaggle overview page, Evaluation table (docs/references/kaggle_overview_page.md)",
+
+    markets: {
+      title: "What changed in the new market", sub: "Developed (Part 1) vs emerging (Part 2) data; lines: motor / buildings / contents",
+      cols: ["", "Developed · Part 1", "Emerging · Part 2"],
+      years: ["2021 to 2024", "2023 and 2024"],
+      nbTestRows: [[15.2, 15.1, 15.2], [76.0, 75.9, 76.1]],
+      purePremium: [[521, 441, 117], [407, 407, 89]],
+      motorFreqSev: "+34% / −42%", motorFreqSevLabel: "Motor frequency / severity vs developed",
+      source: "README.md · CHANGELOG.md C033 · part2_market_comparison.md"
+    },
+
+    p1: {
+      market: "Developed market", testRows: 626639, teams: 51, rank: 12, winner: 0.13923,
+      final: { id: "S09", file: "sub_v3_seeds.zip", priv: 0.13689, pub: 0.12863 },
+      late: { label: "70% S09 + 30% Blend4", formula: "0.7 × S09 + 0.3 × OBLEMOS Blend4", date: "2026-10-28", priv: 0.13718, pub: 0.12949 },
+      half: { label: "50% S09 + 50% Blend4", formula: "0.5 × S09 + 0.5 × OBLEMOS Blend4", priv: 0.13707, pub: 0.12971 },
+      oblemos: { label: "OBLEMOS Blend4 alone", priv: 0.13526, pub: 0.12736 },
+      script: "oblemos_part1/blend_with_S09.py",
+      axis: { lo: 0.135, hi: 0.140, step: 0.001 }
+    },
+
+    p2: {
+      market: "Emerging market", testRows: 209063, teams: 38, rank: 18, median: 0.15773, top: 0.17556,
+      final: { id: "P2-S15", file: "p2_s15_seeds3.zip", submitted: "2026-10-30 00:06 UTC" },
+      keepRule: 0.0005,
+      axis: { lo: 0.155, hi: 0.180, step: 0.005 },
+      trajectory: [
+        { id: "Baseline", note: "average cost only", tip: "Baseline, average cost only", v: 0.07319 },
+        { id: "P2-S01", note: "emerging rows only", tip: "P2-S01, emerging rows only", v: 0.14370 },
+        { id: "P2-S04", note: "pooled training", tip: "P2-S04, pooled developed + emerging training", v: 0.15193 },
+        { id: "P2-S13", note: "motor NB blend", tip: "P2-S13, motor new-business segment blend", v: 0.15577 },
+        { id: "P2-S14", note: "buildings blend", tip: "P2-S14, buildings blend with the Part 1 GAM refit", v: 0.15781 },
+        { id: "P2-S15", note: "3-seed tree refits", tip: "P2-S15, the P2-S14 recipe with 3-seed averaged tree refits", v: 0.15807 }
+      ],
+      trajDomain: 0.16
+    },
+
+    trajNote: "{final} vs {prev}: {delta} on the public board, inside the rule set before upload (keep unless it falls more than {keep}).",
+
+    nbShare: {
+      lines: ["Motor", "Buildings", "Contents"],
+      train: [7.8, 7.7, 7.7],
+      test: [76.9, 76.8, 77.0],
+      devTestRows: [15.2, 15.1, 15.2],
+      validationRenewals: 92
+    },
+
+    recipes: {
+      families: ["GLM", "GAM", "LightGBM", "XGBoost", "CatBoost"],
+      p1: { cap: "Part 1 · S07 blend, used by S09", tag: "S07", rows: [
+        { line: "Motor", segs: [["GLM", 0.20], ["GAM", 0.20], ["LightGBM", 0.20], ["XGBoost", 0.20], ["CatBoost", 0.20]] },
+        { line: "Buildings", segs: [["GAM", 0.20], ["LightGBM", 0.25], ["CatBoost", 0.55]] },
+        { line: "Contents", segs: [["GAM", 0.25], ["LightGBM", 0.20], ["XGBoost", 0.35], ["CatBoost", 0.20]] }
+      ] },
+      p2: { cap: "Part 2 · P2-S15 recipe", tag: "P2-S15", rows: [
+        { line: "Motor, new business", sub: "{nbRows} rows · 1/12 each", nb: true,
+          sets: ["pooled, developed weight 0.3", "pooled, developed weight 1.0", "new-business rows only"],
+          setsShort: ["pooled, dev 0.3", "pooled, dev 1.0", "NB rows only"],
+          setsTiny: ["dev 0.3", "dev 1.0", "NB only"],
+          models: ["GLM", "LightGBM", "XGBoost", "CatBoost"] },
+        { line: "Motor, renewals", segs: [["GLM", 0.25, "pooled, developed weight 0.3"], ["LightGBM", 0.25, "pooled, developed weight 0.3"], ["XGBoost", 0.25, "pooled, developed weight 0.3"], ["CatBoost", 0.25, "pooled, developed weight 0.3"]] },
+        { line: "Buildings", segs: [["GAM", 0.40, "Part 1 GAM (OBLEMOS), refit on the emerging market"], ["CatBoost", 0.60, "pooled, developed weight 1.0"]] },
+        { line: "Contents", segs: [["GLM", 0.35, "pooled, developed weight 0.3"], ["LightGBM", 0.65, "pooled, developed weight 1.0"]] }
+      ] },
+      nbRows: 68823,
+      seeds: 3,
+      trend: [["motor", 1.1606], ["buildings", 1.0948], ["contents", 1.0636]],
+      familyTips: { GLM: "GLM: banded one-hot Tweedie GLM", GAM: "GAM: cubic splines with one global ridge penalty", LightGBM: "LightGBM: Tweedie, shallow trees", XGBoost: "XGBoost: Tweedie, shallow trees", CatBoost: "CatBoost: Tweedie, native categories" },
+      p1Note: "families rescaled to their training totals; 0.05-grid weights kept only if both expanding time folds (2021-22 → 2023, 2021-23 → 2024) beat equal weights; half trend.",
+      p2Note: "P2-S14 weights, trees averaged over {seeds} seeds (C057), buildings at the P2-S13 total (C058); trend {trend}.",
+      source: "SUBMISSIONS.md S07, P2-S12 to P2-S15 · CHANGELOG.md C021, C047, C054, C057, C058"
+    },
+
+    dq: [
+      ["Q1", "Exposure in days (365, 289) or 1.0139", "(end − start + 1) / 365; raw kept as exposure_raw", "C001"],
+      ["Q2", "Motor customer_id lost leading zeros", "Zero-padded to 8 characters", "C002"],
+      ["Q3", "sum_insured outliers above 5,000,000", "Divided by 1,000 and flagged", "C003"],
+      ["Q4", "construction_type mixed case; codes T, W", "Lower-cased; T, W mapped to timber", "C004"],
+      ["Q5", "Claims with no policy row (mostly 2020)", "Excluded from target, listed for audit", "C005"],
+      ["Q6", "customer_service_contacts max 36 train, 6 test", "Leaks same-period claims: dropped", "C008"],
+      ["Q7", "About 2.5% random missing values", "GLM: own band; GAM: median plus a flag", "C011"],
+      ["Q8", "telematics_score about 87% empty", "Structural; absent in emerging data", "C035"],
+      ["Q9", "renewal_decision only in training", "Known after the row ends: not a feature", "features.py"],
+      ["Q10", "renewal_count median 6 → 3, vehicle_age 7 → 9", "Logged; NB shift gated by test-mix views", "C044"]
+    ],
+    dqSource: "DATA_GUIDE.md section 7 · CHANGELOG.md · src/aiiaa/models.py, features.py",
+
+    limits: [
+      { fig: "about 0.008", text: "Part 1 private D2 ran above public on every file: a property of the board split, not of the model." },
+      { fig: "−0.00070", text: "P2-S05 moved against validation on the public board. The validation rule decided, and the disagreement is logged." },
+      { fig: "37 to 697", text: "New-business claims per NB view (buildings 37 / 77, contents 65 / 102, motor 382 / 697): enough to gate, too few to tune." },
+      { fig: "no fold gate", text: "P2-S15's seed averaging leaves the out-of-fold predictions unchanged, so no validation view can test it (R16)." },
+      { fig: "unknown", text: "Part 2 private score until the board closes; selection rests on the six-view gate, not on the public board." }
+    ],
+    limitsSource: "SUBMISSIONS.md · README.md, Known limitations",
+
+    views: [
+      ["time", "Time fold, train 2023 then score 2024, raw weights"],
+      ["group_mean", "Mean of 5 policy-grouped folds, raw weights"],
+      ["time_testmix", "Time fold re-weighted so new business carries the 2025 test share (about 77%)"],
+      ["group_testmix", "Same re-weighting on the grouped folds"],
+      ["time_nb", "Time fold, new-business rows only, calibrated within that segment"],
+      ["group_nb", "Same on the grouped folds"]
+    ],
+    rule: 0.002,
+    gains: [
+      { title: "P2-S14 buildings vs P2-S13", pub: "+0.00204", v: [0.0068, 0.0018, 0.0052, 0.0058, 0.0048, 0.0068] },
+      { title: "P2-S13 motor vs P2-S12", pub: "+0.00103", v: [0.0001, 0.0009, 0.0008, 0.0050, 0.0012, 0.0032] }
+    ],
+    gainsLesson: "On the public board, only candidates that gained on all six views improved the score.",
+
+    gates: [
+      { name: "Raw gate", text: "Mean gain ≥ {rule} and no regression on either fold family." },
+      { name: "Test-mix gate · C044", text: "No regression on raw time, raw grouped and test-mix grouped; and raw mean gain ≥ {rule} or test-mix grouped gain ≥ {rule}." },
+      { name: "Strict rule · C053", text: "time_testmix and time_nb must also not regress." },
+      { name: "Refit-only change · P2-S15", text: "Seed averaging (C057) leaves the out-of-fold predictions unchanged, so no fold can gate it; kept as variance reduction, the step S09 took in Part 1 (C029). Rule stated before the upload: keep {final} unless its public score falls more than {keep} below {prev}. Result {delta}; escalated as R16." }
+    ],
+    gatesSource: "CHANGELOG.md C044, C053, C057 · SUBMISSIONS.md P2-S14, P2-S15",
+
+    tests: { count: 340, files: 24, date: "2026-10-30" },
+    guardrails: [
+      { fig: "{tests}", text: "pytest cases across {files} test files ({date}), written before the code they test." },
+      { fig: "C007", text: "Raw data read-only, SHA256 manifest, integrity test on every run; every correction lives in code." },
+      { fig: "IDs", text: "Identifier columns always read as text." },
+      { fig: "Rebuild", text: "reproduce.ps1 rebuilds the Part 1 submission and, with -Part2, the Part 2 chain; P2-S14 rebuilt from the scripts to a max difference of 5.1e-10 (C058)." },
+      { fig: "{reviewRange}", text: "Escalation register: the AI's evidence, the question put to the team lead, and the signed decision." }
+    ],
+    guardSource: "README.md · CLAUDE.md · CHANGELOG.md C007, C058 · HUMAN_REVIEW.md",
+
+    changelog: {
+      first: "C000", last: "C060",
+      classes: [
+        { key: "adopted", label: "Adopted", cls: "o1", ink: "light",
+          ids: ["C000", "C001", "C002", "C003", "C004", "C005", "C006", "C007", "C008", "C009", "C010", "C011", "C012", "C013", "C014", "C015", "C016", "C017", "C018", "C019", "C020", "C021", "C022", "C025", "C026", "C027", "C028", "C029", "C030", "C033", "C034", "C035", "C036", "C037", "C038", "C040", "C043", "C044", "C050", "C057", "C058", "C059", "C060"] },
+        { key: "partial", label: "Partially adopted", cls: "o2", ink: "light", ids: ["C047", "C052", "C054"] },
+        { key: "eval", label: "Evaluation only or not adopted", cls: "o3", ink: "light",
+          ids: ["C023", "C031", "C032", "C039", "C041", "C042", "C045", "C046", "C048", "C049", "C053"] },
+        { key: "rejected", label: "Rejected or withdrawn", cls: "o4", ink: "dark", ids: ["C024", "C051", "C055", "C056"] }
+      ],
+      rule: "the Area cell decides (rejected; evaluation, not adopted or probe; one part adopted), else the row's own verdict (not adopted, nothing adopted); C024 is withdrawn (removed by C026); all other rows adopted."
+    },
+
+    ailog: { first: "A01", last: "A32", count: 32,
+      stages: {
+        "Part 1": [["A01", "Setup"], ["A02", "EDA"], ["A03", "Data quality"], ["A04", "Cleaning rules"], ["A05", "Target & development"], ["A06", "Leakage"], ["A07", "Features & models"], ["A08", "Debugging"], ["A09", "Development"], ["A10, A12", "Models"], ["A11", "Features"], ["A13", "Audit"], ["A14", "Feature policy"], ["A15", "Training"], ["A16", "Refit"], ["A17", "Governance"], ["A18", "Feature test"], ["A19", "Tuning"]],
+        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"]]
+      } },
+
+    loop: [
+      { step: "1 · Propose", lines: ["AI proposes"], foot: "AI_LOG.md" },
+      { step: "2 · Check", lines: ["Automated test or", "independent check"], foot: "pytest · audits" },
+      { step: "3 · Sign", lines: ["Human review", "and sign-off"], foot: "HUMAN_REVIEW.md" },
+      { step: "4 · Log", lines: ["Change log entry", "with ID"], foot: "CHANGELOG.md" }
+    ],
+    loopReturn: "next change",
+
+    corrected: [
+      { id: "C022", text: "Per-peril reporting curves equal the pooled curve: no effect", tip: "AI_LOG A09: a coordinator design, caught by the worker (max difference 5e-16); kept only as a building block" },
+      { id: "C023", text: "Per-peril frequency × severity model: below the best single model", tip: "AI_LOG A10: motor 0.0809 vs 0.0893, buildings 0.1045 vs 0.1094, contents 0.0879 vs 0.0911" },
+      { id: "C024", text: "Cross-line and household features: zero gain, removed by C026", tip: "AI_LOG A11: importance rank 60 or worse of 66" },
+      { id: "C031", text: "Out-of-fold target encoding: +0.00028, below the 0.002 rule", tip: "AI_LOG A18: fold 2024 fell; S09 files restored by SHA256" },
+      { id: "C032", text: "Tree re-tuning: no configuration met the 0.002 rule", tip: "AI_LOG A19: best motor LightGBM +0.0027 but fold 2024 −0.0008" },
+      { id: "C042", text: "Market interaction blend: formal pass (+0.0024) overruled", tip: "AI_LOG A23: diversity-only gain, in-sample grouped folds, unvalidated 21% new-business level shift" },
+      { id: "C047", text: "Buildings renewal segment: passed the gate, rejected by design", tip: "AI_LOG A26: the gain came from a new-business model applied to renewal rows" }
+    ],
+    audits: [
+      { id: "B1 to B8", text: "Part 1 audit, 2026-10-22: B1 to B3 led to C026, B8 to C027", tip: "AUDIT_2026-10-22.md: B4 tested by the S08 probe and not adopted; B5 to B7 recorded" },
+      { id: "P2-F1 to P2-F10", text: "Part 2 audit: 27 read-only checks, no model trained", tip: "AUDIT_PART2.md, AI_LOG A24" }
+    ],
+    auditCallout: { id: "P2-F1", text: "validation rows were 92% renewals while the test is 77% new business. The finding led directly to the test-mix views", ref: "C044" },
+    aiSource: "HUMAN_REVIEW.md · AI_LOG.md · AUDIT_2026-10-22.md · AUDIT_PART2.md",
+
+    review: {
+      signedDate: "2026-10-25",
+      items: [
+        ["R01", "sum_insured above 5,000,000 divided by 1,000 and flagged (C003)", true],
+        ["R02", "Construction codes T and W mapped to timber (C004)", true],
+        ["R03", "Claim matching: repudiated excluded, incurred minus recoveries, unmatched listed (C005)", true],
+        ["R04", "Reporting-lag development to ultimate (C006; C022 kept as a spare)", true],
+        ["R05", "Large-loss cap at the 99.5th percentile with a per-line load (C014)", true],
+        ["R06", "Half trend for 2025 (C016, C019)", true],
+        ["R07", "Columns with no risk signal dropped (C026)", true],
+        ["R08", "Common schema for the two markets (C035)", true],
+        ["R09", "Emerging market borrows the developed reporting curves (C037)", true],
+        ["R10", "Pooled training, developed rows at weight 0.3, re-balanced on emerging rows (C038)", true],
+        ["R11", "Part 2 default trend: the developed half trend (P2-S02)", true],
+        ["R12", "Motor 2025 level: the emerging market's own full trend 1.1606 (C043, P2-S10)", false],
+        ["R13", "Test-mix validation views as adoption gates (C044)", false],
+        ["R14", "Motor new-business rows from a 12-candidate equal blend (C047, P2-S13)", false],
+        ["R15", "Office premium conventions for the 20 reference policies", false],
+        ["R16", "Seed averaging adopted without a fold gate (P2-S15)", false]
+      ]
+    },
+
+    deliverables: [
+      { k: "Written report", t: "5 graded pages ordered by the four criteria, appendix from page 6; office premium of 20 reference policies from {p2}." },
+      { k: "Video", t: "5 minutes: approach, results, AI-assisted workflow, and how the solution changed for the new market." },
+      { k: "Code repository", t: "Private git repository; every change carries a change-log ID that the code comments cite." },
+      { k: "Prediction files", t: "Both weeks: Part 1 {p1} (ranked) and Part 2 {p2}." }
+    ],
+    docs: [
+      ["README.md", "Setup, reproduction, pipeline, known limitations"],
+      ["COMPETITION.md", "Rules, scoring, timeline"],
+      ["DATA_GUIDE.md", "Tables, target definition, Q1 to Q10"],
+      ["CHANGELOG.md", "{clFirst} to {clLast}"],
+      ["AI_LOG.md", "{aiFirst} to {aiLast}"],
+      ["HUMAN_REVIEW.md", "{reviewRange}"],
+      ["SUBMISSIONS.md", "S01 to S09, post-deadline blend, P2-S01 to {p2final}"],
+      ["docs/report/report.tex", "Written report, graded pages 1 to 5"],
+      ["AUDIT_2026-10-22.md · AUDIT_PART2.md", "B1 to B8 · P2-F1 to P2-F10"],
+      ["PART2_OBLEMOS.md · oblemos_part1/", "The teammate's pipeline in both parts"]
+    ],
+    docsSource: "docs/ · oblemos_part1/README.md · AI_LOG.md A32",
+    repo: [
+      ["src/aiiaa", "clean, target, development, features, models, params, evaluate, freqsev, markets"],
+      ["scripts", "pipeline entry points, blends, one-off analyses"],
+      ["tests", "{files} files, pytest"],
+      ["docs", "logs, audits, Kaggle page archive"],
+      ["data", "raw files, read-only, SHA256 manifests"],
+      ["submissions", "the selected Kaggle files"],
+      ["oblemos_part1", "the teammate's Part 1 pipeline"],
+      ["reproduce.ps1", "one-command rebuild"]
+    ],
+    repoSource: "README.md, Repository layout",
+    submissions: { p1: 9, p1Range: "S01 to S09", p2: 15, p2Range: "P2-S01 to P2-S15", p1Extra: "plus 3 late submissions, not ranked" }
+  };
+
+  /* ---------------------------------------------------------------------------
+     Derived values (computed from DATA, never typed twice)
+     --------------------------------------------------------------------------- */
+  var P1 = DATA.p1, P2 = DATA.p2;
+  var TRAJ = P2.trajectory;
+  var P2FINAL = TRAJ[TRAJ.length - 1];
+  var P2PREV = TRAJ[TRAJ.length - 2];
+  var REVIEW = DATA.review.items;
+  var SIGNED = REVIEW.filter(function (r) { return r[2]; });
+  var AWAIT = REVIEW.filter(function (r) { return !r[2]; });
+  var CL = DATA.changelog;
+  var CL_TOTAL = CL.classes.reduce(function (s, c) { return s + c.ids.length; }, 0);
+
+  function f5(v) { return v.toFixed(5); }
+  function f4s(v) { return (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(4); }
+  function f5s(v) { return (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(5); }
+  function pct(v) { return v.toFixed(1) + "%"; }
+  function int(v) { return v.toLocaleString("en-US"); }
+  function wt(v) { return v.toFixed(2); }
+  function range(a, b) { return a + " to " + b; }
+  function idRuns(ids) {
+    var out = [], i = 0;
+    while (i < ids.length) {
+      var j = i;
+      while (j + 1 < ids.length && parseInt(ids[j + 1].slice(1), 10) === parseInt(ids[j].slice(1), 10) + 1) j++;
+      out.push(j - i >= 2 ? range(ids[i], ids[j]) : ids.slice(i, j + 1).join(", "));
+      i = j + 1;
+    }
+    return out.join(", ");
+  }
+  var REVIEW_RANGE = range(REVIEW[0][0], REVIEW[REVIEW.length - 1][0]);
+  var FILL = {
+    tests: String(DATA.tests.count), files: String(DATA.tests.files), date: DATA.tests.date,
+    reviewRange: REVIEW_RANGE, rule: String(DATA.rule), keep: String(P2.keepRule),
+    final: P2.final.id, prev: P2PREV.id, delta: f5s(P2FINAL.v - P2PREV.v),
+    first: f5(TRAJ[1].v), last: f5(P2FINAL.v),
+    clFirst: CL.first, clLast: CL.last, aiFirst: DATA.ailog.first, aiLast: DATA.ailog.last,
+    p1: P1.final.id, p2: P2.final.id, p2final: P2.final.id,
+    nbRows: int(DATA.recipes.nbRows), seeds: String(DATA.recipes.seeds),
+    trend: DATA.recipes.trend.map(function (t) { return t[0] + " " + t[1].toFixed(4); }).join(", ")
+  };
+  function fill(s) { return s.replace(/\{(\w+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(FILL, k) ? FILL[k] : m; }); }
+
+  /* ---------------------------------------------------------------------------
+     DOM helpers
+     --------------------------------------------------------------------------- */
+  var NS = (function () { var d = document.createElement("div"); d.innerHTML = "<svg></svg>"; return d.firstChild.namespaceURI; })();
+  function setA(n, a) {
+    if (!a) return;
+    Object.keys(a).forEach(function (k) {
+      var v = a[k];
+      if (v == null || v === false) return;
+      if (k === "text") n.textContent = String(v);
+      else n.setAttribute(k, String(v));
+    });
+  }
+  function addK(n, kids) {
+    if (kids == null || kids === false) return;
+    if (!Array.isArray(kids)) kids = [kids];
+    kids.forEach(function (c) {
+      if (c == null || c === false) return;
+      if (Array.isArray(c)) { addK(n, c); return; }
+      n.appendChild(typeof c === "object" ? c : document.createTextNode(String(c)));
+    });
+  }
+  function H(tag, a, kids) { var n = document.createElement(tag); setA(n, a); addK(n, kids); return n; }
+  function S(tag, a, kids) { var n = document.createElementNS(NS, tag); setA(n, a); addK(n, kids); return n; }
+  function r2(n) { return Math.round(n * 100) / 100; }
+  function hbar(x, y, w, h, r) {
+    r = Math.max(0, Math.min(r == null ? 4 : r, w / 2, h / 2));
+    return "M" + r2(x) + "," + r2(y) + "H" + r2(x + w - r) + "Q" + r2(x + w) + "," + r2(y) + " " + r2(x + w) + "," + r2(y + r) +
+      "V" + r2(y + h - r) + "Q" + r2(x + w) + "," + r2(y + h) + " " + r2(x + w - r) + "," + r2(y + h) + "H" + r2(x) + "Z";
+  }
+  function vbar(x, y0, w, h, r) {
+    r = Math.max(0, Math.min(r == null ? 4 : r, w / 2, h / 2));
+    var t = y0 - h;
+    return "M" + r2(x) + "," + r2(y0) + "V" + r2(t + r) + "Q" + r2(x) + "," + r2(t) + " " + r2(x + r) + "," + r2(t) +
+      "H" + r2(x + w - r) + "Q" + r2(x + w) + "," + r2(t) + " " + r2(x + w) + "," + r2(t + r) + "V" + r2(y0) + "Z";
+  }
+  function rect(x, y, w, h) { return "M" + r2(x) + "," + r2(y) + "h" + r2(w) + "v" + r2(h) + "h" + r2(-w) + "Z"; }
+  var measureCtx = document.createElement("canvas").getContext("2d");
+  function tw(s, size, weight) {
+    measureCtx.font = (weight || 400) + " " + (size || 12) + "px Lato, \"Helvetica Neue\", Arial, sans-serif";
+    return measureCtx.measureText(String(s)).width;
+  }
+  function capW(s) { return tw(String(s).toUpperCase(), 10.5, 900) + String(s).length * 1.05; }
+  function svgRoot(W, Hh, label) {
+    return S("svg", { class: "viz", width: r2(W), height: r2(Hh), viewBox: "0 0 " + r2(W) + " " + r2(Hh), role: "img", "aria-label": label });
+  }
+  function hit(x, y, w, h, tip) { return S("rect", { class: "hit", tabindex: 0, x: r2(x), y: r2(y), width: r2(w), height: r2(h), "data-tip": tip }); }
+
+  /* Charts redraw at their measured width */
+  var CHARTS = [];
+  var ro = ("ResizeObserver" in window) ? new ResizeObserver(function (entries) {
+    entries.forEach(function (e) { var c = e.target.chartRef; if (c) drawChart(c, false); });
+  }) : null;
+  function drawChart(c, force) {
+    var W = Math.floor(c.box.clientWidth);
+    if (W <= 0 || (!force && W === c.w)) return;
+    c.w = W;
+    c.box.replaceChildren(c.draw(W));
+  }
+  function chart(draw) {
+    var box = H("div", { class: "chart" });
+    var c = { box: box, draw: draw, w: 0 };
+    box.chartRef = c;
+    CHARTS.push(c);
+    if (ro) ro.observe(box);
+    return box;
+  }
+  function redrawVisible(force) { CHARTS.forEach(function (c) { drawChart(c, force); }); }
+
+  var tabSeq = 0;
+  function tabbed(label, chartNode, tableNode) {
+    var id = "t" + (++tabSeq);
+    var pc = H("div", { id: id + "c", role: "tabpanel" }, chartNode);
+    var pt = H("div", { id: id + "t", role: "tabpanel", class: "tbox", hidden: "hidden" }, tableNode);
+    var b1 = H("button", { type: "button", role: "tab", "aria-selected": "true", "aria-controls": id + "c", text: "Chart" });
+    var b2 = H("button", { type: "button", role: "tab", "aria-selected": "false", "aria-controls": id + "t", text: "Table" });
+    var bar = H("div", { class: "tabs", role: "tablist", "aria-label": label + " view" }, [b1, b2]);
+    [b1, b2].forEach(function (b) {
+      b.addEventListener("click", function () {
+        [b1, b2].forEach(function (o) {
+          var on = o === b;
+          o.setAttribute("aria-selected", on ? "true" : "false");
+          document.getElementById(o.getAttribute("aria-controls")).hidden = !on;
+        });
+        redrawVisible(false);
+      });
+    });
+    return { bar: bar, panels: [pc, pt] };
+  }
+  function srcLine(left, right, tag) {
+    return H(tag || "figcaption", { class: "src" }, [H("span", null, [H("b", { text: "Source: " }), left]), right ? H("span", { text: right }) : null]);
+  }
+  function frame(o) {
+    var t = o.tabs ? tabbed(o.title, o.chart, o.table) : null;
+    var head = H("div", { class: "fh" }, [H("h3", { text: o.title }), t ? t.bar : null]);
+    var body = t ? t.panels : (o.chart ? [o.chart] : []);
+    return H(o.figure === false ? "div" : "figure", { class: "frame" + (o.cls ? " " + o.cls : "") },
+      [head, o.sub ? H("p", { class: "sub", text: o.sub }) : null, body, o.after || null, srcLine(o.source, o.sourceRight, o.figure === false ? "p" : "figcaption")]);
+  }
+  function legend(items) {
+    return H("ul", { class: "legend" }, items.map(function (it) {
+      var sw = H("span", { class: "sw" + (it.shape ? " " + it.shape : ""), style: it.color ? "background:" + it.color : null });
+      return H("li", { "data-tip": it.tip || null }, [sw, it.label, it.n != null ? H("span", { class: "n", text: String(it.n) }) : null]);
+    }));
+  }
+  function table(cols, rows, cls) {
+    return H("table", { class: cls || null }, [
+      H("thead", null, H("tr", null, cols.map(function (c) { return H("th", { class: c.num ? "num" : null, text: c.h }); }))),
+      H("tbody", null, rows.map(function (r) {
+        return H("tr", null, r.map(function (cell, i) {
+          var c = cols[i] || {};
+          return H("td", { class: c.num ? "num" : (c.cls || null) }, cell);
+        }));
+      }))
+    ]);
+  }
+  function idTag(s) { return H("span", { class: "id", text: s }); }
+  var ID_RE = /P2-[SF]\d+/g;
+  function rich(s) {
+    s = String(s);
+    var out = [], last = 0, m;
+    ID_RE.lastIndex = 0;
+    while ((m = ID_RE.exec(s)) !== null) {
+      if (m.index > last) out.push(s.slice(last, m.index));
+      out.push(H("span", { class: "nw", text: m[0] }));
+      last = m.index + m[0].length;
+    }
+    if (last < s.length) out.push(s.slice(last));
+    return out;
+  }
+  /* Hyphenated IDs (P2-S15, P2-F1) never break across lines in running text */
+  function keepIds(root) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var found = [], n;
+    while ((n = walker.nextNode())) {
+      ID_RE.lastIndex = 0;
+      if (ID_RE.test(n.nodeValue) && !n.parentNode.closest("svg, .nw, .id")) found.push(n);
+    }
+    found.forEach(function (t) {
+      var frag = document.createDocumentFragment();
+      addK(frag, rich(t.nodeValue));
+      t.parentNode.replaceChild(frag, t);
+    });
+  }
+
+  /* ---------------------------------------------------------------------------
+     Charts
+     --------------------------------------------------------------------------- */
+  var FAM_CLS = { GLM: "m1", GAM: "m2", LightGBM: "m3", XGBoost: "m4", CatBoost: "m5" };
+  var FAM_VAR = { GLM: "var(--s1)", GAM: "var(--s2)", LightGBM: "var(--s3)", XGBoost: "var(--s4)", CatBoost: "var(--s5)" };
+
+  function drawCriteria(W) {
+    var rows = DATA.criteria;
+    var longest = Math.max.apply(null, rows.map(function (r) { return tw(r.title, 12); }));
+    var stacked = longest + 36 > W * 0.55;
+    var rh = stacked ? 46 : 34;
+    var x0 = stacked ? 20 : Math.round(Math.min(Math.max(longest + 36, W * 0.42), W * 0.55));
+    var k = (W - x0 - 44) / 40;
+    var svg = svgRoot(W, rows.length * rh, "Judging weights: " + rows.map(function (r) { return r.title + " " + r.weight + "%"; }).join(", "));
+    rows.forEach(function (r, i) {
+      var t = i * rh, w = r.weight * k, by = stacked ? t + 22 : t + 7;
+      svg.appendChild(S("a", { href: "#" + r.token, class: "row-link", "data-tip": r.title + " · " + r.weight + "% of the judging score" }, [
+        S("rect", { class: "band", x: 0, y: t, width: W, height: rh - 2 }),
+        S("text", { class: "lab b", x: 4, y: t + (stacked ? 15 : 21), text: r.n }),
+        S("text", { class: "lab", x: 20, y: t + (stacked ? 15 : 21), text: r.title }),
+        S("path", { class: "mk", d: hbar(x0, by, w, 18) }),
+        S("text", { class: "v", x: r2(x0 + w + 6), y: by + 14, text: r.weight + "%" })
+      ]));
+    });
+    return svg;
+  }
+
+  function drawSpark(W) {
+    var Wd = Math.min(W, 170), Hh = 34, pad = 5;
+    var x = function (i) { return pad + i * (Wd - 2 * pad) / (TRAJ.length - 1); };
+    var y = function (v) { return Hh - 3 - v / P2.trajDomain * (Hh - 8); };
+    var svg = svgRoot(Wd, Hh, "Public D2 path from " + TRAJ[0].id + " " + f5(TRAJ[0].v) + " to " + P2FINAL.id + " " + f5(P2FINAL.v));
+    svg.setAttribute("class", "viz spark");
+    svg.setAttribute("data-tip", "Public D2: " + TRAJ.map(function (p) { return p.id + " " + f5(p.v); }).join(" → "));
+    svg.appendChild(S("line", { class: "base", x1: 0, y1: Hh - 2, x2: Wd, y2: Hh - 2 }));
+    svg.appendChild(S("path", { class: "ln", d: "M" + TRAJ.map(function (p, i) { return r2(x(i)) + "," + r2(y(p.v)); }).join("L") }));
+    svg.appendChild(S("circle", { class: "dot", cx: r2(x(TRAJ.length - 1)), cy: r2(y(P2FINAL.v)), r: 4 }));
+    return svg;
+  }
+
+  function standingPanels() {
+    return [
+      { cap: "Part 1 · private D2, developed market", capShort: "Part 1 · private D2", axis: P1.axis, rows: [
+        { label: "Winner", status: "Part 1 private board", v: P1.winner, kind: "ref" },
+        { label: P1.final.id, status: "ranked final · rank " + P1.rank + " of " + P1.teams, v: P1.final.priv, kind: "team", strong: true },
+        { label: P1.late.label, status: "late submission, not ranked", v: P1.late.priv, kind: "late", tip: P1.late.formula + " · late submission " + P1.late.date + ", not ranked" },
+        { label: P1.half.label, status: "late submission, not ranked", v: P1.half.priv, kind: "late", tip: P1.half.formula + " · late submission, not ranked" },
+        { label: P1.oblemos.label, status: "late submission, not ranked", v: P1.oblemos.priv, kind: "late", tip: "Teammate's independent pipeline alone · late submission, not ranked" }
+      ] },
+      { cap: "Part 2 · public D2, emerging market, " + DATA.asOf, capShort: "Part 2 · public D2, " + DATA.asOf, axis: P2.axis, rows: [
+        { label: "Top score", status: P2.teams + " teams", v: P2.top, kind: "ref" },
+        { label: P2.final.id, status: "final candidate · rank " + P2.rank + " of " + P2.teams, v: P2FINAL.v, kind: "team", strong: true },
+        { label: P2PREV.id, status: "previous best, hedge", v: P2PREV.v, kind: "team" },
+        { label: "Board median", status: P2.teams + " teams", v: P2.median, kind: "ref" }
+      ] }
+    ];
+  }
+  function drawStanding(W) {
+    var panels = standingPanels();
+    var compact = W < 470;
+    var labW = compact ? 0 : Math.round(Math.min(230, W * 0.4));
+    var valW = 54;
+    var x0 = compact ? 6 : labW + 14, x1 = W - valW - 8;
+    var rowH = compact ? 40 : 28, capH = 19, axH = 19, gap = 10;
+    var Hh = panels.reduce(function (s, p) { return s + capH + p.rows.length * rowH + axH; }, 0) + gap * (panels.length - 1);
+    var svg = svgRoot(W, Hh, "Standing: Part 1 private D2 " + P1.final.id + " " + f5(P1.final.priv) + ", rank " + P1.rank + " of " + P1.teams + "; Part 2 public D2 " + P2.final.id + " " + f5(P2FINAL.v) + ", rank " + P2.rank + " of " + P2.teams);
+    var y = 0;
+    panels.forEach(function (p, pi) {
+      var lo = p.axis.lo, hi = p.axis.hi, st = p.axis.step;
+      var X = function (v) { return x0 + (v - lo) / (hi - lo) * (x1 - x0); };
+      svg.appendChild(S("text", { class: "cap", x: 0, y: y + 12, text: capW(p.cap) <= W ? p.cap : p.capShort }));
+      var top = y + capH, bot = top + p.rows.length * rowH;
+      var nT = Math.round((hi - lo) / st);
+      for (var i = 0; i <= nT; i++) {
+        var tv = lo + i * st, tx = X(tv);
+        svg.appendChild(S("line", { class: "gl", x1: r2(tx), y1: top, x2: r2(tx), y2: bot }));
+        if (!compact || i % 2 === 0) svg.appendChild(S("text", { class: "mut", x: r2(tx), y: bot + 13, "text-anchor": "middle", text: tv.toFixed(3) }));
+      }
+      svg.appendChild(S("line", { class: "base", x1: x0, y1: bot, x2: x1, y2: bot }));
+      p.rows.forEach(function (r, ri) {
+        var ry = top + ri * rowH, cy = compact ? ry + 29 : ry + rowH / 2;
+        if (compact) {
+          svg.appendChild(S("text", { class: "lab" + (r.strong ? " b" : ""), x: 0, y: ry + 13 }, [r.label, S("tspan", { class: "mut", text: " · " + r.status })]));
+        } else {
+          svg.appendChild(S("text", { class: "lab" + (r.strong ? " b" : ""), x: 0, y: ry + 12, text: r.label }));
+          svg.appendChild(S("text", { class: "mut", x: 0, y: ry + 25, text: r.status }));
+        }
+        var cx = X(r.v);
+        svg.appendChild(S("line", { class: "guide", x1: x0, y1: r2(cy), x2: r2(cx), y2: r2(cy) }));
+        svg.appendChild(S("circle", { class: "dot" + (r.kind === "ref" ? " ctx" : r.kind === "late" ? " late" : ""), cx: r2(cx), cy: r2(cy), r: r.kind === "late" ? 4.5 : 5.5 }));
+        svg.appendChild(S("text", { class: r.strong ? "v" : "lab", x: W, y: r2(cy + 4), "text-anchor": "end", text: f5(r.v) }));
+        svg.appendChild(hit(0, ry, W, rowH, (r.tip || (r.label + " · " + r.status)) + " · D2 " + f5(r.v)));
+      });
+      y = bot + axH + (pi < panels.length - 1 ? gap : 0);
+    });
+    return svg;
+  }
+
+  function drawTraj(W) {
+    var compact = W < 250;
+    var labW = compact ? 0 : Math.round(Math.min(140, W * 0.38));
+    var x0 = compact ? 0 : labW + 8;
+    var valW = 58;
+    var k = (W - x0 - valW) / P2.trajDomain;
+    var rowH = compact ? 38 : 26, top = 3;
+    var bot = top + TRAJ.length * rowH;
+    var svg = svgRoot(W, bot + 20, "Public D2 by submission: " + TRAJ.map(function (p) { return p.id + " " + f5(p.v); }).join(", "));
+    [0, 0.05, 0.10, 0.15].forEach(function (t) {
+      var tx = x0 + t * k;
+      svg.appendChild(S("line", { class: "gl", x1: r2(tx), y1: top, x2: r2(tx), y2: bot }));
+      svg.appendChild(S("text", { class: "mut", x: r2(tx), y: bot + 14, "text-anchor": t === 0 ? "start" : "middle", text: t === 0 ? "0" : t.toFixed(2) }));
+    });
+    TRAJ.forEach(function (p, i) {
+      var y = top + i * rowH, last = i === TRAJ.length - 1;
+      var by = compact ? y + 18 : y + 5, bh = 15;
+      if (compact) {
+        svg.appendChild(S("text", { class: "lab b", x: 0, y: y + 12 }, [p.id, S("tspan", { class: "mut", text: " · " + p.note })]));
+      } else {
+        svg.appendChild(S("text", { class: "lab b", x: 0, y: y + 11, text: p.id }));
+        svg.appendChild(S("text", { class: "mut", x: 0, y: y + 23, text: p.note }));
+      }
+      var w = p.v * k;
+      svg.appendChild(S("path", { class: i === 0 ? "mc" : "mk", d: hbar(x0, by, w, bh) }));
+      svg.appendChild(S("text", { class: "v" + (last ? " big" : ""), x: r2(x0 + w + 5), y: by + 12, text: f5(p.v) }));
+      svg.appendChild(hit(0, y, W, rowH, p.tip + " · public D2 " + f5(p.v)));
+    });
+    svg.appendChild(S("line", { class: "base", x1: x0, y1: top, x2: x0, y2: bot }));
+    return svg;
+  }
+
+  function drawNB(W) {
+    var d = DATA.nbShare, Hh = 146, y0 = 124, top = 18, k = (y0 - top) / 100;
+    var svg = svgRoot(W, Hh, "New business share of exposure-years, emerging training vs 2025 test: " + d.lines.map(function (l, i) { return l + " " + pct(d.train[i]) + " vs " + pct(d.test[i]); }).join("; "));
+    var gw = W / d.lines.length, bw = Math.min(24, gw * 0.3);
+    svg.appendChild(S("line", { class: "base", x1: 0, y1: y0, x2: W, y2: y0 }));
+    d.lines.forEach(function (l, i) {
+      var c = gw * i + gw / 2;
+      [[d.train[i], "mc", c - bw - 1, "emerging training data", "lab"], [d.test[i], "mk", c + 1, "emerging 2025 test", "v"]].forEach(function (s) {
+        var h = s[0] * k;
+        svg.appendChild(S("path", { class: s[1], d: vbar(s[2], y0, bw, h) }));
+        svg.appendChild(S("text", { class: s[4], x: r2(s[2] + bw / 2), y: r2(y0 - h - 5), "text-anchor": "middle", text: pct(s[0]) }));
+        svg.appendChild(hit(s[2] - 2, top - 14, bw + 4, y0 - top + 14, l + " · " + s[3] + " · " + pct(s[0]) + " new business"));
+      });
+      svg.appendChild(S("text", { class: "lab b", x: r2(c), y: y0 + 18, "text-anchor": "middle", text: l }));
+    });
+    return svg;
+  }
+
+  function drawRecipe(W) {
+    var R = DATA.recipes;
+    var labW = Math.round(Math.min(150, Math.max(118, W * 0.3)));
+    var X = labW + 6, BW = W - X, segH = 15, step = 20;
+    var rows = [];
+    var y = 0;
+    rows.push({ cap: R.p1.cap, y: y }); y += 15;
+    R.p1.rows.forEach(function (r) { rows.push({ r: r, tag: R.p1.tag, y: y }); y += step; });
+    y += 10;
+    rows.push({ cap: R.p2.cap, y: y }); y += 15;
+    R.p2.rows.forEach(function (r) { rows.push({ r: r, tag: R.p2.tag, y: y }); y += r.nb ? step + 16 : step; });
+    var svg = svgRoot(W, y, "Model-family weights per line for the Part 1 " + R.p1.tag + " blend and the Part 2 " + R.p2.tag + " recipe");
+    rows.forEach(function (row) {
+      if (row.cap) { svg.appendChild(S("text", { class: "cap", x: 0, y: row.y + 10, text: row.cap })); return; }
+      var r = row.r, yy = row.y;
+      svg.appendChild(S("text", { class: "lab b", x: 0, y: yy + 12, text: r.line }));
+      var segs = r.segs;
+      if (r.nb) {
+        segs = [];
+        r.sets.forEach(function (s) { r.models.forEach(function (m) { segs.push([m, 1 / (r.sets.length * r.models.length), s]); }); });
+        svg.appendChild(S("text", { class: "mut", x: 0, y: yy + 27, text: fill(r.sub) }));
+      }
+      var cum = 0;
+      segs.forEach(function (s, j) {
+        var lastSeg = j === segs.length - 1;
+        var sx = X + cum * BW, sw = s[1] * BW - (lastSeg ? 0 : 2);
+        var tipText = row.tag + " " + r.line.toLowerCase() + " · " + s[0] + " " + (r.nb ? "1/12" : wt(s[1])) + (s[2] ? " · " + s[2] : "");
+        svg.appendChild(S("path", { class: FAM_CLS[s[0]] + " hit", tabindex: 0, d: lastSeg ? hbar(sx, yy, sw, segH) : rect(sx, yy, sw, segH), "data-tip": tipText }));
+        if (!r.nb) {
+          var lab = wt(s[1]);
+          if (tw(lab, 11, 700) + 8 <= sw) svg.appendChild(S("text", { class: "in", x: r2(sx + sw / 2), y: yy + 12, "text-anchor": "middle", text: lab }));
+        }
+        cum += s[1];
+      });
+      if (r.nb) {
+        var third = BW / r.sets.length;
+        var fits = function (list) { return list.every(function (s) { return tw(s, 11) + 8 <= third; }); };
+        (fits(r.sets) ? r.sets : fits(r.setsShort) ? r.setsShort : r.setsTiny).forEach(function (s, j) {
+          svg.appendChild(S("text", { class: "mut", x: r2(X + (j + 0.5) * third), y: yy + 29, "text-anchor": "middle", text: s }));
+        });
+      }
+    });
+    return svg;
+  }
+
+  function drawGains(W) {
+    var G = DATA.gains, V = DATA.views;
+    var side = W >= 540;
+    var PW = side ? (W - 24) / 2 : W;
+    var x0 = 96, valW = 54;
+    var dom = 0.007, k = (PW - x0 - valW) / dom;
+    var rowH = 25, head = 46;
+    var panelH = head + V.length * rowH + 4;
+    var Hh = side ? panelH : panelH * 2 + 14;
+    var svg = svgRoot(W, Hh, "Six-view gains in D2: " + G.map(function (g) { return g.title + " " + g.v.map(f4s).join(", "); }).join("; "));
+    G.forEach(function (g, gi) {
+      var ox = side ? gi * (PW + 24) : 0, oy = side ? 0 : gi * (panelH + 14);
+      var grp = S("g", { transform: "translate(" + r2(ox) + "," + r2(oy) + ")" });
+      grp.appendChild(S("text", { class: "lab b", x: 0, y: 12, text: g.title }));
+      grp.appendChild(S("text", { class: "mut", x: 0, y: 27, text: "Public board " + g.pub }));
+      var ref = x0 + DATA.rule * k;
+      grp.appendChild(S("line", { class: "ref", x1: r2(ref), y1: head - 4, x2: r2(ref), y2: panelH - 2 }));
+      grp.appendChild(S("text", { class: "mut", x: r2(ref), y: head - 8, "text-anchor": "middle", text: String(DATA.rule) }));
+      g.v.forEach(function (v, i) {
+        var t = head + i * rowH, w = Math.max(1.5, v * k);
+        grp.appendChild(S("text", { class: "lab", x: 0, y: t + 13, text: V[i][0] }));
+        grp.appendChild(S("path", { class: "mk", d: hbar(x0, t + 2, w, 15, w < 8 ? 1 : 4) }));
+        grp.appendChild(S("text", { class: "v halo", x: r2(x0 + w + 5), y: t + 14, text: f4s(v) }));
+        grp.appendChild(hit(0, t, PW, rowH, g.title + " · " + V[i][0] + " " + f4s(v) + " D2"));
+      });
+      grp.appendChild(S("line", { class: "base", x1: x0, y1: head - 4, x2: x0, y2: panelH - 2 }));
+      svg.appendChild(grp);
+    });
+    return svg;
+  }
+
+  function drawOutcomes(W) {
+    var Hh = 26, bh = 22, gapW = 2;
+    var svg = svgRoot(W, Hh, CL_TOTAL + " change log entries: " + CL.classes.map(function (c) { return c.ids.length + " " + c.label.toLowerCase(); }).join(", "));
+    var usable = W - gapW * (CL.classes.length - 1), x = 0;
+    CL.classes.forEach(function (c, i) {
+      var w = usable * c.ids.length / CL_TOTAL, lastSeg = i === CL.classes.length - 1;
+      svg.appendChild(S("path", { class: c.cls + " hit", tabindex: 0, d: lastSeg ? hbar(x, 2, w, bh) : rect(x, 2, w, bh), "data-tip": c.ids.length + " of " + CL_TOTAL + " · " + c.label + ": " + idRuns(c.ids) }));
+      var lab = String(c.ids.length);
+      if (tw(lab, 11, 700) + 8 <= w) svg.appendChild(S("text", { class: "in" + (c.ink === "dark" ? " dk" : ""), x: r2(x + w / 2), y: 17, "text-anchor": "middle", text: lab }));
+      x += w + gapW;
+    });
+    return svg;
+  }
+
+  function drawReview(W) {
+    var n = REVIEW.length, gapW = 2, cw = (W - gapW * (n - 1)) / n, Hh = 42;
+    var signedText = range(SIGNED[0][0], SIGNED[SIGNED.length - 1][0]) + " signed " + DATA.review.signedDate;
+    var awaitText = range(AWAIT[0][0], AWAIT[AWAIT.length - 1][0]) + " awaiting signature";
+    var svg = svgRoot(W, Hh, "Review register: " + signedText + ", " + awaitText);
+    REVIEW.forEach(function (r, i) {
+      svg.appendChild(S("rect", { class: "cell " + (r[2] ? "o1" : "o4"), tabindex: 0, x: r2(i * (cw + gapW)), y: 2, width: r2(cw), height: 18, rx: 1.5,
+        "data-tip": r[0] + " · " + r[1] + " · " + (r[2] ? "signed " + DATA.review.signedDate : "awaiting signature") }));
+    });
+    svg.appendChild(S("text", { class: "lab", x: 0, y: 37, text: signedText }));
+    svg.appendChild(S("text", { class: "lab", x: W, y: 37, "text-anchor": "end", text: awaitText }));
+    return svg;
+  }
+
+  var markerSeq = 0;
+  function drawLoop(W) {
+    var L = DATA.loop, mid = "ah" + (++markerSeq);
+    var horiz = W >= 500;
+    var gapX = 26, nw = horiz ? (W - gapX * (L.length - 1)) / L.length : W, nh = 70;
+    var Hh = horiz ? nh + 35 : L.length * (nh + 20) - 20;
+    var svg = svgRoot(W, Hh, "The loop: " + L.map(function (s) { return s.lines.join(" "); }).join(", then ") + ", then the next change");
+    svg.appendChild(S("defs", null, S("marker", { id: mid, viewBox: "0 0 8 8", refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, S("path", { class: "ahd", d: "M0,0L8,4L0,8Z" }))));
+    L.forEach(function (s, i) {
+      var x = horiz ? i * (nw + gapX) : 0, y = horiz ? 0 : i * (nh + 20);
+      svg.appendChild(S("rect", { class: "node", x: r2(x), y: y, width: r2(nw), height: nh }));
+      svg.appendChild(S("text", { class: "cap", x: r2(x + 10), y: y + 17, text: s.step }));
+      s.lines.forEach(function (ln, j) { svg.appendChild(S("text", { class: "lab b", x: r2(x + 10), y: y + 33 + j * 15, text: ln })); });
+      svg.appendChild(S("text", { class: "mut", x: r2(x + 10), y: y + nh - 6, text: s.foot }));
+      if (i < L.length - 1) {
+        if (horiz) svg.appendChild(S("line", { class: "arw", x1: r2(x + nw + 3), y1: nh / 2, x2: r2(x + nw + gapX - 4), y2: nh / 2, "marker-end": "url(#" + mid + ")" }));
+        else svg.appendChild(S("line", { class: "arw", x1: 30, y1: y + nh + 2, x2: 30, y2: y + nh + 17, "marker-end": "url(#" + mid + ")" }));
+      }
+    });
+    if (horiz) {
+      var xr = (L.length - 1) * (nw + gapX) + nw / 2;
+      svg.appendChild(S("path", { class: "arw", d: "M" + r2(xr) + "," + (nh + 2) + "V" + (nh + 21) + "H" + r2(nw / 2) + "V" + (nh + 6), "marker-end": "url(#" + mid + ")" }));
+      svg.appendChild(S("text", { class: "mut", x: r2(W / 2), y: nh + 33, "text-anchor": "middle", text: DATA.loopReturn }));
+    }
+    return svg;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sections
+     --------------------------------------------------------------------------- */
+  function secHead(over, title, lead, quote) {
+    return H("div", { class: "sec-head" }, [
+      H("div", null, [H("p", { class: "over", text: over }), H("h1", { text: title })]),
+      H("p", { class: "crit", text: quote ? "\"" + lead + "\"" : lead })
+    ]);
+  }
+  function critHead(n) {
+    var c = DATA.criteria[n - 1];
+    return secHead("Criterion " + c.n + " · Weight " + c.weight + "%", c.title, c.text, true);
+  }
+
+  function secOverview() {
+    var o = DATA.overview;
+    var kpis = H("div", { class: "kpis" }, [
+      H("div", { class: "kpi" }, [
+        H("p", { class: "over", text: "Part 1 · " + P1.market }),
+        H("p", { class: "val", text: f5(P1.final.priv) }),
+        H("p", { class: "what", text: "Private D2 · rank " + P1.rank + " of " + P1.teams }),
+        H("p", { class: "meta", text: "Ranked final " + P1.final.id + " · winner " + f5(P1.winner) + " · public " + f5(P1.final.pub) + " · " + int(P1.testRows) + " test rows" }),
+        H("p", { class: "late" }, [H("b", { text: "Late submission, not ranked" }), P1.late.formula + ": private " + f5(P1.late.priv) + ", public " + f5(P1.late.pub)])
+      ]),
+      H("div", { class: "kpi" }, [
+        H("p", { class: "over", text: "Part 2 · " + P2.market }),
+        H("p", { class: "val", text: f5(P2FINAL.v) }),
+        chart(drawSpark),
+        H("p", { class: "what", text: "Public D2 · rank " + P2.rank + " of " + P2.teams + " teams" }),
+        H("p", { class: "meta", text: "As of " + DATA.asOf + " · final candidate " + P2.final.id + " · board median " + f5(P2.median) + " · " + int(P2.testRows) + " test rows · private score unknown until the board closes" })
+      ]),
+      H("div", { class: "kpi" }, [
+        H("p", { class: "over", text: "Automated tests" }),
+        H("p", { class: "val", text: String(DATA.tests.count) }),
+        H("p", { class: "what", text: "pytest cases in " + DATA.tests.files + " test files" }),
+        H("p", { class: "meta", text: DATA.tests.date + " · includes the raw-data SHA256 integrity test that runs with every suite (C007)" })
+      ]),
+      H("div", { class: "kpi" }, [
+        H("p", { class: "over", text: "Change log" }),
+        H("p", { class: "val", text: String(CL_TOTAL) }),
+        H("p", { class: "what", text: "Logged changes, " + range(CL.first, CL.last) }),
+        H("p", { class: "meta", text: CL.classes.map(function (c) { return c.ids.length + " " + c.label.toLowerCase(); }).join(" · ") })
+      ])
+    ]);
+    var crit = frame({
+      title: "Judging criteria and weights", sub: "Select a criterion to open its evidence.",
+      chart: chart(drawCriteria),
+      source: DATA.criteriaSource
+    });
+    var M = DATA.markets;
+    var slash = function (a, f) { return a.map(f).join(" / "); };
+    var mkt = frame({
+      title: M.title, sub: M.sub,
+      chart: H("div", { class: "tbox" }, table(M.cols.map(function (c) { return { h: c }; }), [
+        ["Training years", M.years[0], M.years[1]],
+        ["2025 test rows", int(P1.testRows), int(P2.testRows)],
+        ["New business, share of 2025 test rows", slash(M.nbTestRows[0], pct), slash(M.nbTestRows[1], pct)],
+        ["Reported pure premium, 2023-24", slash(M.purePremium[0], String), slash(M.purePremium[1], String)],
+        [M.motorFreqSevLabel, "", M.motorFreqSev]
+      ], "mkt")),
+      source: M.source
+    });
+    var standTable = table([{ h: "Board" }, { h: "Entry" }, { h: "Status" }, { h: "Private D2", num: true }, { h: "Public D2", num: true }], [
+      ["Part 1", P1.final.id, "ranked final, rank " + P1.rank + " of " + P1.teams, f5(P1.final.priv), f5(P1.final.pub)],
+      ["Part 1", P1.late.formula, "late submission " + P1.late.date + ", not ranked", f5(P1.late.priv), f5(P1.late.pub)],
+      ["Part 1", P1.half.formula, "late submission, not ranked", f5(P1.half.priv), f5(P1.half.pub)],
+      ["Part 1", P1.oblemos.label, "late submission, not ranked", f5(P1.oblemos.priv), f5(P1.oblemos.pub)],
+      ["Part 1", "Winner", "Part 1 private board", f5(P1.winner), "n/a"],
+      ["Part 2", P2.final.id, "final candidate, rank " + P2.rank + " of " + P2.teams + ", " + DATA.asOf, "unknown", f5(P2FINAL.v)],
+      ["Part 2", P2PREV.id, "previous best, hedge", "unknown", f5(P2PREV.v)],
+      ["Part 2", "Board median", P2.teams + " teams", "n/a", f5(P2.median)],
+      ["Part 2", "Top score", P2.teams + " teams", "n/a", f5(P2.top)]
+    ]);
+    var stand = frame({
+      title: "Standing on both boards",
+      sub: "Part 1 private board after the close; Part 2 public board on " + DATA.asOf,
+      tabs: true, chart: H("div", null, [legend([
+        { label: "Team submission", shape: "dot", color: "var(--mark)" },
+        { label: "Late submission, not ranked", shape: "ring" },
+        { label: "Board reference", shape: "dot", color: "var(--context)" }
+      ]), chart(drawStanding)]), table: standTable,
+      source: "SUBMISSIONS.md (S09, post-deadline blend, P2-S14, P2-S15) · " + P1.script
+    });
+    return [secHead("Overview · " + DATA.metric, o.title, fill(o.thesis), false), kpis, H("div", { class: "g c-ov" }, [H("div", { class: "colstack" }, [crit, mkt]), stand])];
+  }
+
+  function secPricing() {
+    var trajT = table([{ h: "Submission" }, { h: "Change" }, { h: "Public D2", num: true }], TRAJ.map(function (p) { return [p.id, p.note, f5(p.v)]; }));
+    var traj = frame({ title: "Public D2 by submission", sub: "Emerging market, " + int(P2.testRows) + " test rows; higher is better", tabs: true,
+      chart: chart(drawTraj), table: trajT, after: H("p", { class: "note" }, rich(fill(DATA.trajNote))), source: "SUBMISSIONS.md, P2-S01 to " + P2.final.id, cls: "a-traj" });
+
+    var d = DATA.nbShare;
+    var nbT = table([{ h: "Line" }, { h: "Emerging training", num: true }, { h: "Emerging 2025 test", num: true }, { h: "Developed 2025 test (rows)", num: true }],
+      d.lines.map(function (l, i) { return [l, pct(d.train[i]), pct(d.test[i]), pct(d.devTestRows[i])]; }));
+    var nb = frame({ title: "New business share", sub: "Share of exposure-years, emerging market", tabs: true,
+      chart: H("div", null, [legend([{ label: "Training data", color: "var(--context)" }, { label: "2025 test", color: "var(--mark)" }]), chart(drawNB)]),
+      table: nbT,
+      after: H("p", { class: "note", text: "Validation rows: " + d.validationRenewals + "% renewals. Part 1 test: " + d.devTestRows.map(pct).join(" / ") + " of rows." }),
+      source: "part2_market_comparison.md, section 3", cls: "a-nb" });
+
+    var R = DATA.recipes;
+    var weights = function (segs) {
+      var same = segs.every(function (x) { return x[1] === segs[0][1]; });
+      return same ? segs.map(function (x) { return x[0]; }).join(", ") + ": " + wt(segs[0][1]) + " each" : segs.map(function (x) { return x[0] + " " + wt(x[1]); }).join(" · ");
+    };
+    var recRows = [];
+    R.p1.rows.forEach(function (r) { recRows.push([R.p1.tag + " " + r.line.toLowerCase(), weights(r.segs)]); });
+    R.p2.rows.forEach(function (r) {
+      var same = !r.nb && r.segs.every(function (x) { return x[2] === r.segs[0][2]; });
+      recRows.push([R.p2.tag + " " + r.line.toLowerCase(), r.nb
+        ? "1/12 each: " + r.models.join(", ") + " × " + r.setsShort.join(", ") + " (" + fill(r.sub.split(" · ")[0]) + ")"
+        : same ? weights(r.segs) + " (" + r.segs[0][2] + ")" : r.segs.map(function (x) { return x[0] + " " + wt(x[1]) + " (" + x[2] + ")"; }).join(" · ")]);
+    });
+    var rec = frame({ title: "Blend recipes: weight of each model family", tabs: true,
+      chart: H("div", null, [legend(R.families.map(function (f) { return { label: f, color: FAM_VAR[f], tip: R.familyTips[f] }; })), chart(drawRecipe),
+        H("p", { class: "note" }, [H("b", { text: R.p1.tag + ": " }), R.p1Note]), H("p", { class: "note" }, [H("b", { text: R.p2.tag + ": " }), rich(fill(R.p2Note))])]),
+      table: table([{ h: "Line" }, { h: "Weights and training set" }], recRows),
+      source: R.source, cls: "a-recipe" });
+
+    var lim = H("div", { class: "frame a-limits" }, [
+      H("h3", { text: "Limitations and uncertainty" }),
+      H("ul", { class: "list lim" }, DATA.limits.map(function (l) { return H("li", null, [H("span", { class: "fig", text: l.fig }), H("span", null, rich(l.text))]); })),
+      srcLine(DATA.limitsSource, null, "p")
+    ]);
+
+    var dq = frame({ title: "Data quality: ten documented issues", sub: "Each fixed in code at load time and logged; raw files are never edited (C007).",
+      chart: H("div", { class: "tbox" }, table([{ h: "Q" }, { h: "Issue" }, { h: "Treatment" }, { h: "Log" }],
+        DATA.dq.map(function (q) { return [q[0], q[1], q[2], /^C\d+$/.test(q[3]) ? idTag(q[3]) : q[3]]; }), "dq")),
+      source: DATA.dqSource, cls: "a-dq" });
+    return [critHead(1), H("div", { class: "g c-pr1" }, [traj, nb, lim]), H("div", { class: "g c-pr2" }, [rec, dq])];
+  }
+
+  function secAI() {
+    var A = DATA.ailog;
+    var chips = Object.keys(A.stages).map(function (part) {
+      return H("div", { class: "chips-row" }, [H("p", { class: "cap-h", text: part }),
+        H("ul", { class: "chips" }, A.stages[part].map(function (s) { return H("li", { "data-tip": s[0] + " · " + s[1], tabindex: 0, text: s[1] }); }))]);
+    });
+    var loop = frame({ title: "The loop on every change", sub: "Every AI step records what the AI did, how it was checked, and its status.",
+      chart: chart(drawLoop),
+      after: [H("div", { class: "counts" }, [
+        H("div", null, [H("div", { class: "n", text: String(A.count) }), H("div", { class: "t", text: "logged AI steps, " + range(A.first, A.last) })]),
+        H("div", null, [H("div", { class: "n", text: String(CL_TOTAL) }), H("div", { class: "t", text: "change log entries, " + range(CL.first, CL.last) })]),
+        H("div", null, [H("div", { class: "n", text: String(REVIEW.length) }), H("div", { class: "t", text: "human review items, " + REVIEW_RANGE })])
+      ]), H("p", { class: "cap-h", style: "margin-top:6px", text: "Stages in the AI log" }), chips],
+      source: "AI_LOG.md · HUMAN_REVIEW.md · CHANGELOG.md" });
+
+    var corr = H("div", { class: "frame" }, [
+      H("h3", { text: "AI output rejected or corrected after checking" }),
+      H("ul", { class: "list tight" }, DATA.corrected.map(function (c) { return H("li", { "data-tip": c.tip }, [idTag(c.id), H("span", { text: c.text })]); })),
+      H("h4", { style: "margin-top:8px", text: "Independent audits of AI work" }),
+      H("ul", { class: "list tight" }, DATA.audits.map(function (a) { return H("li", { "data-tip": a.tip || null }, [idTag(a.id), H("span", { text: a.text })]); })),
+      H("p", { class: "callout" }, [H("strong", { text: DATA.auditCallout.id + ": " }), DATA.auditCallout.text + " ", idTag(DATA.auditCallout.ref)]),
+      srcLine(DATA.aiSource, null, "p")
+    ]);
+
+    var outT = table([{ h: "Class" }, { h: "Entries", cls: "ids" }], CL.classes.map(function (c) { return [c.label, idRuns(c.ids)]; }));
+    var out = frame({ title: "Change log outcomes, " + CL_TOTAL + " entries", sub: range(CL.first, CL.last) + " by what happened to each change",
+      chart: H("div", null, [chart(drawOutcomes), legend(CL.classes.map(function (c) { return { label: c.label, color: "var(--" + c.cls + ")", n: c.ids.length }; })), H("div", { class: "tbox" }, outT)]),
+      source: "CHANGELOG.md. Rule: " + CL.rule });
+
+    var rev = frame({ title: "Human review register", sub: "Each item: the AI's evidence, one question for the team lead, the decision.",
+      chart: H("div", null, [legend([{ label: "Signed", color: "var(--o1)" }, { label: "Awaiting signature", color: "var(--o4)" }]), chart(drawReview),
+        H("ul", { class: "list tight open" }, AWAIT.map(function (r) { return H("li", null, [idTag(r[0]), H("span", { text: r[1] })]); }))]),
+      source: "HUMAN_REVIEW.md" });
+    return [critHead(2), H("div", { class: "g c-ai" }, [loop, corr]), H("div", { class: "g c-ai" }, [out, rev])];
+  }
+
+  function secValidation() {
+    var V = DATA.views, G = DATA.gains;
+    var gT = table([{ h: "View" }].concat(G.map(function (g) { return { h: g.title, num: true }; })),
+      V.map(function (v, i) { return [v[0]].concat(G.map(function (g) { return f4s(g.v[i]); })); }).concat([["public board"].concat(G.map(function (g) { return g.pub; }))]));
+    var gains = frame({ title: "Six-view gains in D2, last two adopted steps", sub: "Every candidate is scored on all six views (C044); the line marks the " + DATA.rule + " rule", tabs: true,
+      chart: chart(drawGains), table: gT, after: H("p", { class: "callout", text: DATA.gainsLesson }),
+      source: "SUBMISSIONS.md P2-S13, P2-S14 · PART2_OBLEMOS.md" });
+    var views = frame({ title: "Six validation views", sub: "Raw and test-mix views on both fold families",
+      chart: H("div", { class: "tbox" }, table([{ h: "View" }, { h: "Meaning" }], V.map(function (v) { return [v[0], v[1]]; }))),
+      source: "CHANGELOG.md C036, C044" });
+    var gates = H("div", { class: "frame" }, [H("h3", { text: "Adoption gates" }),
+      H("ol", { class: "gates" }, DATA.gates.map(function (g) { return H("li", null, [H("b", { text: g.name }), fill(g.text)]); })),
+      srcLine(DATA.gatesSource, null, "p")]);
+    var guard = H("div", { class: "frame" }, [H("h3", { text: "Guardrails" }),
+      H("ul", { class: "list" }, DATA.guardrails.map(function (g) {
+        var f = fill(g.fig);
+        return H("li", null, [/^C\d+$/.test(f) ? idTag(f) : H("span", { class: "fig", text: f }), H("span", { text: fill(g.text) })]);
+      })),
+      srcLine(DATA.guardSource, null, "p")]);
+    return [critHead(3), H("div", { class: "g c-va" }, [gains, views]), H("div", { class: "g c-va" }, [gates, guard])];
+  }
+
+  function secCommunication() {
+    var tiles = H("div", { class: "tiles" }, DATA.deliverables.map(function (d) { return H("div", { class: "tile" }, [H("p", { class: "k", text: d.k }), H("p", null, rich(fill(d.t)))]); }));
+    var docs = H("div", { class: "frame" }, [H("h3", { text: "Documentation set" }),
+      H("ul", { class: "list tight" }, DATA.docs.map(function (d) { return H("li", null, [H("span", { class: "fig", text: d[0] }), H("span", { text: fill(d[1]) })]); })),
+      srcLine(DATA.docsSource, null, "p")]);
+    var repo = H("div", { class: "frame" }, [H("h3", { text: "Repository layout" }),
+      H("ul", { class: "tree" }, DATA.repo.map(function (r) { return H("li", null, [H("b", { text: r[0] }), " · " + fill(r[1])]); })),
+      srcLine(DATA.repoSource, null, "p")]);
+    var s = DATA.submissions;
+    var subs = H("div", { class: "frame" }, [H("h3", { text: "Submissions logged" }), H("p", { class: "sub", text: "Each with recipe, validation gains and public score." }),
+      H("div", { class: "big-pair" }, [
+        H("div", null, [H("div", { class: "n", text: String(s.p1) }), H("div", { class: "t", text: "Part 1 · " + s.p1Range }), H("div", { class: "x", text: s.p1Extra })]),
+        H("div", null, [H("div", { class: "n", text: String(s.p2) }), H("div", { class: "t" }, rich("Part 2 · " + s.p2Range))])
+      ]),
+      srcLine("SUBMISSIONS.md", null, "p")]);
+    return [critHead(4), tiles, H("div", { class: "g c-co" }, [docs, repo, subs])];
+  }
+
+  /* ---------------------------------------------------------------------------
+     Shell, navigation, tooltip
+     --------------------------------------------------------------------------- */
+  var ORDER = [DATA.overview].concat(DATA.criteria);
+  var BUILD = { overview: secOverview, pricing: secPricing, ai: secAI, validation: secValidation, communication: secCommunication };
+  addK(document.getElementById("top"), [H("span", { class: "brand", text: DATA.brand }), H("span", { class: "ctx", text: DATA.context }),
+    H("span", { class: "who" }, [DATA.authors + " · ", H("b", { text: "as of " + DATA.asOf })])]);
+  var links = ORDER.map(function (s) {
+    return H("a", { href: "#" + s.token }, [H("span", { class: "tm", text: s.time }), H("span", { class: "nm", text: s.nav || s.title }),
+      H("span", { class: "wt", text: s.navSub || ("Criterion " + s.n + " · " + s.weight + "%") })]);
+  });
+  addK(document.getElementById("toc"), [H("p", { class: "toc-h", text: DATA.navHeading }), H("ol", null, links.map(function (a) { return H("li", null, a); })), H("p", { class: "hint", text: DATA.navHint })]);
+  var main = document.getElementById("main");
+  var SECS = {};
+  ORDER.forEach(function (s) {
+    var sec = H("section", { "data-token": s.token, "aria-label": s.nav || s.title, hidden: "hidden" }, BUILD[s.token]());
+    SECS[s.token] = sec;
+    main.appendChild(sec);
+  });
+  keepIds(main);
+
+  var tip = document.getElementById("tip");
+  function hideTip() { tip.hidden = true; }
+  function current() { var h = location.hash.slice(1); return Object.prototype.hasOwnProperty.call(SECS, h) ? h : "overview"; }
+  function show(t) {
+    Object.keys(SECS).forEach(function (k) { SECS[k].hidden = k !== t; });
+    links.forEach(function (a) { if (a.getAttribute("href") === "#" + t) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    hideTip();
+    redrawVisible(false);
+  }
+  window.addEventListener("hashchange", function () { show(current()); window.scrollTo(0, 0); });
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    var el = e.target;
+    if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+    var tokens = ORDER.map(function (s) { return s.token; });
+    var i = tokens.indexOf(current()) + (e.key === "ArrowRight" ? 1 : -1);
+    if (i < 0 || i >= tokens.length) return;
+    e.preventDefault();
+    location.hash = tokens[i];
+  });
+  function place(x, y) {
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = Math.max(8, Math.min(x + 14, window.innerWidth - w - 8));
+    var t = y - h - 12;
+    if (t < 8) t = y + 18;
+    tip.style.left = left + "px";
+    tip.style.top = t + "px";
+  }
+  function point(e) {
+    var el = e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (!el) { if (!tip.hidden) hideTip(); return; }
+    tip.textContent = el.getAttribute("data-tip");
+    tip.hidden = false;
+    place(e.clientX, e.clientY);
+  }
+  document.addEventListener("pointermove", point);
+  document.addEventListener("pointerdown", point);
+  document.addEventListener("focusin", function (e) {
+    var el = e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (!el) { hideTip(); return; }
+    var r = el.getBoundingClientRect();
+    tip.textContent = el.getAttribute("data-tip");
+    tip.hidden = false;
+    place(r.left + r.width / 2, r.top);
+  });
+  document.addEventListener("focusout", hideTip);
+  document.documentElement.addEventListener("mouseleave", hideTip);
+  window.addEventListener("resize", function () { redrawVisible(false); });
+  show(current());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { redrawVisible(true); });
+})();
+</script>
