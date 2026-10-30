@@ -130,7 +130,7 @@ emerging `sample_submission`; the archived zip is the file that was uploaded.
 The paragraphs up to "Trend" describe the Part 1 pipeline, which Part 2 reuses; the Part 2 changes follow after them.
 
 Cleaning (C001 to C004). The raw tables have four defects that are fixed at load time in `clean.py`. `exposure` is
-recomputed from the period dates on a 365-day year because thousands of training rows hold day counts or 370/365
+recomputed from the period dates on a 365-day year because thousands of training rows hold day counts or a 360-day basis
 (C001). Motor `customer_id` values lost their leading zeros and are padded to 8 characters so they join to `customers`
 (C002). `sum_insured` values above 5 million are divided by 1,000 and flagged, since they match the same policies' other
 years at a factor of exactly 1,000 (C003). `construction_type` is lower-cased and the codes T and W both map to timber (C004).

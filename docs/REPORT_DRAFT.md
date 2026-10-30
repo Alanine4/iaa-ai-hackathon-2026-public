@@ -149,7 +149,7 @@ Written premium is the current tariff and R is our 2025 cost estimate, so we do 
 
 | Issue | Size | Treatment |
 |---|---|---|
-| Q1 `exposure` holds day counts, 370/365 or a 360-day basis | 5,723 motor, 4,176 buildings, 4,305 contents rows | Recomputed from period dates on a 365-day year (C001) |
+| Q1 `exposure` holds day counts or a 360-day basis (1.0139 = 365/360) | 5,723 motor, 4,176 buildings, 4,305 contents rows | Recomputed from period dates on a 365-day year (C001) |
 | Q2 motor `customer_id` lost leading zeros | 98,110 training and 25,554 test rows | Padded to 8 characters; 100% join to customers (C002) |
 | Q3 `sum_insured` inflated by 1,000 | Values above 5m, including 370 buildings and 360 contents test rows | Divided by 1,000 and flagged; same policies differ by exactly 1,000 across years (C003) |
 | Q4 `construction_type` case and codes T/W | 13,250 policies switch from T to W | Lower-cased; T and W mapped to timber (C004) |
