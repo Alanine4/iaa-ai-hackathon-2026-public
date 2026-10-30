@@ -75,8 +75,8 @@ Part 1 截止：约 2026-10-23（以 Kaggle 页面倒计时为准，UTC）。
 - [x] 新模型实验 C046（新兴市场树模型调参→融合候选，三线否决）、C047（新业务专用模型 + 分段融合：车险新业务段采纳，房屋续保段按设计否决）→ P2-S13 0.15577 — 2026-10-26，CHANGELOG C046/C047、`docs/part2_validation/`
 - [ ] Kaggle 最终选择：候选 P2-S15（0.15807，种子平均版，事先规则已通过，2026-10-30，`docs/SUBMISSIONS.md`）；对冲 P2-S14（0.15781）
 - [x] Part 1 报告和视频把截止后融合（0.7 S09 + 0.3 OBLEMOS，迟交、不计排名，私榜 0.13718）与计入排名的 S09（私榜 0.13689，第 12 / 51）并列介绍；草稿已写入 `docs/REPORT_DRAFT.md`、`docs/VIDEO_SCRIPT.md`，定稿时保留（2026-10-30：报告表 3 和附录 B、仪表盘总览都已并列展示，标注 late/not ranked）
-- [ ] 把 `docs/report/report.tex` 贴进 Overleaf 编译，确认第 4 节结束在第 5 页、附录从第 6 页起（队长）
-- [ ] 队长签字 `docs/HUMAN_REVIEW.md` R12–R16
+- [ ] 把 `docs/report/overleaf_sections.tex` 贴进 Overleaf 编译，确认第 4 节结束在第 5 页、附录从第 6 页起（队长）
+- [x] 队长签字 `docs/HUMAN_REVIEW.md` R12–R16 — 2026-10-30，`docs/HUMAN_REVIEW.md`（队长在对话中回复"这些我都同意"，协调方代填）
 - [ ] 用 `docs/dashboard/index.html`（或 artifact 链接）录 5 分钟视频，台词 `docs/VIDEO_SCRIPT.md`（664 词，约 4:55，建议第 5 段删约 10 词）
 - [x] 发达市场默认路径复验：build_target 三条线 target 表与 `output/target_*.parquet` 完全一致、报告与 `docs/target_summary.txt` 一致；S09 融合用当前 blend.py 重现，与 `work/sub_v3_seeds.csv` SHA256 相同 — 2026-10-25，`output/emerging/check_dev_target.log`
 - [x] 半趋势系数重算：车险 1.0175、房屋 1.0948、家财 1.0636，与 `markets.py` 一致 — 2026-10-25，`output/emerging/check_dev_target.log`

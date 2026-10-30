@@ -103,7 +103,6 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
 .list li:first-child { border-top: 0; } .list .fig { font-weight: 700; color: var(--fg); font-size: 13.5px; white-space: nowrap; } .list.tight li { padding: 4px 0; }
 .rebuild td { vertical-align: top; } .rebuild td:nth-child(2) { color: var(--ink-2); } .rebuild code { font: 11px/1.5 var(--mono); color: var(--fg); background: var(--wash); padding: 0 3px; border-radius: 2px; white-space: nowrap; } .rebuild code.long { white-space: normal; overflow-wrap: anywhere; }
 .rebuild td:last-child { font-size: 11.5px; color: var(--muted); } .list.docs li { padding: 3px 0; font-size: 12px; }
-.list.open { margin-top: 6px; border-top: 1px solid var(--line); } .list.open li { padding: 3px 0; font-size: 12px; } .list.open li:first-child { border-top: 0; }
 .list.lim li { grid-template-columns: 92px minmax(0, 1fr); padding: 5px 0; }
 .nw { white-space: nowrap; }
 .mkt td:first-child { font-weight: 400; color: var(--ink-2); white-space: normal; min-width: 8.5em; } .mkt td { color: var(--fg); }
@@ -380,24 +379,23 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     aiSource: "HUMAN_REVIEW.md · AI_LOG.md · AUDIT_2026-10-22.md · AUDIT_PART2.md",
 
     review: {
-      signedDate: "2026-10-25",
       items: [
-        ["R01", "sum_insured above 5,000,000 divided by 1,000 and flagged (C003)", true],
-        ["R02", "Construction codes T and W mapped to timber (C004)", true],
-        ["R03", "Claim matching: repudiated excluded, incurred minus recoveries, unmatched listed (C005)", true],
-        ["R04", "Reporting-lag development to ultimate (C006; C022 kept as a spare)", true],
-        ["R05", "Large-loss cap at the 99.5th percentile with a per-line load (C014)", true],
-        ["R06", "Half trend for 2025 (C016, C019)", true],
-        ["R07", "Columns with no risk signal dropped (C026)", true],
-        ["R08", "Common schema for the two markets (C035)", true],
-        ["R09", "Emerging market borrows the developed reporting curves (C037)", true],
-        ["R10", "Pooled training, developed rows at weight 0.3, re-balanced on emerging rows (C038)", true],
-        ["R11", "Part 2 default trend: the developed half trend (P2-S02)", true],
-        ["R12", "Motor 2025 level: the emerging market's own full trend 1.1606 (C043, P2-S10)", false],
-        ["R13", "Test-mix validation views as adoption gates (C044)", false],
-        ["R14", "Motor new-business rows from a 12-candidate equal blend (C047, P2-S13)", false],
-        ["R15", "Office premium conventions for the 20 reference policies", false],
-        ["R16", "Seed averaging adopted without a fold gate (P2-S15)", false]
+        ["R01", "sum_insured above 5,000,000 divided by 1,000 and flagged (C003)", "2026-10-25"],
+        ["R02", "Construction codes T and W mapped to timber (C004)", "2026-10-25"],
+        ["R03", "Claim matching: repudiated excluded, incurred minus recoveries, unmatched listed (C005)", "2026-10-25"],
+        ["R04", "Reporting-lag development to ultimate (C006; C022 kept as a spare)", "2026-10-25"],
+        ["R05", "Large-loss cap at the 99.5th percentile with a per-line load (C014)", "2026-10-25"],
+        ["R06", "Half trend for 2025 (C016, C019)", "2026-10-25"],
+        ["R07", "Columns with no risk signal dropped (C026)", "2026-10-25"],
+        ["R08", "Common schema for the two markets (C035)", "2026-10-25"],
+        ["R09", "Emerging market borrows the developed reporting curves (C037)", "2026-10-25"],
+        ["R10", "Pooled training, developed rows at weight 0.3, re-balanced on emerging rows (C038)", "2026-10-25"],
+        ["R11", "Part 2 default trend: the developed half trend (P2-S02)", "2026-10-25"],
+        ["R12", "Motor 2025 level: the emerging market's own full trend 1.1606 (C043, P2-S10)", "2026-10-30"],
+        ["R13", "Test-mix validation views as adoption gates (C044)", "2026-10-30"],
+        ["R14", "Motor new-business rows from a 12-candidate equal blend (C047, P2-S13)", "2026-10-30"],
+        ["R15", "Office premium conventions for the 20 reference policies", "2026-10-30"],
+        ["R16", "Seed averaging adopted without a fold gate (P2-S15)", "2026-10-30"]
       ]
     },
 
@@ -454,8 +452,6 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
   var P2FINAL = TRAJ[TRAJ.length - 1];
   var P2PREV = TRAJ[TRAJ.length - 2];
   var REVIEW = DATA.review.items;
-  var SIGNED = REVIEW.filter(function (r) { return r[2]; });
-  var AWAIT = REVIEW.filter(function (r) { return !r[2]; });
   var CL = DATA.changelog;
   var CL_TOTAL = CL.classes.reduce(function (s, c) { return s + c.ids.length; }, 0);
 
@@ -874,15 +870,17 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
 
   function drawReview(W) {
     var n = REVIEW.length, gapW = 2, cw = (W - gapW * (n - 1)) / n, Hh = 42;
-    var signedText = range(SIGNED[0][0], SIGNED[SIGNED.length - 1][0]) + " signed " + DATA.review.signedDate;
-    var awaitText = range(AWAIT[0][0], AWAIT[AWAIT.length - 1][0]) + " awaiting signature";
-    var svg = svgRoot(W, Hh, "Review register: " + signedText + ", " + awaitText);
+    var early = REVIEW.filter(function (r) { return r[2] === REVIEW[0][2]; });
+    var late = REVIEW.filter(function (r) { return r[2] === REVIEW[n - 1][2]; });
+    var earlyText = range(early[0][0], early[early.length - 1][0]) + " signed " + early[0][2];
+    var lateText = range(late[0][0], late[late.length - 1][0]) + " signed " + late[0][2];
+    var svg = svgRoot(W, Hh, "Review register: " + earlyText + ", " + lateText);
     REVIEW.forEach(function (r, i) {
-      svg.appendChild(S("rect", { class: "cell " + (r[2] ? "o1" : "o4"), tabindex: 0, x: r2(i * (cw + gapW)), y: 2, width: r2(cw), height: 18, rx: 1.5,
-        "data-tip": r[0] + " · " + r[1] + " · " + (r[2] ? "signed " + DATA.review.signedDate : "awaiting signature") }));
+      svg.appendChild(S("rect", { class: "cell o1", tabindex: 0, x: r2(i * (cw + gapW)), y: 2, width: r2(cw), height: 18, rx: 1.5,
+        "data-tip": r[0] + " · " + r[1] + " · signed " + r[2] }));
     });
-    svg.appendChild(S("text", { class: "lab", x: 0, y: 37, text: signedText }));
-    svg.appendChild(S("text", { class: "lab", x: W, y: 37, "text-anchor": "end", text: awaitText }));
+    svg.appendChild(S("text", { class: "lab", x: 0, y: 37, text: earlyText }));
+    svg.appendChild(S("text", { class: "lab", x: W, y: 37, "text-anchor": "end", text: lateText }));
     return svg;
   }
 
@@ -1075,10 +1073,9 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       source: "CHANGELOG.md. Rule: " + CL.rule });
 
     var revT = table([{ h: "Item" }, { h: "AI decision under review" }, { h: "Status" }],
-      REVIEW.map(function (r) { return [r[0], r[1], r[2] ? "signed " + DATA.review.signedDate : "awaiting signature"]; }));
+      REVIEW.map(function (r) { return [r[0], r[1], "signed " + r[2]]; }));
     var rev = frame({ title: "Human review register", sub: "Each item: the AI's evidence, one question for the team lead, the decision.", tabs: true,
-      chart: H("div", null, [legend([{ label: "Signed", color: "var(--o1)" }, { label: "Awaiting signature", color: "var(--o4)" }]), chart(drawReview),
-        H("ul", { class: "list tight open" }, AWAIT.map(function (r) { return H("li", null, [idTag(r[0]), H("span", { text: r[1] })]); }))]),
+      chart: H("div", null, [legend([{ label: "Signed", color: "var(--o1)" }]), chart(drawReview)]),
       table: revT, source: "HUMAN_REVIEW.md" });
     return [critHead(2), H("div", { class: "g c-ai" }, [loop, corr]), H("div", { class: "g c-ai" }, [out, rev])];
   }
