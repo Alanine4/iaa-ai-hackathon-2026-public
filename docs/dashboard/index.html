@@ -186,23 +186,32 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     context: "IAA AI-Assisted Hackathon 2026",
     authors: "Yichuan Lin · Oussama El Hadi",
     metric: "Tweedie deviance D2, power 1.5",
-    navHeading: "Judging criteria",
+    navHeading: "Sections",
     navHint: "Arrow keys ← → move between sections",
 
     overview: {
-      token: "overview", nav: "Overview", navSub: "Headline numbers",
+      token: "overview", nav: "Overview", navSub: "Results and judging criteria",
       title: "Same pipeline, new market",
       thesis: "The same validated pipeline, re-pointed at a new market: pooled training plus test-mix-aware validation lifted public D2 from {first} (emerging rows only) to {last}."
     },
 
+    sections: [
+      { token: "part1", nav: "Part 1: developed market", navSub: "Approach, {p1Years}", over: "Week 1 · Approach",
+        text: "Two independent pipelines: Yichuan's per-line blend of five model families, ranked as {p1}, and Oussama's Blend4. The Part 1 method we present is their post-deadline blend, {p1Late}." },
+      { token: "part2", nav: "Part 2: emerging market", navSub: "What changed for the new market", over: "Week 2 · Adaptation",
+        text: "Most 2025 test rows are new business, rare in the emerging training data, so training pooled both markets and validation was re-weighted to the test mix." },
+      { token: "ai", nav: "AI-assisted workflow", navSub: "AI use, checks and guardrails", over: "Weeks 1 and 2 · Claude Code",
+        text: "The AI proposed each step, an automated test or an independent check verified it, the team lead signed the judgement calls, and every change carries a log ID." }
+    ],
+
     criteria: [
-      { n: 1, token: "pricing", weight: 40, title: "Pricing Performance & Adaptation",
+      { n: 1, link: "part2", where: "evidence in Part 2 and Part 1", weight: 40, title: "Pricing Performance & Adaptation",
         text: "Quantitative accuracy across both Week 1 & 2 dataset. Appropriate modelling choices and adaptation to emerging market differences. Clear treatment of data quality, limitations, and remaining uncertainties." },
-      { n: 2, token: "ai", weight: 25, title: "Effective Use of AI",
+      { n: 2, link: "ai", where: "evidence in AI-assisted workflow", weight: 25, title: "Effective Use of AI",
         text: "Meaningful integration of AI throughout the actuarial workflow (e.g., EDA, feature engineering, modeling, diagnostics, and testing). Demonstrated improvement in quality, efficiency, challenge, or reliability. Rigorous verification of AI-generated outputs." },
-      { n: 3, token: "validation", weight: 20, title: "Trust, Validation & Guardrails",
+      { n: 3, link: "part2", where: "evidence in Part 2 and AI-assisted workflow", weight: 20, title: "Trust, Validation & Guardrails",
         text: "Comprehensive validation checks, automated tests, and model diagnostics. Governance controls, reproducibility, and human review/escalation protocols." },
-      { n: 4, token: "communication", weight: 15, title: "Communication & Documentation",
+      { n: 4, link: "overview", where: "evidence in Overview", weight: 15, title: "Communication & Documentation",
         text: "Clear and concise video demo and written report explaining methodology and key decisions. Well-structured code repository with version control." }
     ],
     criteriaSource: "Kaggle overview page, Evaluation table (docs/references/kaggle_overview_page.md)",
@@ -225,6 +234,22 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       oblemos: { label: "OBLEMOS Blend4 alone", status: "not the selected entry, not ranked", priv: 0.13526, pub: 0.12736 },
       script: "oblemos_part1/blend_with_S09.py",
       axis: { lo: 0.135, hi: 0.140, step: 0.001 }
+    },
+
+    oblemos: {
+      title: "Oussama's Part 1 pipeline",
+      sub: "Built by Oussama El Hadi (OBLEMOS) apart from the main pipeline; the scripts are kept as they were run",
+      stages: [
+        { fig: "Prepare", text: "Exposure from the dates; sum_insured and construction codes fixed; about 600 duplicate claims removed; late-reported claims (IBNR) by shrinking the exposure; each claim capped at the line's 99.5th percentile with a loading; customer_service_contacts dropped as leaky" },
+        { fig: "GLM", text: "Poisson frequency × Gamma severity, written as its own IRLS; numeric variables binned; forward selection on BIC by score test" },
+        { fig: "Blend4", text: "(GLM + GAM + LightGBM + CatBoost) / 4, an equal average; the GAM on P-splines, LightGBM and CatBoost with a Tweedie loss" },
+        { fig: "Validation", text: "Fit on 2021 to 2023, scored on 2024 with Tweedie D2" },
+        { fig: "With {p1}", text: "Put on {p1}'s level per line, so the blend changes the ranking of rows, not the line totals; correlation of the two predictions 0.965" }
+      ],
+      scoresHead: "Kaggle Part 1 scores",
+      lateStatus: "late submission, not ranked",
+      finalStatus: "the ranked entry, rank {p1Rank} of {p1Teams}",
+      source: "oblemos_part1/README.md · SUBMISSIONS.md, post-deadline blend · REPORT_DRAFT.md section 3"
     },
 
     p2: {
@@ -255,12 +280,12 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
 
     recipes: {
       families: ["GLM", "GAM", "LightGBM", "XGBoost", "CatBoost"],
-      p1: { cap: "Part 1 · S07 blend, used by S09", tag: "S07", rows: [
+      p1: { title: "Blend recipe, Part 1: weight of each model family", tableHead: "Weights", cap: "Part 1 · S07 blend, used by S09", tag: "S07", rows: [
         { line: "Motor", segs: [["GLM", 0.20], ["GAM", 0.20], ["LightGBM", 0.20], ["XGBoost", 0.20], ["CatBoost", 0.20]] },
         { line: "Buildings", segs: [["GAM", 0.20], ["LightGBM", 0.25], ["CatBoost", 0.55]] },
         { line: "Contents", segs: [["GAM", 0.25], ["LightGBM", 0.20], ["XGBoost", 0.35], ["CatBoost", 0.20]] }
-      ] },
-      p2: { cap: "Part 2 · P2-S15 recipe", tag: "P2-S15", rows: [
+      ], source: "SUBMISSIONS.md S07 · CHANGELOG.md C021" },
+      p2: { title: "Blend recipe, Part 2: weight of each model family", tableHead: "Weights and training set", cap: "Part 2 · P2-S15 recipe", tag: "P2-S15", rows: [
         { line: "Motor, new business", sub: "{nbRows} rows · 1/12 each", nb: true,
           sets: ["pooled, developed weight 0.3", "pooled, developed weight 1.0", "new-business rows only"],
           setsShort: ["pooled, dev 0.3", "pooled, dev 1.0", "NB rows only"],
@@ -269,14 +294,13 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
         { line: "Motor, renewals", segs: [["GLM", 0.25, "pooled, developed weight 0.3"], ["LightGBM", 0.25, "pooled, developed weight 0.3"], ["XGBoost", 0.25, "pooled, developed weight 0.3"], ["CatBoost", 0.25, "pooled, developed weight 0.3"]] },
         { line: "Buildings", segs: [["GAM", 0.40, "Part 1 GAM (OBLEMOS), refit on the emerging market"], ["CatBoost", 0.60, "pooled, developed weight 1.0"]] },
         { line: "Contents", segs: [["GLM", 0.35, "pooled, developed weight 0.3"], ["LightGBM", 0.65, "pooled, developed weight 1.0"]] }
-      ] },
+      ], source: "SUBMISSIONS.md P2-S12 to P2-S15 · CHANGELOG.md C047, C054, C057, C058" },
       nbRows: 68823,
       seeds: 3,
       trend: [["motor", 1.1606], ["buildings", 1.0948], ["contents", 1.0636]],
       familyTips: { GLM: "GLM: banded one-hot Tweedie GLM", GAM: "GAM: cubic splines with one global ridge penalty", LightGBM: "LightGBM: Tweedie, shallow trees", XGBoost: "XGBoost: Tweedie, shallow trees", CatBoost: "CatBoost: Tweedie, native categories" },
       p1Note: "families rescaled to their training totals; 0.05-grid weights kept only if both expanding time folds (2021-22 → 2023, 2021-23 → 2024) beat equal weights; half trend.",
-      p2Note: "P2-S14 weights, trees averaged over {seeds} seeds (C057), buildings at the P2-S13 total (C058); trend {trend}.",
-      source: "SUBMISSIONS.md S07, P2-S12 to P2-S15 · CHANGELOG.md C021, C047, C054, C057, C058"
+      p2Note: "P2-S14 weights, trees averaged over {seeds} seeds (C057), buildings at the P2-S13 total (C058); trend {trend}."
     },
 
     dq: [
@@ -348,10 +372,10 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       rule: "the Area cell decides (rejected; evaluation, not adopted or probe; one part adopted), else the row's own verdict (not adopted, nothing adopted); C024 is withdrawn (removed by C026); all other rows adopted."
     },
 
-    ailog: { first: "A01", last: "A35", count: 35,
+    ailog: { first: "A01", last: "A36", count: 36,
       stages: {
         "Part 1": [["A01", "Setup"], ["A02", "EDA"], ["A03", "Data quality"], ["A04", "Cleaning rules"], ["A05", "Target & development"], ["A06", "Leakage"], ["A07", "Features & models"], ["A08", "Debugging"], ["A09", "Development"], ["A10, A12", "Models"], ["A11", "Features"], ["A13", "Audit"], ["A14", "Feature policy"], ["A15", "Training"], ["A16", "Refit"], ["A17", "Governance"], ["A18", "Feature test"], ["A19", "Tuning"]],
-        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"]]
+        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"], ["A36", "Dashboard by video section"]]
       } },
 
     loop: [
@@ -480,6 +504,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     first: f5(TRAJ[1].v), last: f5(P2FINAL.v),
     clFirst: CL.first, clLast: CL.last, aiFirst: DATA.ailog.first, aiLast: DATA.ailog.last,
     p1: P1.final.id, p2: P2.final.id, p2final: P2.final.id,
+    p1Rank: String(P1.rank), p1Teams: String(P1.teams), p1Late: P1.late.formula, p1Years: DATA.markets.years[0],
     nbRows: int(DATA.recipes.nbRows), seeds: String(DATA.recipes.seeds),
     trend: DATA.recipes.trend.map(function (t) { return t[0] + " " + t[1].toFixed(4); }).join(", ")
   };
@@ -646,7 +671,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     var svg = svgRoot(W, rows.length * rh, "Judging weights: " + rows.map(function (r) { return r.title + " " + r.weight + "%"; }).join(", "));
     rows.forEach(function (r, i) {
       var t = i * rh, w = r.weight * k, by = stacked ? t + 22 : t + 7;
-      svg.appendChild(S("a", { href: "#" + r.token, class: "row-link", "data-tip": r.title + " · " + r.weight + "% of the judging score" }, [
+      svg.appendChild(S("a", { href: "#" + r.link, class: "row-link", "data-tip": r.title + " · " + r.weight + "% of the judging score · " + r.where }, [
         S("rect", { class: "band", x: 0, y: t, width: W, height: rh - 2 }),
         S("text", { class: "lab b", x: 4, y: t + (stacked ? 15 : 21), text: r.n }),
         S("text", { class: "lab", x: 20, y: t + (stacked ? 15 : 21), text: r.title }),
@@ -778,18 +803,14 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     return svg;
   }
 
-  function drawRecipe(W) {
-    var R = DATA.recipes;
+  function drawRecipe(part, W) {
     var labW = Math.round(Math.min(150, Math.max(118, W * 0.3)));
     var X = labW + 6, BW = W - X, segH = 15, step = 20;
     var rows = [];
     var y = 0;
-    rows.push({ cap: R.p1.cap, y: y }); y += 15;
-    R.p1.rows.forEach(function (r) { rows.push({ r: r, tag: R.p1.tag, y: y }); y += step; });
-    y += 10;
-    rows.push({ cap: R.p2.cap, y: y }); y += 15;
-    R.p2.rows.forEach(function (r) { rows.push({ r: r, tag: R.p2.tag, y: y }); y += r.nb ? step + 16 : step; });
-    var svg = svgRoot(W, y, "Model-family weights per line for the Part 1 " + R.p1.tag + " blend and the Part 2 " + R.p2.tag + " recipe");
+    rows.push({ cap: part.cap, y: y }); y += 15;
+    part.rows.forEach(function (r) { rows.push({ r: r, tag: part.tag, y: y }); y += r.nb ? step + 16 : step; });
+    var svg = svgRoot(W, y, "Model-family weights per line: " + part.cap);
     rows.forEach(function (row) {
       if (row.cap) { svg.appendChild(S("text", { class: "cap", x: 0, y: row.y + 10, text: row.cap })); return; }
       var r = row.r, yy = row.y;
@@ -914,15 +935,26 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
   /* ---------------------------------------------------------------------------
      Sections
      --------------------------------------------------------------------------- */
-  function secHead(over, title, lead, quote) {
+  function secHead(over, title, lead) {
     return H("div", { class: "sec-head" }, [
       H("div", null, [H("p", { class: "over", text: over }), H("h1", { text: title })]),
-      H("p", { class: "crit", text: quote ? "\"" + lead + "\"" : lead })
+      H("p", { class: "crit", text: lead })
     ]);
   }
-  function critHead(n) {
-    var c = DATA.criteria[n - 1];
-    return secHead("Criterion " + c.n + " · Weight " + c.weight + "%", c.title, c.text, true);
+  function sectionHead(s) { return secHead(s.over, s.nav, fill(s.text)); }
+
+  /* Blend recipe, one panel per part; rowText words a line's weights for the table view */
+  function recipeWeights(segs) {
+    var same = segs.every(function (x) { return x[1] === segs[0][1]; });
+    return same ? segs.map(function (x) { return x[0]; }).join(", ") + ": " + wt(segs[0][1]) + " each" : segs.map(function (x) { return x[0] + " " + wt(x[1]); }).join(" · ");
+  }
+  function recipePanel(part, rowText, note) {
+    var R = DATA.recipes;
+    return frame({ title: part.title, tabs: true,
+      chart: H("div", null, [legend(R.families.map(function (f) { return { label: f, color: FAM_VAR[f], tip: R.familyTips[f] }; })), chart(function (W) { return drawRecipe(part, W); }),
+        H("p", { class: "note" }, [H("b", { text: part.tag + ": " }), note])]),
+      table: table([{ h: "Line" }, { h: part.tableHead }], part.rows.map(function (r) { return [part.tag + " " + r.line.toLowerCase(), rowText(r)]; })),
+      source: part.source, cls: "a-recipe" });
   }
 
   function secOverview() {
@@ -960,19 +992,37 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       chart: chart(drawCriteria),
       source: DATA.criteriaSource
     });
-    var M = DATA.markets;
-    var slash = function (a, f) { return a.map(f).join(" / "); };
-    var mkt = frame({
-      title: M.title, sub: M.sub,
-      chart: H("div", { class: "tbox" }, table(M.cols.map(function (c) { return { h: c }; }), [
-        ["Training years", M.years[0], M.years[1]],
-        ["2025 test rows", int(P1.testRows), int(P2.testRows)],
-        ["New business, share of 2025 test rows", slash(M.nbTestRows[0], pct), slash(M.nbTestRows[1], pct)],
-        ["Reported pure premium, 2023-24", slash(M.purePremium[0], String), slash(M.purePremium[1], String)],
-        [M.motorFreqSevLabel, "", M.motorFreqSev]
-      ], "mkt")),
-      source: M.source
-    });
+    var s = DATA.submissions;
+    var subs = H("div", { class: "frame" }, [H("h3", { text: "Submissions logged" }), H("p", { class: "sub", text: "Each with recipe, validation gains and public score." }),
+      H("div", { class: "big-pair" }, [
+        H("div", null, [H("div", { class: "n", text: String(s.p1) }), H("div", { class: "t", text: "Part 1 · " + s.p1Range }), H("div", { class: "x", text: s.p1Extra })]),
+        H("div", null, [H("div", { class: "n", text: String(s.p2) }), H("div", { class: "t" }, rich("Part 2 · " + s.p2Range))])
+      ]),
+      srcLine("SUBMISSIONS.md", null, "p")]);
+    var tiles = H("div", { class: "tiles" }, DATA.deliverables.map(function (d) { return H("div", { class: "tile" }, [H("p", { class: "k", text: d.k }), H("p", null, rich(fill(d.t)))]); }));
+    var docs = H("div", { class: "frame" }, [H("h3", { text: "Documentation set" }),
+      H("ul", { class: "list tight docs" }, DATA.docs.map(function (d) { return H("li", null, [H("span", { class: "fig", text: d[0] }), H("span", { text: fill(d[1]) })]); })),
+      srcLine(DATA.docsSource, null, "p")]);
+    var repo = H("div", { class: "frame" }, [H("h3", { text: "Repository layout" }),
+      H("ul", { class: "tree" }, DATA.repo.map(function (r) { return H("li", null, [H("b", { text: r[0] }), " · " + fill(r[1])]); })),
+      srcLine(DATA.repoSource, null, "p")]);
+    return [secHead("Overview · " + DATA.metric, o.title, fill(o.thesis)), kpis, H("div", { class: "g c-ov" }, [crit, subs]), tiles, H("div", { class: "g c-ov" }, [docs, repo])];
+  }
+
+  function secPart1(sec) {
+    var OB = DATA.oblemos;
+    var obT = table([{ h: "Entry" }, { h: "Status" }, { h: "Private D2", num: true }, { h: "Public D2", num: true }], [
+      [P1.oblemos.label, P1.oblemos.status, f5(P1.oblemos.priv), f5(P1.oblemos.pub)],
+      [P1.late.label, OB.lateStatus, f5(P1.late.priv), f5(P1.late.pub)],
+      [P1.final.id, fill(OB.finalStatus), f5(P1.final.priv), f5(P1.final.pub)]
+    ]);
+    var ob = frame({ title: OB.title, sub: OB.sub, figure: false,
+      chart: [H("ul", { class: "list lim" }, OB.stages.map(function (s) { return H("li", null, [H("span", { class: "fig", text: fill(s.fig) }), H("span", { text: fill(s.text) })]); })),
+        H("h4", { style: "margin-top:8px", text: OB.scoresHead }), H("div", { class: "tbox" }, obT)],
+      source: OB.source + " · " + P1.script });
+
+    var rec = recipePanel(DATA.recipes.p1, function (r) { return recipeWeights(r.segs); }, DATA.recipes.p1Note);
+
     var standTable = table([{ h: "Board" }, { h: "Entry" }, { h: "Status" }, { h: "Private D2", num: true }, { h: "Public D2", num: true }], [
       ["Part 1", P1.final.id, "ranked final, rank " + P1.rank + " of " + P1.teams, f5(P1.final.priv), f5(P1.final.pub)],
       ["Part 1", P1.late.formula, "late submission " + P1.late.date + ", not ranked", f5(P1.late.priv), f5(P1.late.pub)],
@@ -994,13 +1044,28 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       ]), chart(drawStanding)]), table: standTable,
       source: "SUBMISSIONS.md (S09, post-deadline blend, P2-S14, P2-S15) · " + P1.script
     });
-    return [secHead("Overview · " + DATA.metric, o.title, fill(o.thesis), false), kpis, H("div", { class: "g c-ov" }, [H("div", { class: "colstack" }, [crit, mkt]), stand])];
+
+    var dq = frame({ title: "Data quality: ten documented issues", sub: "Each fixed in code at load time and logged; raw files are never edited (C007).",
+      chart: H("div", { class: "tbox" }, table([{ h: "Q" }, { h: "Issue" }, { h: "Treatment" }, { h: "Log" }],
+        DATA.dq.map(function (q) { return [q[0], q[1], q[2], /^C\d+$/.test(q[3]) ? idTag(q[3]) : q[3]]; }), "dq")),
+      source: DATA.dqSource, cls: "a-dq" });
+    return [sectionHead(sec), H("div", { class: "g c-ov" }, [H("div", { class: "colstack" }, [ob, rec]), H("div", { class: "colstack" }, [stand, dq])])];
   }
 
-  function secPricing() {
-    var trajT = table([{ h: "Submission" }, { h: "Change" }, { h: "Public D2", num: true }], TRAJ.map(function (p) { return [p.id, p.note, f5(p.v)]; }));
-    var traj = frame({ title: "Public D2 by submission", sub: "Emerging market, " + int(P2.testRows) + " test rows; higher is better", tabs: true,
-      chart: chart(drawTraj), table: trajT, after: H("p", { class: "note" }, rich(fill(DATA.trajNote))), source: "SUBMISSIONS.md, P2-S01 to " + P2.final.id, cls: "a-traj" });
+  function secPart2(sec) {
+    var M = DATA.markets;
+    var slash = function (a, f) { return a.map(f).join(" / "); };
+    var mkt = frame({
+      title: M.title, sub: M.sub,
+      chart: H("div", { class: "tbox" }, table(M.cols.map(function (c) { return { h: c }; }), [
+        ["Training years", M.years[0], M.years[1]],
+        ["2025 test rows", int(P1.testRows), int(P2.testRows)],
+        ["New business, share of 2025 test rows", slash(M.nbTestRows[0], pct), slash(M.nbTestRows[1], pct)],
+        ["Reported pure premium, 2023-24", slash(M.purePremium[0], String), slash(M.purePremium[1], String)],
+        [M.motorFreqSevLabel, "", M.motorFreqSev]
+      ], "mkt")),
+      source: M.source
+    });
 
     var d = DATA.nbShare;
     var nbT = table([{ h: "Line" }, { h: "Emerging training", num: true }, { h: "Emerging 2025 test", num: true }, { h: "Developed 2025 test (rows)", num: true }],
@@ -1011,39 +1076,39 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       after: H("p", { class: "note", text: "Validation rows: " + d.validationRenewals + "% renewals. Part 1 test: " + d.devTestRows.map(pct).join(" / ") + " of rows." }),
       source: "part2_market_comparison.md, section 3", cls: "a-nb" });
 
-    var R = DATA.recipes;
-    var weights = function (segs) {
-      var same = segs.every(function (x) { return x[1] === segs[0][1]; });
-      return same ? segs.map(function (x) { return x[0]; }).join(", ") + ": " + wt(segs[0][1]) + " each" : segs.map(function (x) { return x[0] + " " + wt(x[1]); }).join(" · ");
-    };
-    var recRows = [];
-    R.p1.rows.forEach(function (r) { recRows.push([R.p1.tag + " " + r.line.toLowerCase(), weights(r.segs)]); });
-    R.p2.rows.forEach(function (r) {
-      var same = !r.nb && r.segs.every(function (x) { return x[2] === r.segs[0][2]; });
-      recRows.push([R.p2.tag + " " + r.line.toLowerCase(), r.nb
+    var trajT = table([{ h: "Submission" }, { h: "Change" }, { h: "Public D2", num: true }], TRAJ.map(function (p) { return [p.id, p.note, f5(p.v)]; }));
+    var traj = frame({ title: "Public D2 by submission", sub: "Emerging market, " + int(P2.testRows) + " test rows; higher is better", tabs: true,
+      chart: chart(drawTraj), table: trajT, after: H("p", { class: "note" }, rich(fill(DATA.trajNote))), source: "SUBMISSIONS.md, P2-S01 to " + P2.final.id, cls: "a-traj" });
+
+    var rec = recipePanel(DATA.recipes.p2, function (r) {
+    var same = !r.nb && r.segs.every(function (x) { return x[2] === r.segs[0][2]; });
+      return r.nb
         ? "1/12 each: " + r.models.join(", ") + " × " + r.setsShort.join(", ") + " (" + fill(r.sub.split(" · ")[0]) + ")"
-        : same ? weights(r.segs) + " (" + r.segs[0][2] + ")" : r.segs.map(function (x) { return x[0] + " " + wt(x[1]) + " (" + x[2] + ")"; }).join(" · ")]);
-    });
-    var rec = frame({ title: "Blend recipes: weight of each model family", tabs: true,
-      chart: H("div", null, [legend(R.families.map(function (f) { return { label: f, color: FAM_VAR[f], tip: R.familyTips[f] }; })), chart(drawRecipe),
-        H("p", { class: "note" }, [H("b", { text: R.p1.tag + ": " }), R.p1Note]), H("p", { class: "note" }, [H("b", { text: R.p2.tag + ": " }), rich(fill(R.p2Note))])]),
-      table: table([{ h: "Line" }, { h: "Weights and training set" }], recRows),
-      source: R.source, cls: "a-recipe" });
+        : same ? recipeWeights(r.segs) + " (" + r.segs[0][2] + ")" : r.segs.map(function (x) { return x[0] + " " + wt(x[1]) + " (" + x[2] + ")"; }).join(" · ");
+    }, rich(fill(DATA.recipes.p2Note)));
+
+    var V = DATA.views, G = DATA.gains;
+    var gT = table([{ h: "View" }].concat(G.map(function (g) { return { h: g.title, num: true }; })),
+      V.map(function (v, i) { return [v[0]].concat(G.map(function (g) { return f4s(g.v[i]); })); }).concat([["public board"].concat(G.map(function (g) { return g.pub; }))]));
+    var gains = frame({ title: "Six-view gains in D2, last two adopted steps", sub: "Every candidate is scored on all six views (C044); the line marks the " + DATA.rule + " rule", tabs: true,
+      chart: chart(drawGains), table: gT, after: H("p", { class: "callout", text: DATA.gainsLesson }),
+      source: "SUBMISSIONS.md P2-S13, P2-S14 · PART2_OBLEMOS.md" });
+    var views = frame({ title: "Six validation views", sub: "Raw and test-mix views on both fold families",
+      chart: H("div", { class: "tbox" }, table([{ h: "View" }, { h: "Meaning" }], V.map(function (v) { return [v[0], v[1]]; }))),
+      source: "CHANGELOG.md C036, C044" });
+    var gates = H("div", { class: "frame" }, [H("h3", { text: "Adoption gates" }),
+      H("ol", { class: "gates" }, DATA.gates.map(function (g) { return H("li", null, [H("b", { text: g.name }), fill(g.text)]); })),
+      srcLine(DATA.gatesSource, null, "p")]);
 
     var lim = H("div", { class: "frame a-limits" }, [
       H("h3", { text: "Limitations and uncertainty" }),
       H("ul", { class: "list lim" }, DATA.limits.map(function (l) { return H("li", null, [H("span", { class: "fig", text: l.fig }), H("span", null, rich(l.text))]); })),
       srcLine(DATA.limitsSource, null, "p")
     ]);
-
-    var dq = frame({ title: "Data quality: ten documented issues", sub: "Each fixed in code at load time and logged; raw files are never edited (C007).",
-      chart: H("div", { class: "tbox" }, table([{ h: "Q" }, { h: "Issue" }, { h: "Treatment" }, { h: "Log" }],
-        DATA.dq.map(function (q) { return [q[0], q[1], q[2], /^C\d+$/.test(q[3]) ? idTag(q[3]) : q[3]]; }), "dq")),
-      source: DATA.dqSource, cls: "a-dq" });
-    return [critHead(1), H("div", { class: "g c-pr1" }, [traj, nb, lim]), H("div", { class: "g c-pr2" }, [rec, dq])];
+    return [sectionHead(sec), H("div", { class: "g c-ov" }, [mkt, nb]), H("div", { class: "g c-pr2" }, [traj, rec]), H("div", { class: "g c-va" }, [gains, views]), H("div", { class: "g c-va" }, [gates, lim])];
   }
 
-  function secAI() {
+  function secAI(sec) {
     var A = DATA.ailog;
     var chips = Object.keys(A.stages).map(function (part) {
       return H("div", { class: "chips-row" }, [H("p", { class: "cap-h", text: part }),
@@ -1077,71 +1142,37 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     var rev = frame({ title: "Human review register", sub: "Each item: the AI's evidence, one question for the team lead, the decision.", tabs: true,
       chart: H("div", null, [legend([{ label: "Signed", color: "var(--o1)" }]), chart(drawReview)]),
       table: revT, source: "HUMAN_REVIEW.md" });
-    return [critHead(2), H("div", { class: "g c-ai" }, [loop, corr]), H("div", { class: "g c-ai" }, [out, rev])];
-  }
-
-  function secValidation() {
-    var V = DATA.views, G = DATA.gains;
-    var gT = table([{ h: "View" }].concat(G.map(function (g) { return { h: g.title, num: true }; })),
-      V.map(function (v, i) { return [v[0]].concat(G.map(function (g) { return f4s(g.v[i]); })); }).concat([["public board"].concat(G.map(function (g) { return g.pub; }))]));
-    var gains = frame({ title: "Six-view gains in D2, last two adopted steps", sub: "Every candidate is scored on all six views (C044); the line marks the " + DATA.rule + " rule", tabs: true,
-      chart: chart(drawGains), table: gT, after: H("p", { class: "callout", text: DATA.gainsLesson }),
-      source: "SUBMISSIONS.md P2-S13, P2-S14 · PART2_OBLEMOS.md" });
-    var views = frame({ title: "Six validation views", sub: "Raw and test-mix views on both fold families",
-      chart: H("div", { class: "tbox" }, table([{ h: "View" }, { h: "Meaning" }], V.map(function (v) { return [v[0], v[1]]; }))),
-      source: "CHANGELOG.md C036, C044" });
-    var gates = H("div", { class: "frame" }, [H("h3", { text: "Adoption gates" }),
-      H("ol", { class: "gates" }, DATA.gates.map(function (g) { return H("li", null, [H("b", { text: g.name }), fill(g.text)]); })),
-      srcLine(DATA.gatesSource, null, "p")]);
     var guard = H("div", { class: "frame" }, [H("h3", { text: "Guardrails" }),
       H("ul", { class: "list" }, DATA.guardrails.map(function (g) {
         var f = fill(g.fig);
         return H("li", null, [/^C\d+$/.test(f) ? idTag(f) : H("span", { class: "fig", text: f }), H("span", { text: fill(g.text) })]);
       })),
       srcLine(DATA.guardSource, null, "p")]);
-    return [critHead(3), H("div", { class: "g c-va" }, [gains, views]), H("div", { class: "g c-va" }, [gates, guard])];
-  }
-
-  function secCommunication() {
-    var tiles = H("div", { class: "tiles" }, DATA.deliverables.map(function (d) { return H("div", { class: "tile" }, [H("p", { class: "k", text: d.k }), H("p", null, rich(fill(d.t)))]); }));
-    var docs = H("div", { class: "frame" }, [H("h3", { text: "Documentation set" }),
-      H("ul", { class: "list tight docs" }, DATA.docs.map(function (d) { return H("li", null, [H("span", { class: "fig", text: d[0] }), H("span", { text: fill(d[1]) })]); })),
-      srcLine(DATA.docsSource, null, "p")]);
-    var repo = H("div", { class: "frame" }, [H("h3", { text: "Repository layout" }),
-      H("ul", { class: "tree" }, DATA.repo.map(function (r) { return H("li", null, [H("b", { text: r[0] }), " · " + fill(r[1])]); })),
-      srcLine(DATA.repoSource, null, "p")]);
-    var s = DATA.submissions;
-    var subs = H("div", { class: "frame" }, [H("h3", { text: "Submissions logged" }), H("p", { class: "sub", text: "Each with recipe, validation gains and public score." }),
-      H("div", { class: "big-pair" }, [
-        H("div", null, [H("div", { class: "n", text: String(s.p1) }), H("div", { class: "t", text: "Part 1 · " + s.p1Range }), H("div", { class: "x", text: s.p1Extra })]),
-        H("div", null, [H("div", { class: "n", text: String(s.p2) }), H("div", { class: "t" }, rich("Part 2 · " + s.p2Range))])
-      ]),
-      srcLine("SUBMISSIONS.md", null, "p")]);
     var RB = DATA.rebuild;
     var rebuild = frame({ title: RB.title, sub: RB.sub,
       chart: H("div", { class: "tbox" }, table([{ h: "File" }, { h: "Command or script" }, { h: "Source" }], RB.rows.map(function (r) {
         return [r.file, r.cmd.map(function (c) { return c[0] === "code" ? H("code", { class: c[1].length > 48 ? "long" : null, text: c[1] }) : c[1]; }), r.src];
       }), "rebuild")),
       source: RB.source, figure: false });
-    return [critHead(4), tiles, H("div", { class: "g c-co" }, [docs, repo, subs]), H("div", { class: "g" }, [rebuild])];
+    return [sectionHead(sec), H("div", { class: "g c-ai" }, [loop, corr]), H("div", { class: "g c-ai" }, [out, rev]), H("div", { class: "g" }, [guard]), H("div", { class: "g" }, [rebuild])];
   }
 
   /* ---------------------------------------------------------------------------
      Shell, navigation, tooltip
      --------------------------------------------------------------------------- */
-  var ORDER = [DATA.overview].concat(DATA.criteria);
-  var BUILD = { overview: secOverview, pricing: secPricing, ai: secAI, validation: secValidation, communication: secCommunication };
+  var ORDER = [DATA.overview].concat(DATA.sections);
+  var BUILD = { overview: secOverview, part1: secPart1, part2: secPart2, ai: secAI };
   addK(document.getElementById("top"), [H("span", { class: "brand", text: DATA.brand }), H("span", { class: "ctx", text: DATA.context }),
     H("span", { class: "who" }, [DATA.authors + " · ", H("b", { text: "as of " + DATA.asOf })])]);
   var links = ORDER.map(function (s) {
-    return H("a", { href: "#" + s.token }, [H("span", { class: "nm", text: s.nav || s.title }),
-      H("span", { class: "wt", text: s.navSub || ("Criterion " + s.n + " · " + s.weight + "%") })]);
+    return H("a", { href: "#" + s.token }, [H("span", { class: "nm", text: s.nav }),
+      H("span", { class: "wt", text: fill(s.navSub) })]);
   });
   addK(document.getElementById("toc"), [H("p", { class: "toc-h", text: DATA.navHeading }), H("ol", null, links.map(function (a) { return H("li", null, a); })), H("p", { class: "hint", text: DATA.navHint })]);
   var main = document.getElementById("main");
   var SECS = {};
   ORDER.forEach(function (s) {
-    var sec = H("section", { "data-token": s.token, "aria-label": s.nav || s.title, hidden: "hidden" }, BUILD[s.token]());
+    var sec = H("section", { "data-token": s.token, "aria-label": s.nav, hidden: "hidden" }, BUILD[s.token](s));
     SECS[s.token] = sec;
     main.appendChild(sec);
   });
