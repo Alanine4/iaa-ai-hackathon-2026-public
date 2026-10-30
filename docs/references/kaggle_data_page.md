@@ -1,7 +1,7 @@
-# Kaggle Data 页原文（存档）
+# Kaggle Data page, original text (archived)
 
-来源：https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/data
-抓取日期：2026-10-21（Part 1 截止前 2 天）
+Source: https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/data
+Capture date: 2026-10-21 (2 days before the Part 1 deadline)
 
 ---
 

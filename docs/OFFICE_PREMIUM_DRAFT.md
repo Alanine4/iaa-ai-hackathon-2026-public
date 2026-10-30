@@ -1,38 +1,38 @@
-# 办公室保费（office premium）公式草案与数据核对
+# Office premium formula draft and data check
 
-用途：Part 2 报告中，对 20 张参考保单说明如何从预测的风险保费推到办公室保费。本文给出公式链草案和需要人来定的口径。数据取自 `data/iaa-ai-assisted-hackathon-2026-part-2/emerging/` 下的 `expenses.parquet`、`reference_policies.parquet`，由 `scripts/part2_expenses.py` 打印核对。
+Purpose: in the Part 2 report, explain for the 20 reference policies how the office premium is derived from the predicted risk premium. This document gives a draft formula chain and the definitions that a person must decide. The data comes from `expenses.parquet` and `reference_policies.parquet` under `data/iaa-ai-assisted-hackathon-2026-part-2/emerging/`, printed and checked by `scripts/part2_expenses.py`.
 
-## 1. 官方原文（来源：`docs/references/part2_kaggle_data_page.md`）
+## 1. Official text (source: `docs/references/part2_kaggle_data_page.md`)
 
-- 文件清单表（第 44–45 行）：
+- File list table (lines 44–45):
   - "expenses | emerging | Cost item | Expense, commission, tax, reinsurance and profit assumptions for both markets"
   - "reference_policies | emerging | Policy | 20 policies for the office premium build-up in your report"
-- expenses 小节（第 140–149 行）：列为 `item`（Cost item）、`developed`（Value in the developed market）、`emerging`（Value in the emerging market (blank if not applicable)）、`unit`（CU, share of premium, or share of property risk premium）。"Items: fixed expense per policy, variable expense, commission by channel, premium tax, catastrophe reinsurance and target profit margin."
-- reference_policies 小节（第 151–153 行）："Twenty 2025 emerging-market policies taken from the test files (same columns, plus line). For each one, show in your written report how you build the office premium from your predicted risk premium using the expenses assumptions. This is assessed by the judging panel and does not affect the Kaggle score."
-- 预测目标（第 19–23 行）："This is the risk premium, not the premium charged." "The prediction is a total for the row, not an annual rate. A row with exposure of 0.5 covers half a year."
+- expenses section (lines 140–149): the columns are `item` (Cost item), `developed` (Value in the developed market), `emerging` (Value in the emerging market (blank if not applicable)), `unit` (CU, share of premium, or share of property risk premium). "Items: fixed expense per policy, variable expense, commission by channel, premium tax, catastrophe reinsurance and target profit margin."
+- reference_policies section (lines 151–153): "Twenty 2025 emerging-market policies taken from the test files (same columns, plus line). For each one, show in your written report how you build the office premium from your predicted risk premium using the expenses assumptions. This is assessed by the judging panel and does not affect the Kaggle score."
+- Prediction target (lines 19–23): "This is the risk premium, not the premium charged." "The prediction is a total for the row, not an annual rate. A row with exposure of 0.5 covers half a year."
 
-`docs/references/part2_kaggle_overview_page.md` 中没有 office premium、expenses 或 reference policies 的相关文字。官方没有给出组合公式，下面的公式链是草案。
+`docs/references/part2_kaggle_overview_page.md` contains no text about office premium, expenses or reference policies. The official sources give no combination formula; the formula chain below is a draft.
 
-## 2. expenses.parquet 全表
+## 2. Full expenses.parquet table
 
-8 行，4 列：`item`、`developed`、`emerging`、`unit`。本任务只用 `emerging` 列；`developed` 列列出仅供对照。
+8 rows, 4 columns: `item`, `developed`, `emerging`, `unit`. This task uses only the `emerging` column; the `developed` column is listed for comparison only.
 
-| item | developed | emerging | unit | 含义 | 量纲 | 按险种？ | 按渠道？ |
+| item | developed | emerging | unit | Meaning | Dimension | By line? | By channel? |
 |---|---|---|---|---|---|---|---|
-| fixed_expense_per_policy | 45.00 | 85.00 | CU | 每张保单的固定费用 | 金额（CU） | 全险种统一 | 否 |
-| variable_expense | 0.12 | 0.15 | share of premium | 变动费用率 | 占保费比例 | 全险种统一 | 否 |
-| commission_direct | 0.00 | 0.00 | share of premium | 直销渠道佣金率 | 占保费比例 | 全险种统一 | 仅 direct |
-| commission_comparison_site | 0.10 | 空白（NaN） | share of premium | 比价网站渠道佣金率 | 占保费比例 | 全险种统一 | 仅 comparison_site |
-| commission_broker | 0.15 | 0.20 | share of premium | 经纪人渠道佣金率 | 占保费比例 | 全险种统一 | 仅 broker |
-| premium_tax | 0.12 | 0.08 | share of premium | 保费税率 | 占保费比例 | 全险种统一 | 否 |
-| cat_reinsurance | 0.06 | 0.12 | share of property risk premium | 巨灾再保险成本 | 占财产险风险保费比例 | 仅财产险（见开放问题 3） | 否 |
-| target_profit_margin | 0.05 | 0.08 | share of premium | 目标利润率 | 占保费比例 | 全险种统一 | 否 |
+| fixed_expense_per_policy | 45.00 | 85.00 | CU | Fixed expense per policy | Amount (CU) | Uniform across lines | No |
+| variable_expense | 0.12 | 0.15 | share of premium | Variable expense rate | Share of premium | Uniform across lines | No |
+| commission_direct | 0.00 | 0.00 | share of premium | Commission rate for the direct channel | Share of premium | Uniform across lines | direct only |
+| commission_comparison_site | 0.10 | blank (NaN) | share of premium | Commission rate for the comparison site channel | Share of premium | Uniform across lines | comparison_site only |
+| commission_broker | 0.15 | 0.20 | share of premium | Commission rate for the broker channel | Share of premium | Uniform across lines | broker only |
+| premium_tax | 0.12 | 0.08 | share of premium | Premium tax rate | Share of premium | Uniform across lines | No |
+| cat_reinsurance | 0.06 | 0.12 | share of property risk premium | Catastrophe reinsurance cost | Share of property risk premium | Property lines only (see open question 3) | No |
+| target_profit_margin | 0.05 | 0.08 | share of premium | Target profit margin | Share of premium | Uniform across lines | No |
 
-"按险种""按渠道"两列来自 item 名称和 unit，文件里没有险种列，也没有渠道列。
+The "By line?" and "By channel?" columns are derived from the item names and the unit; the file has no line column and no channel column.
 
-## 3. reference_policies.parquet 的 20 行
+## 3. The 20 rows of reference_policies.parquet
 
-文件共 50 列，比测试文件多 `line`（险种）。险种分布：motor 7（row_id 以 M 开头）、buildings 7（B）、contents 6（C）。渠道：broker 17，direct 3，无 comparison_site。新业务（`new_business`）18 张，续保 2 张。以下只列与办公室保费推导相关的字段。`written_premium` 是现行定价下的已收保费（Part 1 数据页词汇表："Premium charged under the insurer's current pricing"，来源 `docs/references/kaggle_data_page.md` 第 122 行），不是本任务的风险保费。
+The file has 50 columns, one more than the test files: `line` (line of business). Line split: motor 7 (row_id starts with M), buildings 7 (B), contents 6 (C). Channel: broker 17, direct 3, no comparison_site. New business (`new_business`) 18 policies, renewal 2. Only the fields relevant to the office premium derivation are listed below. `written_premium` is the premium collected under current pricing (Part 1 data page glossary: "Premium charged under the insurer's current pricing", source `docs/references/kaggle_data_page.md` line 122), not the risk premium for this task.
 
 | row_id | policy_id | line | channel | new_business | period_start | period_end | exposure | written_premium | discount_applied | voluntary_excess | compulsory_excess |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -57,73 +57,73 @@
 | M00176777 | M42023395 | motor | broker | True | 2025-01-04 | 2025-12-31 | 0.9918 | 443.61 | 0.00 | 0 | 250 |
 | M00185311 | M83715550 | motor | direct | True | 2025-01-14 | 2025-12-31 | 0.9644 | 872.31 | 0.05 | 1000 | 250 |
 
-exposure 小于 0.5 的行有 3 张：B00250679（0.1096）、C00314425（0.0685）、M00129413（0.3315），固定费用口径对这 3 张影响最大。
+3 rows have exposure below 0.5: B00250679 (0.1096), C00314425 (0.0685), M00129413 (0.3315); the fixed expense definition affects these 3 most.
 
-## 4. 公式链（草案）
+## 4. Formula chain (draft)
 
-符号：R = 该行预测的风险保费（行总额，不是年化，单位 CU）；exposure = 该行 `exposure`。以下每一步标明所用字段。
+Notation: R = predicted risk premium of the row (row total, not annualised, in CU); exposure = the `exposure` of the row. Each step below states the fields used.
 
-| 步骤 | 内容 | 公式 | 使用的字段 |
+| Step | Content | Formula | Fields used |
 |---|---|---|---|
-| 1 | 风险保费 | R = 最终提交文件中该 row_id 的 prediction | 来自 `work/` 中最终提交文件，不是 expenses 字段 |
-| 2 | 巨灾再保险成本（仅 buildings、contents；motor 取 0） | Cat = 0.12 × R | `cat_reinsurance` |
-| 3 | 固定费用（每张保单） | F = 85 CU；是否乘 exposure 见开放问题 1 | `fixed_expense_per_policy` |
-| 4 | 渠道佣金率 c | broker 取 0.20；direct 取 0.00；comparison_site 为空白（见开放问题 2） | `commission_broker`、`commission_direct`、`commission_comparison_site` |
-| 5 | 与办公室保费成比例的各项合计 k | k = 0.15 + c + 0.08 + 0.08，即 variable_expense + c + premium_tax + target_profit_margin | `variable_expense`、`premium_tax`、`target_profit_margin`，以及第 4 步的 c |
-| 6 | 办公室保费 | P = (R + Cat + F) ÷ (1 − k) | 第 1–5 步 |
+| 1 | Risk premium | R = prediction for that row_id in the final submission file | From the final submission file in `work/`, not an expenses field |
+| 2 | Catastrophe reinsurance cost (buildings and contents only; motor takes 0) | Cat = 0.12 × R | `cat_reinsurance` |
+| 3 | Fixed expense (per policy) | F = 85 CU; whether to multiply by exposure: see open question 1 | `fixed_expense_per_policy` |
+| 4 | Channel commission rate c | broker takes 0.20; direct takes 0.00; comparison_site is blank (see open question 2) | `commission_broker`, `commission_direct`, `commission_comparison_site` |
+| 5 | Sum of the items proportional to the office premium, k | k = 0.15 + c + 0.08 + 0.08, i.e. variable_expense + c + premium_tax + target_profit_margin | `variable_expense`, `premium_tax`, `target_profit_margin`, and c from step 4 |
+| 6 | Office premium | P = (R + Cat + F) ÷ (1 − k) | Steps 1–5 |
 
-分母（只做加减，数值来自上表）：broker 的 1 − k = 1 − 0.15 − 0.20 − 0.08 − 0.08 = 0.49；direct 的 1 − k = 1 − 0.15 − 0.00 − 0.08 − 0.08 = 0.69。
+Denominators (addition and subtraction only, values from the table above): for broker, 1 − k = 1 − 0.15 − 0.20 − 0.08 − 0.08 = 0.49; for direct, 1 − k = 1 − 0.15 − 0.00 − 0.08 − 0.08 = 0.69.
 
-各费用项在 P 中对应的金额，可在报告表里分列：
+The amount each expense item contributes to P can be shown in separate columns in the report table:
 
-- 变动费用 = variable_expense × P
-- 佣金 = c × P
-- 保费税 = premium_tax × P
-- 利润 = target_profit_margin × P
-- 巨灾再保 = Cat（第 2 步，仅财产险）
-- 固定费用 = F（第 3 步）
+- Variable expense = variable_expense × P
+- Commission = c × P
+- Premium tax = premium_tax × P
+- Profit = target_profit_margin × P
+- Catastrophe reinsurance = Cat (step 2, property lines only)
+- Fixed expense = F (step 3)
 
-验算：风险保费 + 巨灾再保 + 固定费用 + 变动费用 + 佣金 + 保费税 + 利润 = P。
+Check: risk premium + catastrophe reinsurance + fixed expense + variable expense + commission + premium tax + profit = P.
 
-公式链基于 unit 列的字面含义：`share of premium` 的各项按办公室保费 P 取比例，故放在分母；`share of property risk premium` 的 `cat_reinsurance` 按风险保费 R 取比例，故是加在 R 上的成本；`fixed_expense_per_policy` 单位是 CU，故是加在分子上的金额。官方没有写组合方式，这个结构是对 unit 的解读，需要队员确认。
+The formula chain rests on the literal meaning of the unit column: items in `share of premium` are taken as a proportion of the office premium P, so they go in the denominator; `cat_reinsurance`, in `share of property risk premium`, is taken as a proportion of the risk premium R, so it is a cost added to R; `fixed_expense_per_policy` is in CU, so it is an amount added to the numerator. The official text does not say how to combine them; this structure is an interpretation of the unit and needs confirmation by a team member.
 
-## 5. 必须由人决定的开放问题
+## 5. Open questions that a person must decide
 
-| # | 问题 | AI 建议 | 理由 |
+| # | Question | AI suggestion | Reason |
 |---|---|---|---|
-| 1 | 固定费用 85 CU 是"每张保单"，参考保单里有 exposure 只有 0.0685、0.1096、0.3315 的行，怎样分摊？ | 按 exposure 折算：F = 85 × exposure；报告里写明口径，并在脚注给出不折算时的结果作对照 | 风险保费 R 是行总额（官方：exposure 0.5 的行覆盖半年），R 与 F 同在一个分子里，时间口径应一致；同一保单一年内有多行时（中途变更），不折算会重复收取。反方理由：短期保单的获客和开户成本并不随时间缩短，不折算更贴近真实成本 |
-| 2 | `commission_comparison_site` 在 emerging 为空白，当 0 处理是否合理？ | 当 0 处理，并在报告中写明；同时注明 emerging 数据里比价网站渠道约占 5%（`docs/PART2_INTAKE.md` N2），这条假设对 20 张参考保单无影响（参考保单没有该渠道） | 官方对该列的说明是 "blank if not applicable"，按字面读就是不适用，当 0 不违背官方；但数据里存在该渠道，当 0 会低估成本。若要审慎，可在敏感性说明中给出改用 developed 的 0.10 时的差异 |
-| 3 | 巨灾再保险成本只加房屋/家财，还是也加车险？ | 只加 buildings 和 contents，motor 取 0 | unit 写的是 "share of property risk premium"，motor 不是财产险。"property" 是否包含 contents，官方没有明说，建议两个险种都加，并在报告里写明 |
-| 4 | 保费税 `premium_tax`（0.08）/IPT 在哪一步加？ | 放在分母，和变动费用、佣金、利润一起，按办公室保费取比例 | unit 是 "share of premium"。另一种读法是先算不含税保费，再乘 (1 + 税率)；两种读法税基不同、结果不同，需要队员选定并在报告里写出公式。保费税是否也对固定费用征收，官方没有写明 |
-| 5 | 对 20 张参考保单要不要做保费上下限（cap/floor）？ | 主表不做上下限；另加一列 `written_premium` 作对照，对偏离大的行在备注里解释 | 上下限属于商业决策，官方没有提供上下限参数；加上限会遮住模型预测本身。`written_premium` 是现行定价的结果，只作参考 |
-| 6 | `discount_applied`（0.05，参考保单中 3 张）是否要在办公室保费里扣除？ | 不扣 | 办公室保费从风险保费推出，不依赖现行定价；折扣属于 `written_premium` 的构成，只在对照列里体现 |
-| 7 | 风险保费预测为 0 时怎么办？ | 照公式计算，P = F ÷ (1 − k)（财产险同理，Cat 为 0） | 提交要求预测非负（官方："predictions zero or above"），公式在 R = 0 时仍有定义；固定费用不随 R 消失 |
-| 8 | 金额保留几位小数？ | 中间步骤不取整，最终展示保留两位小数 | 避免舍入误差累计，`written_premium` 本身是两位小数 |
+| 1 | The fixed expense of 85 CU is "per policy"; the reference policies include rows with exposure of only 0.0685, 0.1096 and 0.3315. How should it be allocated? | Prorate by exposure: F = 85 × exposure; state the definition in the report and give the unprorated result as a comparison in a footnote | The risk premium R is a row total (official: a row with exposure 0.5 covers half a year), and R and F are in the same numerator, so their time basis should be consistent; when one policy has several rows within a year (mid-term changes), not prorating would charge the fee more than once. Counterargument: the acquisition and set-up costs of a short-term policy do not shrink with time, so not prorating is closer to the true cost |
+| 2 | `commission_comparison_site` is blank in emerging; is it reasonable to treat it as 0? | Treat it as 0 and state this in the report; also note that the comparison site channel is about 5% of the emerging data (`docs/PART2_INTAKE.md` N2), and that this assumption has no effect on the 20 reference policies (none of them uses this channel) | The official description of this column is "blank if not applicable"; read literally it means not applicable, so treating it as 0 does not contradict the official text; but the channel exists in the data, so treating it as 0 would understate cost. To be prudent, the sensitivity note can show the difference when the developed value of 0.10 is used instead |
+| 3 | Is the catastrophe reinsurance cost added only for buildings/contents, or also for motor? | Add it only for buildings and contents; motor takes 0 | The unit says "share of property risk premium"; motor is not a property line. The official text does not state whether "property" includes contents; we recommend adding it for both lines and stating this in the report |
+| 4 | At which step is premium tax `premium_tax` (0.08) / IPT added? | Put it in the denominator, together with variable expense, commission and profit, as a proportion of the office premium | The unit is "share of premium". An alternative reading is to compute the premium excluding tax first, then multiply by (1 + tax rate); the two readings have different tax bases and give different results, so a team member needs to choose one and write out the formula in the report. The official text does not say whether premium tax also applies to the fixed expense |
+| 5 | Should a premium cap/floor be applied to the 20 reference policies? | No cap/floor in the main table; add a `written_premium` column for comparison, and explain rows with large deviations in a note | Caps and floors are a commercial decision; the official text provides no cap/floor parameters; applying a cap would mask the model prediction itself. `written_premium` is the result of current pricing and serves only as a reference |
+| 6 | Should `discount_applied` (0.05, on 3 of the reference policies) be deducted from the office premium? | No | The office premium is derived from the risk premium and does not depend on current pricing; the discount is a component of `written_premium` and shows only in the comparison column |
+| 7 | What if the predicted risk premium is 0? | Calculate by the formula: P = F ÷ (1 − k) (the same for property lines, with Cat = 0) | Submissions must be non-negative (official: "predictions zero or above"); the formula is still defined at R = 0; the fixed expense does not disappear with R |
+| 8 | How many decimal places to keep? | No rounding in intermediate steps; display two decimals in the final result | Avoids accumulation of rounding error; `written_premium` itself has two decimals |
 
-## 6. 交付物样式
+## 6. Deliverable layout
 
-报告里放一张 20 行表，每行一张参考保单，按 line、row_id 排序。
+The report contains a 20-row table, one reference policy per row, sorted by line, then row_id.
 
-| 列 | 来源 | 状态 |
+| Column | Source | Status |
 |---|---|---|
-| row_id | reference_policies | 已有 |
-| line（险种） | reference_policies | 已有 |
-| channel（渠道） | reference_policies | 已有 |
-| exposure | reference_policies | 已有 |
-| 风险保费 R | `work/` 中最终提交文件里该 row_id 的 prediction | 待填（现在留空，不编数字） |
-| 巨灾再保（仅财产险） | 0.12 × R | 待算 |
-| 固定费用 | 85（或 85 × exposure，取决于开放问题 1） | 待算 |
-| 变动费用 | 0.15 × P | 待算 |
-| 佣金 | c × P（broker 0.20，direct 0.00） | 待算 |
-| 保费税 | 0.08 × P | 待算 |
-| 利润 | 0.08 × P | 待算 |
-| 办公室保费 P | (R + 巨灾再保 + 固定费用) ÷ (1 − k) | 待算 |
-| written_premium（对照） | reference_policies | 已有 |
+| row_id | reference_policies | Available |
+| line (line of business) | reference_policies | Available |
+| channel | reference_policies | Available |
+| exposure | reference_policies | Available |
+| Risk premium R | prediction for that row_id in the final submission file in `work/` | To be filled (left blank for now, no numbers invented) |
+| Catastrophe reinsurance (property lines only) | 0.12 × R | To be calculated |
+| Fixed expense | 85 (or 85 × exposure, depending on open question 1) | To be calculated |
+| Variable expense | 0.15 × P | To be calculated |
+| Commission | c × P (broker 0.20, direct 0.00) | To be calculated |
+| Premium tax | 0.08 × P | To be calculated |
+| Profit | 0.08 × P | To be calculated |
+| Office premium P | (R + catastrophe reinsurance + fixed expense) ÷ (1 − k) | To be calculated |
+| written_premium (comparison) | reference_policies | Available |
 
-表下注明：币种为 CU；所用口径（开放问题 1、2、3、4 的最终选择）；风险保费来源文件和版本。
+Below the table state: the currency is CU; the definitions used (final choices for open questions 1, 2, 3 and 4); the source file and version of the risk premium.
 
-## 7. 核对结果
+## 7. Check results
 
-- expenses：8 行 4 列，字段名、数值、单位与 parquet 一致（由 `scripts/part2_expenses.py` 打印）。emerging 列中 `commission_comparison_site` 为 NaN，其余 7 项有值。
-- reference_policies：20 行，row_id 全部列出，险种分布 motor 7 / buildings 7 / contents 6，渠道 broker 17 / direct 3，与 `docs/PART2_INTAKE.md` 第 6 节的描述一致。
-- 本文没有填入任何风险保费或办公室保费数值。
+- expenses: 8 rows, 4 columns; field names, values and units match the parquet (printed by `scripts/part2_expenses.py`). In the emerging column `commission_comparison_site` is NaN, and the other 7 items have values.
+- reference_policies: 20 rows, all row_id values are listed; line split motor 7 / buildings 7 / contents 6, channel broker 17 / direct 3, consistent with the description in section 6 of `docs/PART2_INTAKE.md`.
+- This document contains no risk premium or office premium values.

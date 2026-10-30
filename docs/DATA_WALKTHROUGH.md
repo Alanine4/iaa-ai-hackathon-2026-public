@@ -1,330 +1,330 @@
-# 数据全览：每个文件、每个字段、做了什么处理
+# Data walkthrough: every file, every field, and what was done to it
 
-依据：
-- 官方字段说明：`docs/references/kaggle_data_page.md`（Kaggle Data 页原文存档）
-- 体检结果：`docs/data_profile.txt`、`docs/data_quality_checks.txt`、`docs/investigate_*.txt`、`docs/scan_leakage.txt`
-- 处理逻辑：`src/aiiaa/clean.py`、`target.py`、`development.py`、`features.py`
-- 每一处修改的编号（C0xx）对应 `docs/CHANGELOG.md`
+Sources:
+- Official field descriptions: `docs/references/kaggle_data_page.md` (archived original text of the Kaggle Data page)
+- Profiling and quality-check results: `docs/data_profile.txt`, `docs/data_quality_checks.txt`, `docs/investigate_*.txt`, `docs/scan_leakage.txt`
+- Processing logic: `src/aiiaa/clean.py`, `target.py`, `development.py`, `features.py`
+- The number of each change (C0xx) refers to `docs/CHANGELOG.md`
 
-表里的 **"来源"** 一栏：
-- **官方**：Kaggle Data 页写明了含义
-- **官方+名**：Data 页写了含义，但单位或方向是从列名看出来的（例如 `_km`、`_mm`）
-- **推断**：Data 页没写，是我根据数据推断的，推断依据写在"处理/备注"里
+The **"Source"** column in the tables:
+- **Official**: the Kaggle Data page states the meaning
+- **Official+name**: the Data page states the meaning, but the unit or direction is read from the column name (e.g. `_km`, `_mm`)
+- **Inferred**: the Data page does not state it; I inferred it from the data, and the basis is given in "Handling / notes"
 
-表里的 **"类型"** 一栏（后面建模会用到）：
+The **"Type"** column in the tables (used later in modelling):
 
-| 类型 | 意思 | 例子 |
+| Type | Meaning | Examples |
 |---|---|---|
-| 编号 | 用来连接表格，本身不进模型 | customer_id |
-| 日期 | 日期 | period_start |
-| 连续 | 可以取很多值的数字，大小有意义 | 年龄、保额、降雨量 |
-| 计数 | 0、1、2… 这样的整数次数 | 往年理赔次数 |
-| 有序分类 | 几个类别，有高低顺序 | 信用等级 A–E、洪水区 1–5 |
-| 无序分类 | 几个类别，没有高低顺序 | 车身类型、职业 |
-| 二元 | 是 / 否 | 有没有地下室 |
+| ID | Used to join tables; not itself a model input | customer_id |
+| Date | A date | period_start |
+| Continuous | A number that can take many values; its size is meaningful | age, sum insured, rainfall |
+| Count | An integer count such as 0, 1, 2... | number of prior claims |
+| Ordinal | A few categories with a high-to-low order | credit band A–E, flood zone 1–5 |
+| Nominal | A few categories with no order | body type, occupation |
+| Binary | Yes / no | whether there is a basement |
 
 ---
 
-## 0. 怎么读的数据
+## 0. How the data was read
 
-1. 11 个文件都是 parquet 格式（按列压缩的表格），用 Python 的 pandas 读：`pd.read_parquet(路径)`。
-2. 原始文件放在 `data/iaa-ai-assisted-hackathon-2026-part-1/`，**设为只读，永远不改**。每个文件的 SHA256 指纹记在 `MANIFEST.sha256`，测试会自动核对（C007）。
-3. 所有修正都在代码里、读进内存以后做（`src/aiiaa/clean.py`）。所以随时能对照"原始是什么、改成了什么"。
-4. 官方要求编号类字段一律当文字读，不能当数字（否则开头的 0 会丢）。
+1. All 11 files are in parquet format (a column-compressed table format) and are read with pandas in Python: `pd.read_parquet(path)`.
+2. The original files are in `data/iaa-ai-assisted-hackathon-2026-part-1/`, **set to read-only and never modified**. The SHA256 fingerprint of each file is recorded in `MANIFEST.sha256`, and a test checks it automatically (C007).
+3. All corrections are made in code, after the data is read into memory (`src/aiiaa/clean.py`). So it is always possible to compare "what the original was" with "what it was changed to".
+4. The official guidance requires ID fields to be read as text, not as numbers (otherwise the leading 0 is lost).
 
-## 1. 文件总览
+## 1. File overview
 
-| # | 文件 | 行数 | 列数 | 一行代表 | 用途 |
+| # | File | Rows | Columns | One row represents | Purpose |
 |---|---|---|---|---|---|
-| 1 | customers | 545,240 | 18 | 一个客户 | 客户属性，三个险种共用 |
-| 2 | addresses | 575,983 | 16 | 一个地址 | 地理和房屋特征 |
-| 3 | weather | 2,879,915 | 9 | 一个地址的一年 | 天气，2021–2025 每年一行 |
-| 4 | policies_motor | 979,968 | 39 | 一张车险保单的一段保障期 | 车险训练数据，2021–2024 |
-| 5 | policies_buildings | 707,726 | 27 | 一张房屋结构险保单的一段保障期 | 房屋结构险训练数据 |
-| 6 | policies_contents | 721,617 | 28 | 一张家财险保单的一段保障期 | 家财险训练数据 |
-| 7 | claims | 163,150 | 12 | 一笔理赔 | 训练期全部理赔，截至 2024-12-31 |
-| 8 | test_motor | 254,986 | 38 | 同 4 | 2025 年车险，要预测 |
-| 9 | test_buildings | 184,155 | 26 | 同 5 | 2025 年房屋结构险，要预测 |
-| 10 | test_contents | 187,498 | 27 | 同 6 | 2025 年家财险，要预测 |
-| 11 | sample_submission | 626,639 | 2 | 一行测试数据 | 提交格式样板，预测值全是 0 |
+| 1 | customers | 545,240 | 18 | One customer | Customer attributes, shared by all three lines |
+| 2 | addresses | 575,983 | 16 | One address | Geographic and property characteristics |
+| 3 | weather | 2,879,915 | 9 | One year for one address | Weather, one row per year for 2021–2025 |
+| 4 | policies_motor | 979,968 | 39 | One coverage period of one motor policy | Motor training data, 2021–2024 |
+| 5 | policies_buildings | 707,726 | 27 | One coverage period of one buildings policy | Buildings training data |
+| 6 | policies_contents | 721,617 | 28 | One coverage period of one contents policy | Contents training data |
+| 7 | claims | 163,150 | 12 | One claim | All claims in the training period, as at 2024-12-31 |
+| 8 | test_motor | 254,986 | 38 | Same as 4 | 2025 motor, to be predicted |
+| 9 | test_buildings | 184,155 | 26 | Same as 5 | 2025 buildings, to be predicted |
+| 10 | test_contents | 187,498 | 27 | Same as 6 | 2025 contents, to be predicted |
+| 11 | sample_submission | 626,639 | 2 | One test row | Submission format template; all predictions are 0 |
 
-**名词**
-- **房屋结构险（buildings）**：保房子本身，比如墙、屋顶、水管。
-- **家财险（contents）**：保房子里的东西，比如家具、电器、首饰。
-- **一段保障期**：一张保单在一个自然年里的一段时间。年中换车、搬家会拆成多行，中途退保则提前结束。官方原文："A policy has more than one row in a year if it changed mid-term"。
+**Terms**
+- **Buildings**: covers the building itself, e.g. walls, roof, pipes.
+- **Contents**: covers what is inside the building, e.g. furniture, appliances, jewellery.
+- **Coverage period**: a stretch of time for one policy within one calendar year. A mid-year change of car or home splits it into several rows, and a mid-term cancellation ends it early. Official wording: "A policy has more than one row in a year if it changed mid-term".
 
-**表之间怎么连**（官方写明）
+**How the tables join** (stated officially)
 
 ```
 customers ──customer_id──┐
-addresses ──address_id───┼──> 保单表 / 测试表 ──policy_id + 出险日期──> claims
-weather ──address_id + 年份┘
+addresses ──address_id───┼──> policy tables / test tables ──policy_id + loss date──> claims
+weather ──address_id+year┘
 ```
 
 ---
 
-## 2. 逐个文件、逐个字段
+## 2. Each file, each field
 
-### 2.1 customers（客户表）
+### 2.1 customers (customer table)
 
-例子（真实第一行）：一位 1938 年出生、已退休、已婚的客户，2011 年入保，信用等级 B，驾照扣 3 分。
+Example (the real first row): a customer born in 1938, retired and married, who first took out a policy in 2011, credit band B, with 3 licence points.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| customer_id | 88505748 | 客户编号 | 编号 | 官方 | 8 位文字；车险表里丢了开头的 0，补齐（C002） |
-| surname | Surname569 | 姓（已匿名） | 无序分类 | 官方 | 只有 600 种假名，没有意义，**不进模型** |
-| date_of_birth | 1938-01-05 | 出生日期 | 日期 | 官方 | 换算成保单起始日时的年龄 `customer_age` |
-| occupation | Retired | 职业 | 无序分类（20 类） | 官方 | 2.5% 空值 |
-| marital_status | married | 婚姻状况：单身 / 已婚 / 离婚 / 丧偶 | 无序分类 | 官方 | 2.5% 空值 |
-| household_size | 4.0 | 家庭人数 | 计数（1–7） | 官方 | 2.5% 空值 |
-| credit_band | B | 信用等级，A 最好、E 最差 | 有序分类 | 官方 | |
-| prior_claims_5y | 0 | 入保前 5 年的理赔次数（客户自己申报） | 计数（0–7） | 官方 | |
-| licence_points | 3 | 驾照扣分 | 计数（0/3/6/9） | 官方 | |
-| years_at_address | NaN | 在现住址住了几年 | 连续（0–57） | 官方 | 2.5% 空值 |
-| customer_since_year | 2011 | 第一次在本公司投保的年份 | 年份 | 官方 | 换算成"入保年数" `customer_tenure` |
-| email_domain | posthub | 邮箱服务商 | 无序分类（5 类） | 官方 | 都是虚构名称，五类数量几乎一样，大概率没有风险含义，交给模型判断 |
-| marketing_consent | False | 是否同意接收营销信息 | 二元 | 官方 | |
-| document_preference | app | 接收文件的方式：邮件 / 邮寄 / App | 无序分类 | 官方 | |
-| previous_insurer | INS30 | 之前的保险公司 | 无序分类（40 类） | 官方 | 编号代表哪家公司不知道 |
-| campaign_code | NaN | 入保时参加的营销活动 | 无序分类（15 类） | 官方 | 51% 为空。官方写 "if any"，所以**空 = 没参加活动**，不算缺失 |
-| branch_id | 2 | 服务网点 | 无序分类（25 个） | 官方 | 是编号，不是大小，但目前代码里当成了数字（见第 5 节） |
-| marketing_segment | senior_affluent | 营销部分的客群，如"年长 + 富裕" | 无序分类（12 类） | 官方 | 是"年龄段 × 收入档"的组合 |
+| customer_id | 88505748 | Customer ID | ID | Official | 8-digit text; the motor tables lost the leading 0, which is restored (C002) |
+| surname | Surname569 | Surname (anonymised) | Nominal | Official | Only 600 pseudonyms, no meaning, **not used in the model** |
+| date_of_birth | 1938-01-05 | Date of birth | Date | Official | Converted to the age at the policy start date, `customer_age` |
+| occupation | Retired | Occupation | Nominal (20 levels) | Official | 2.5% missing |
+| marital_status | married | Marital status: single / married / divorced / widowed | Nominal | Official | 2.5% missing |
+| household_size | 4.0 | Number of people in the household | Count (1–7) | Official | 2.5% missing |
+| credit_band | B | Credit band, A best, E worst | Ordinal | Official | |
+| prior_claims_5y | 0 | Number of claims in the 5 years before joining (declared by the customer) | Count (0–7) | Official | |
+| licence_points | 3 | Driving licence penalty points | Count (0/3/6/9) | Official | |
+| years_at_address | NaN | Years living at the current address | Continuous (0–57) | Official | 2.5% missing |
+| customer_since_year | 2011 | Year of the first policy with this company | Year | Official | Converted to "years with the company", `customer_tenure` |
+| email_domain | posthub | Email provider | Nominal (5 levels) | Official | All are fictitious names with almost equal counts across the five levels, so they probably carry no risk meaning; left to the model to judge |
+| marketing_consent | False | Whether the customer consents to receive marketing | Binary | Official | |
+| document_preference | app | How documents are received: email / post / App | Nominal | Official | |
+| previous_insurer | INS30 | Previous insurance company | Nominal (40 levels) | Official | Which company each code stands for is unknown |
+| campaign_code | NaN | Marketing campaign joined at inception | Nominal (15 levels) | Official | 51% blank. The official text says "if any", so **blank = did not take part in a campaign**, not missing |
+| branch_id | 2 | Service branch | Nominal (25 branches) | Official | It is a code, not a magnitude, but the code currently treats it as a number (see section 5) |
+| marketing_segment | senior_affluent | The marketing department's customer segment, e.g. "senior + affluent" | Nominal (12 levels) | Official | A combination of "age band × income tier" |
 
-### 2.2 addresses（地址表）
+### 2.2 addresses (address table)
 
-例子：一套 2014 年建的联排房，在 R05 区的郊区，洪水区 1 级（最低），离河 4.1 公里，黏土地基，能效 A 级。
+Example: a terraced house built in 2014, in the suburbs of region R05, flood zone 1 (lowest), 4.1 km from the river, clay soil, energy rating A.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| address_id | A1980663 | 地址编号 | 编号 | 官方 | |
-| region | R05 | 区域，R01–R12 | 无序分类 | 官方 | |
-| urban_density | suburban | 城市化程度：农村 / 郊区 / 城市 / 密集城区 | 有序分类 | 官方 | |
-| flood_zone | 1.0 | 洪水风险区，1 最低、5 最高 | 有序分类 | 官方 | 2.9% 空值 |
-| distance_to_river_km | 4.1 | 离最近河流的距离（公里） | 连续 | 官方+名 | 单位从列名看出；2.5% 空值 |
-| elevation_m | 9.2 | 比当地河面高多少米 | 连续 | 官方 | |
-| soil_type | clay | 土壤：黏土 / 沙 / 壤土 / 白垩 / 岩石 | 无序分类 | 官方 | 2.5% 空值。黏土和地基沉降风险有关 |
-| year_built | 2014 | 建造年份 | 年份 | 官方 | 换算成房龄 `property_age` |
-| property_type | terraced | 房屋类型：独栋 / 半独立 / 联排 / 公寓 | 无序分类 | 官方 | |
-| roof_type | pitched | 屋顶：坡顶 / 平顶 | 二元 | 官方 | 2.5% 空值 |
-| basement | False | 有没有地下室 | 二元 | 官方 | |
-| trees_within_5m | False | 5 米内有没有树 | 二元 | 官方 | 和地基沉降、风暴风险有关 |
-| listed_building | False | 是否受保护的历史建筑 | 二元 | 官方 | 维修成本通常更高 |
-| bedrooms | 3 | 卧室数 | 计数（1–7） | 官方 | |
-| energy_rating | A | 能效等级，A 最好、G 最差 | 有序分类 | 官方 | 2.5% 空值 |
-| solar_panels | False | 有没有太阳能板 | 二元 | 官方 | |
+| address_id | A1980663 | Address ID | ID | Official | |
+| region | R05 | Region, R01–R12 | Nominal | Official | |
+| urban_density | suburban | Degree of urbanisation: rural / suburban / urban / dense urban | Ordinal | Official | |
+| flood_zone | 1.0 | Flood risk zone, 1 lowest, 5 highest | Ordinal | Official | 2.9% missing |
+| distance_to_river_km | 4.1 | Distance to the nearest river (km) | Continuous | Official+name | Unit read from the column name; 2.5% missing |
+| elevation_m | 9.2 | Metres above the local river level | Continuous | Official | |
+| soil_type | clay | Soil: clay / sand / loam / chalk / rock | Nominal | Official | 2.5% missing. Clay is linked to subsidence risk |
+| year_built | 2014 | Year built | Year | Official | Converted to property age, `property_age` |
+| property_type | terraced | Property type: detached / semi-detached / terraced / flat | Nominal | Official | |
+| roof_type | pitched | Roof: pitched / flat | Binary | Official | 2.5% missing |
+| basement | False | Whether there is a basement | Binary | Official | |
+| trees_within_5m | False | Whether there are trees within 5 m | Binary | Official | Linked to subsidence and storm risk |
+| listed_building | False | Whether it is a protected historic (listed) building | Binary | Official | Repair costs are usually higher |
+| bedrooms | 3 | Number of bedrooms | Count (1–7) | Official | |
+| energy_rating | A | Energy efficiency rating, A best, G worst | Ordinal | Official | 2.5% missing |
+| solar_panels | False | Whether there are solar panels | Binary | Official | |
 
-### 2.3 weather（天气表）
+### 2.3 weather (weather table)
 
-例子：地址 A1980663 在 2021 年有 10 天冰雹、31 天冰冻，年降雨 1254 毫米，年均温 13.9 度。
+Example: address A1980663 had 10 hail days and 31 freezing days in 2021, annual rainfall of 1254 mm and a mean annual temperature of 13.9 degrees Celsius.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| address_id | A1980663 | 地址编号 | 编号 | 官方 | |
-| year | 2021 | 年份 | 年份 | 官方 | 按**保单起始年份**连接；测试集用 2025 年 |
-| hail_days | 10.0 | 一年中下冰雹的天数 | 计数 | 官方 | |
-| wind_exposure_index | 4.6 | 破坏性大风暴露指数，0–10 | 连续 | 官方 | |
-| freezing_days | 31.0 | 一年中冰冻的天数 | 计数 | 官方 | 和水管冻裂有关 |
-| dry_summer_index | 0.614 | 夏季干旱程度，0 湿润、1 很干 | 连续 | 官方 | 干旱和地基沉降有关 |
-| wildfire_index | 0.248 | 山火风险，0–1 | 连续 | 官方 | |
-| rainfall_mm | 1254.0 | 年降雨量（毫米） | 连续 | 官方+名 | |
-| mean_temperature_c | 13.9 | 年均温（摄氏度） | 连续 | 官方+名 | |
+| address_id | A1980663 | Address ID | ID | Official | |
+| year | 2021 | Year | Year | Official | Joined on the **policy start year**; the test set uses 2025 |
+| hail_days | 10.0 | Number of days with hail in the year | Count | Official | |
+| wind_exposure_index | 4.6 | Damaging-wind exposure index, 0–10 | Continuous | Official | |
+| freezing_days | 31.0 | Number of days with frost in the year | Count | Official | Linked to burst pipes |
+| dry_summer_index | 0.614 | Summer dryness, 0 wet, 1 very dry | Continuous | Official | Drought is linked to subsidence |
+| wildfire_index | 0.248 | Wildfire risk, 0–1 | Continuous | Official | |
+| rainfall_mm | 1254.0 | Annual rainfall (mm) | Continuous | Official+name | |
+| mean_temperature_c | 13.9 | Mean annual temperature (degrees Celsius) | Continuous | Official+name | |
 
-### 2.4 三个险种共有的保单字段
+### 2.4 Policy fields shared by the three lines
 
-例子（车险训练表第 4 行）：保单 M39362900 在 2021-01-01 到 2021-10-12 这一段，exposure 0.7808 年。年中有变更（renewal_decision = mid_term_change），所以这一行提前结束。
+Example (row 4 of the motor training table): policy M39362900 for the period 2021-01-01 to 2021-10-12, exposure 0.7808 years. There was a mid-term change (renewal_decision = mid_term_change), so this row ends early.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| row_id | M00000003 | 行编号；首字母 M/B/C 表示险种 | 编号 | 官方 | 首字母含义是观察出来的 |
-| policy_id | M39362900 | 保单编号，跨年不变 | 编号 | 官方 | 用来连接理赔、计算往年经验 |
-| customer_id | 67002274 | 投保人 | 编号 | 官方 | 车险补零（C002） |
-| address_id | A7357961 | 被保地址（车险是投保人家庭住址） | 编号 | 官方 | |
-| period_start / period_end | 2021-01-01 / 2021-10-12 | 这一行的起止日期（含当天） | 日期 | 官方 | |
-| exposure | 0.7808 | 这一行保了多少年 | 连续 | 官方 | **有错，用日期重算**（C001，见第 4 节） |
-| voluntary_excess | 250 | 客户自选的免赔额：0/250/500/1000 CU | 有序分类 | 官方 | CU 是虚构货币单位 |
-| compulsory_excess | 250 | 保险公司规定的免赔额 | 常数 | 官方 | 车险全是 250、房屋和家财全是 350，没有区分度 |
-| channel | direct | 销售渠道：直销 / 比价网站 / 经纪人 | 无序分类 | 官方 | |
-| payment_method | monthly | 缴费方式：年缴 / 月缴 | 二元 | 官方 | |
-| missed_payments_12m | 0 | 过去 12 个月漏缴的期数 | 计数 | 官方 | |
-| new_business | False | 是不是在本公司的第一年 | 二元 | 官方 | |
-| renewal_count | 4 | 已经续保了几次 | 计数 | 官方 | 测试集中位数 3，训练集 6，分布不同（Q10） |
-| days_quote_to_inception | 19 | 从报价到起保隔了几天 | 计数（0–30） | 官方 | |
-| discount_applied | 0.05 | 保费折扣 | 有序分类（0 / 0.05 / 0.10） | 官方 | "0.05 = 打 5%"是推断的 |
-| written_premium | 430.08 | 现行定价收的保费（CU） | 连续 | 官方 | 是公司**现有**定价的判断，可以当特征用；我们要预测的不是它 |
-| customer_service_contacts | 0 | 联系客服的次数 | 计数 | 官方 | **数据泄漏，已删除**（C008，见第 4 节） |
-| renewal_decision | mid_term_change | 这一行结束后的结果：续保 / 客户不续 / 退保 / 公司拒保 / 年中变更 | 无序分类 | 官方 | **只在训练集有，是事后信息，不能用**（Q9） |
+| row_id | M00000003 | Row ID; the first letter M/B/C indicates the line | ID | Official | The meaning of the first letter was observed from the data |
+| policy_id | M39362900 | Policy ID, unchanged across years | ID | Official | Used to join claims and to compute prior-year experience |
+| customer_id | 67002274 | Policyholder | ID | Official | Zero-padded for motor (C002) |
+| address_id | A7357961 | Insured address (for motor, the policyholder's home address) | ID | Official | |
+| period_start / period_end | 2021-01-01 / 2021-10-12 | Start and end dates of this row (inclusive) | Date | Official | |
+| exposure | 0.7808 | How many years this row was on cover | Continuous | Official | **Contains errors; recomputed from the dates** (C001, see section 4) |
+| voluntary_excess | 250 | Excess chosen by the customer: 0/250/500/1000 CU | Ordinal | Official | CU is a fictitious currency unit |
+| compulsory_excess | 250 | Excess set by the insurer | Constant | Official | All 250 for motor and all 350 for buildings and contents; no discriminating power |
+| channel | direct | Sales channel: direct / comparison site / broker | Nominal | Official | |
+| payment_method | monthly | Payment method: annual / monthly | Binary | Official | |
+| missed_payments_12m | 0 | Number of missed payments in the past 12 months | Count | Official | |
+| new_business | False | Whether it is the first year with this company | Binary | Official | |
+| renewal_count | 4 | Number of renewals so far | Count | Official | Test median 3, training median 6; the distributions differ (Q10) |
+| days_quote_to_inception | 19 | Days from quote to inception | Count (0–30) | Official | |
+| discount_applied | 0.05 | Premium discount | Ordinal (0 / 0.05 / 0.10) | Official | "0.05 = 5% discount" is inferred |
+| written_premium | 430.08 | Premium charged under current pricing (CU) | Continuous | Official | It reflects the company's **existing** pricing judgement and can be used as a feature; it is not what we are predicting |
+| customer_service_contacts | 0 | Number of customer service contacts | Count | Official | **Data leakage, removed** (C008, see section 4) |
+| renewal_decision | mid_term_change | Outcome after this row ends: renewed / customer did not renew / cancelled / insurer declined / mid-term change | Nominal | Official | **Only in the training set; it is after-the-fact information and cannot be used** (Q9) |
 
-### 2.5 车险专有字段（policies_motor / test_motor）
+### 2.5 Motor-specific fields (policies_motor / test_motor)
 
-例子：主驾驶员 87 岁、驾龄 68 年、无赔款 8 年；车是 3 年的自动挡 SUV，汽油车，2400cc，全险，年行驶 1 万英里/公里，晚上停在自家车道，用于通勤。
+Example: the main driver is 87 years old, has held a licence for 68 years and has 8 years of no-claims bonus; the car is a 3-year-old automatic SUV, petrol, 2400cc, comprehensive cover, driven 10,000 miles/km a year, parked overnight on the driveway and used for commuting.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| driver_age | 87 | 主驾驶员年龄（这一行开始时） | 连续（17–92） | 官方 | |
-| years_licensed | 68 | 驾龄 | 连续 | 官方 | |
-| ncb_years | 8 | 无赔款优待年数（连续多少年没出险） | 计数（0–15） | 官方 | |
-| vehicle_value_group | 14 | 车辆价值分组，1 最低、20 最高 | 有序分类 | 官方 | |
-| vehicle_age | 3.0 | 车龄 | 连续 | 官方 | 2.5% 空值；测试集中位数 9，训练集 7（Q10） |
-| make_model | MM115 | 品牌型号代码 | 无序分类（300 种） | 官方 | 具体是什么车不知道（已匿名） |
-| engine_size_cc | 2400.0 | 排量（cc） | 连续 | 官方+名 | 2.5% 空值 |
-| body_type | suv | 车身：两厢 / 三厢 / 旅行 / SUV / 跑车 | 无序分类 | 官方 | |
-| transmission | automatic | 手动 / 自动 | 二元 | 官方 | |
-| seats | 5 | 座位数 | 计数（2/4/5/7） | 官方 | |
-| vehicle_colour | red | 车身颜色 | 无序分类（8 种） | 官方 | 各颜色数量几乎相同 |
-| fuel_type | petrol | 汽油 / 柴油 / 混动 / 电动 | 无序分类 | 官方 | |
-| driver_assist | False | 有没有驾驶辅助（如自动刹车） | 二元 | 官方 | |
-| cover_type | comprehensive | 保障范围：全险 / 第三方+火灾盗抢 / 只保第三方 | 有序分类 | 官方 | |
-| annual_mileage | 10000.0 | 申报的年行驶里程 | 连续 | 官方 | 单位没写；2.5% 空值 |
-| overnight_parking | driveway | 夜间停车：车库 / 自家车道 / 路边 | 无序分类 | 官方 | 2.5% 空值 |
-| vehicle_use | commuting | 用途：私用 / 通勤 / 商用 | 无序分类 | 官方 | |
-| named_young_driver | False | 保单上有没有 25 岁以下的驾驶员 | 二元 | 官方 | |
-| telematics_opt_in | False | 有没有装车载监测设备 | 二元 | 官方 | |
-| telematics_score | NaN | 车载设备给的驾驶评分，1–100 | 连续 | 官方 | 没装设备就是空（87%），**空本身有含义，不填补**（Q8）。"分越高开得越好"是推断：出险的人平均 58.2，没出险的 60.2 |
+| driver_age | 87 | Main driver's age (at the start of this row) | Continuous (17–92) | Official | |
+| years_licensed | 68 | Years holding a driving licence | Continuous | Official | |
+| ncb_years | 8 | No-claims bonus years (consecutive years without a claim) | Count (0–15) | Official | |
+| vehicle_value_group | 14 | Vehicle value group, 1 lowest, 20 highest | Ordinal | Official | |
+| vehicle_age | 3.0 | Vehicle age | Continuous | Official | 2.5% missing; test median 9, training median 7 (Q10) |
+| make_model | MM115 | Make and model code | Nominal (300 levels) | Official | Which car each code stands for is unknown (anonymised) |
+| engine_size_cc | 2400.0 | Engine size (cc) | Continuous | Official+name | 2.5% missing |
+| body_type | suv | Body: hatchback / saloon / estate / SUV / sports | Nominal | Official | |
+| transmission | automatic | Manual / automatic | Binary | Official | |
+| seats | 5 | Number of seats | Count (2/4/5/7) | Official | |
+| vehicle_colour | red | Body colour | Nominal (8 levels) | Official | Almost equal counts across colours |
+| fuel_type | petrol | Petrol / diesel / hybrid / electric | Nominal | Official | |
+| driver_assist | False | Whether driver assistance is fitted (e.g. automatic braking) | Binary | Official | |
+| cover_type | comprehensive | Cover level: comprehensive / third party, fire and theft / third party only | Ordinal | Official | |
+| annual_mileage | 10000.0 | Declared annual mileage | Continuous | Official | Unit not stated; 2.5% missing |
+| overnight_parking | driveway | Overnight parking: garage / driveway / street | Nominal | Official | 2.5% missing |
+| vehicle_use | commuting | Use: private / commuting / business | Nominal | Official | |
+| named_young_driver | False | Whether the policy names a driver under 25 | Binary | Official | |
+| telematics_opt_in | False | Whether a telematics device is installed | Binary | Official | |
+| telematics_score | NaN | Driving score from the telematics device, 1–100 | Continuous | Official | Blank when no device is installed (87%); **the blank itself carries meaning and is not imputed** (Q8). "A higher score means better driving" is inferred: policyholders with a claim average 58.2, those without 60.2 |
 
-### 2.6 房屋结构险专有字段（policies_buildings / test_buildings）
+### 2.6 Buildings-specific fields (policies_buildings / test_buildings)
 
-例子（测试表第一行）：76 岁的业主自住，保额 89,000，砖房，有烟雾报警器，加保了意外损坏，有房贷。
+Example (first row of the test table): a 76-year-old owner-occupier, sum insured 89,000, brick construction, with smoke alarms, accidental damage cover added and a mortgage.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| policyholder_age | 76 | 投保人年龄 | 连续 | 官方 | |
-| sum_insured | 89000.0 | 保额（最多赔多少） | 连续 | 官方 | **约 1400 行放大了 1000 倍，已修正**（C003） |
-| construction_type | Brick | 建筑结构：砖 / 石 / 木 / 非标准 | 无序分类 | 官方 | **写法混乱，另有 W、T 两个代码**（C004） |
-| occupancy | owner_occupied | 业主自住 / 出租 | 二元 | 官方 | |
-| days_unoccupied | 10.0 | 最长空置天数 | 计数 | 官方+名 | 2.5% 空值 |
-| smoke_alarms | True | 有没有烟雾报警器 | 二元（含空值） | 官方 | 2.5% 空值；曾导致 XGBoost 报错（C012） |
-| accidental_damage_cover | True | 有没有加保"意外损坏" | 二元 | 官方 | |
-| mortgage | True | 有没有房贷 | 二元 | 官方 | |
+| policyholder_age | 76 | Policyholder's age | Continuous | Official | |
+| sum_insured | 89000.0 | Sum insured (the maximum payable) | Continuous | Official | **About 1400 rows were inflated by a factor of 1000, now corrected** (C003) |
+| construction_type | Brick | Construction: brick / stone / timber / non-standard | Nominal | Official | **Inconsistent spelling, plus two extra codes W and T** (C004) |
+| occupancy | owner_occupied | Owner-occupied / let | Binary | Official | |
+| days_unoccupied | 10.0 | Longest unoccupied spell (days) | Count | Official+name | 2.5% missing |
+| smoke_alarms | True | Whether there are smoke alarms | Binary (with missing) | Official | 2.5% missing; once caused an XGBoost error (C012) |
+| accidental_damage_cover | True | Whether "accidental damage" cover was added | Binary | Official | |
+| mortgage | True | Whether there is a mortgage | Binary | Official | |
 
-### 2.7 家财险专有字段（policies_contents / test_contents）
+### 2.7 Contents-specific fields (policies_contents / test_contents)
 
-例子（测试表第一行，和上面是同一位客户、同一个地址）：业主，保额 38,500，装了防盗锁和报警器，没有贵重物品，加保了意外损坏。
+Example (first row of the test table, the same customer and address as above): an owner, sum insured 38,500, with security locks and an alarm fitted, no high-value items, and accidental damage cover added.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| policyholder_age | 76 | 投保人年龄 | 连续 | 官方 | |
-| sum_insured | 38500.0 | 家财保额 | 连续 | 官方 | 同样有 ×1000 的问题（C003） |
-| tenure | owner | 业主 / 租客 | 二元 | 官方 | |
-| security_level | alarm_and_locks | 安防：普通 / 有锁 / 锁 + 报警器 | 有序分类 | 官方 | 2.5% 空值 |
-| high_value_items | 0.0 | 申报的贵重物品件数 | 计数（0–5） | 官方 | 2.5% 空值 |
-| accidental_damage_cover | True | 有没有加保"意外损坏" | 二元 | 官方 | |
-| works_from_home | False | 是否在家办公 | 二元 | 官方 | |
-| lodgers | False | 家里有没有房客或学生借住 | 二元 | 官方 | |
-| bicycle_cover | False | 有没有加保自行车 | 二元 | 官方 | |
+| policyholder_age | 76 | Policyholder's age | Continuous | Official | |
+| sum_insured | 38500.0 | Contents sum insured | Continuous | Official | Has the same ×1000 problem (C003) |
+| tenure | owner | Owner / tenant | Binary | Official | |
+| security_level | alarm_and_locks | Security: basic / locks / locks + alarm | Ordinal | Official | 2.5% missing |
+| high_value_items | 0.0 | Number of declared high-value items | Count (0–5) | Official | 2.5% missing |
+| accidental_damage_cover | True | Whether "accidental damage" cover was added | Binary | Official | |
+| works_from_home | False | Whether the policyholder works from home | Binary | Official | |
+| lodgers | False | Whether lodgers or students stay in the home | Binary | Official | |
+| bicycle_cover | False | Whether bicycle cover was added | Binary | Official | |
 
-### 2.8 claims（理赔表）
+### 2.8 claims (claim table)
 
-例子 1（车险自车损失，有追偿）：2024-09-20 出险，4 天后报案，已结案。付了 1,290.01，追回 1,032.01，净成本 258。
+Example 1 (motor own damage, with recovery): loss on 2024-09-20, reported 4 days later, closed. Paid 1,290.01, recovered 1,032.01, net cost 258.
 
-例子 2（房屋水管漏水，未结案）：2024-08-08 出险，2024-09-25 报案。目前已付 252.22，估计总共要赔 611.10。
+Example 2 (buildings escape of water, open): loss on 2024-08-08, reported on 2024-09-25. Paid so far 252.22, estimated total payout 611.10.
 
-例子 3（车险盗抢，拒赔）：状态 repudiated，已付和估损都是 0。
+Example 3 (motor theft, repudiated): status repudiated, paid and incurred are both 0.
 
-| 字段 | 例子 | 中文含义 | 类型 | 来源 | 处理 / 备注 |
+| Field | Example | Meaning | Type | Source | Handling / notes |
 |---|---|---|---|---|---|
-| claim_id | CL75052008 | 理赔编号 | 编号 | 官方 | |
-| policy_id | M63370288 | 是哪张保单的理赔 | 编号 | 官方 | |
-| line | motor | 险种 | 无序分类 | 官方 | |
-| peril | own_damage | 出险原因 | 无序分类 | 官方 | 车险 5 种、房屋 6 种、家财 4 种 |
-| loss_date | 2024-09-20 | 出险日期 | 日期 | 官方 | 用来对到保单的哪一行 |
-| report_date | 2024-09-24 | 报案日期 | 日期 | 官方 | 报案日 − 出险日 = 报案延迟，用来做发展调整（C006） |
-| status | closed | 已结案 / 未结案 / 拒赔 | 无序分类 | 官方 | 拒赔的不算进目标 |
-| paid_to_date | 1290.01 | 到目前已付的钱（已扣免赔额） | 连续 | 官方 | |
-| incurred_to_date | 1290.01 | 已付 + 还没付的估计（未决估损） | 连续 | 官方 | "也已扣免赔额"是推断：已结案的 151,292 笔里，incurred 全部等于 paid |
-| recoveries | 1032.01 | 追偿或残值回收的钱 | 连续 | 官方 | 观察到**只在车险的自车损失和盗抢里出现** |
-| repairer_id | RP0886 | 修理厂编号 | 编号 | 官方 | 只在自车损失和第三方财产里有；不进模型（理赔发生后才知道） |
-| third_party_id | TP9574811 | 第三方编号 | 编号 | 官方 | 只在第三方财产和人伤里有；不进模型 |
+| claim_id | CL75052008 | Claim ID | ID | Official | |
+| policy_id | M63370288 | Which policy the claim belongs to | ID | Official | |
+| line | motor | Line of business | Nominal | Official | |
+| peril | own_damage | Cause of loss | Nominal | Official | 5 for motor, 6 for buildings, 4 for contents |
+| loss_date | 2024-09-20 | Loss date | Date | Official | Used to match the claim to a policy row |
+| report_date | 2024-09-24 | Report date | Date | Official | Report date − loss date = reporting delay, used for the development adjustment (C006) |
+| status | closed | Closed / open / repudiated | Nominal | Official | Repudiated claims are not counted in the target |
+| paid_to_date | 1290.01 | Amount paid to date (after deducting the excess) | Continuous | Official | |
+| incurred_to_date | 1290.01 | Paid + estimate of what is still to be paid (outstanding reserve) | Continuous | Official | "Also net of excess" is inferred: of the 151,292 closed claims, incurred equals paid in every case |
+| recoveries | 1032.01 | Money recovered through subrogation or salvage | Continuous | Official | Observed to **appear only in motor own damage and theft** |
+| repairer_id | RP0886 | Repairer ID | ID | Official | Present only for own damage and third-party property; not used in the model (only known after the claim occurs) |
+| third_party_id | TP9574811 | Third-party ID | ID | Official | Present only for third-party property and bodily injury; not used in the model |
 
-**理赔原因中英对照**
+**Claim peril codes and meanings**
 
-| 代码 | 中文 | 险种 | 笔数 |
+| Code | Meaning | Line | Count |
 |---|---|---|---|
-| own_damage | 自车损失 | 车险 | 48,964 |
-| third_party_prop | 第三方财产损失 | 车险 | 33,826 |
-| glass_hail | 玻璃 / 冰雹 | 车险 | 15,732 |
-| bodily_injury | 人身伤害 | 车险 | 7,583 |
-| theft | 盗抢 | 车险 6,501 / 家财 7,863 | 14,364 |
-| escape_of_water | 漏水 | 房屋 10,137 / 家财 5,407 | 15,544 |
-| accidental_damage | 意外损坏 | 房屋 3,848 / 家财 9,208 | 13,056 |
-| storm | 风暴 | 房屋 | 7,816 |
-| flood | 洪水 | 房屋 2,232 / 家财 1,624 | 3,856 |
-| subsidence | 地基沉降 | 房屋 | 1,294 |
-| fire | 火灾 | 房屋 | 1,115 |
+| own_damage | Own damage | Motor | 48,964 |
+| third_party_prop | Third-party property damage | Motor | 33,826 |
+| glass_hail | Glass / hail | Motor | 15,732 |
+| bodily_injury | Bodily injury | Motor | 7,583 |
+| theft | Theft | Motor 6,501 / Contents 7,863 | 14,364 |
+| escape_of_water | Escape of water | Buildings 10,137 / Contents 5,407 | 15,544 |
+| accidental_damage | Accidental damage | Buildings 3,848 / Contents 9,208 | 13,056 |
+| storm | Storm | Buildings | 7,816 |
+| flood | Flood | Buildings 2,232 / Contents 1,624 | 3,856 |
+| subsidence | Subsidence | Buildings | 1,294 |
+| fire | Fire | Buildings | 1,115 |
 
-### 2.9 测试表（test_motor / test_buildings / test_contents）
+### 2.9 Test tables (test_motor / test_buildings / test_contents)
 
-字段和对应的训练表完全一样，只少了 `renewal_decision`。全部是 2025 年的保障期，要预测每一行的赔款，**没有答案**。
+The fields are identical to the corresponding training tables, except that `renewal_decision` is absent. All rows are 2025 coverage periods; the claim cost of each row is to be predicted, and **no answers are provided**.
 
-例子：test_motor 第一行就是 2.5 节那位客户的同一张保单 M39362900 在 2025 年的记录。驾驶员 91 岁，换了一辆 19 年的手动挡两厢车。测试集里约 85% 的保单在训练集中出现过。
+Example: the first row of test_motor is the 2025 record of the same policy M39362900 as the customer in section 2.5. The driver is 91 years old and has switched to a 19-year-old manual hatchback. About 85% of the policies in the test set appear in the training set.
 
-### 2.10 sample_submission（提交样板）
+### 2.10 sample_submission (submission template)
 
-| 字段 | 例子 | 中文含义 |
+| Field | Example | Meaning |
 |---|---|---|
-| row_id | M02409311 | 测试表的行编号 |
-| prediction | 0.0 | 预测的赔款（CU），必须 ≥ 0 |
+| row_id | M02409311 | Row ID of the test table |
+| prediction | 0.0 | Predicted claim cost (CU), must be ≥ 0 |
 
-已核对：它的 626,639 个 row_id 和三张测试表的 row_id 完全一致。
+Checked: its 626,639 row_id values match the row_id values of the three test tables exactly.
 
 ---
 
-## 3. 哪些是官方写明的，哪些是我推断的
+## 3. What is stated officially and what I inferred
 
-**官方都写明了的**：11 个文件里的**每一个字段**在 Data 页都有一句英文说明，分类字段的取值范围大多也列出来了（例如信用等级 A 最好到 E）。
+**Everything stated officially**: **every field** in the 11 files has a one-line English description on the Data page, and the value ranges of most categorical fields are also listed (e.g. credit band from A best to E).
 
-**我推断的（Data 页没写）**
+**What I inferred (not stated on the Data page)**
 
-| 推断内容 | 依据 | 有多确定 |
+| Inference | Basis | How certain |
 |---|---|---|
-| construction_type 的 T / W 都表示木结构 | T 只在 2021–22 年出现，W 只在 2023–24 年出现；13,250 张保单从 T 变成 W | 较确定，但不是官方说法 |
-| sum_insured 大于 500 万的是放大了 1000 倍 | 同一张保单其他年份的保额，中位数正好是它的 1/1000；保费和正常行一样 | 较确定 |
-| exposure 按一年 365 天算 | 2024 年整年行都在 12-30 结束；99.4% 的行 exposure = 天数 / 365 | 确定 |
-| incurred_to_date 也已扣免赔额 | 官方只说 paid 扣了；已结案的理赔 incurred 全部等于 paid | 确定 |
-| telematics_score 越高越好 | 出险的人平均分更低 | 较确定 |
-| discount_applied 0.05 = 打 5% 折扣 | 取值只有 0 / 0.05 / 0.10 | 较确定 |
-| 距离、降雨、气温、排量的单位 | 列名后缀 `_km`、`_mm`、`_c`、`_cc` | 确定 |
-| annual_mileage 的单位（英里还是公里） | 没有依据 | **不知道**，不影响建模 |
-| row_id 首字母 M / B / C 代表险种 | 和文件一一对应 | 确定 |
-| make_model、previous_insurer、branch_id、campaign_code 具体代表什么 | 都是匿名代码 | **不知道**，只能当类别用 |
+| T and W in construction_type both mean timber | T appears only in 2021–22 and W only in 2023–24; 13,250 policies change from T to W | Fairly certain, but not an official statement |
+| A sum_insured above 5 million has been inflated by a factor of 1000 | The median sum insured of the same policy in other years is exactly 1/1000 of it; the premium is the same as for normal rows | Fairly certain |
+| exposure is computed on a 365-day year | In 2024 all full-year rows end on 12-30; for 99.4% of rows exposure = days / 365 | Certain |
+| incurred_to_date is also net of excess | The official text says only that paid is net of excess; for closed claims incurred equals paid in every case | Certain |
+| A higher telematics_score is better | Policyholders with a claim have a lower average score | Fairly certain |
+| discount_applied 0.05 = 5% discount | The only values are 0 / 0.05 / 0.10 | Fairly certain |
+| Units of distance, rainfall, temperature and engine size | Column name suffixes `_km`, `_mm`, `_c`, `_cc` | Certain |
+| Unit of annual_mileage (miles or kilometres) | No basis | **Unknown**; does not affect modelling |
+| The first letter M / B / C of row_id indicates the line | Maps one-to-one to the files | Certain |
+| What make_model, previous_insurer, branch_id and campaign_code actually stand for | All are anonymised codes | **Unknown**; can only be used as categories |
 
 ---
 
-## 4. 发现的问题和处理方式
+## 4. Issues found and how they were handled
 
-| 编号 | 问题 | 规模 | 怎么处理 | 修改编号 |
+| ID | Issue | Scale | Treatment | Change ID |
 |---|---|---|---|---|
-| Q1 | exposure 填错：有的填成天数（365），有的是 1.0139（370/365），有的按一年 360 天算 | 训练集车险 5,723 行、房屋 4,176 行、家财 4,305 行；测试集没有 | 所有行用 (结束日 − 开始日 + 1) / 365 重算，原值另存一列 | C001 |
-| Q2 | 车险 customer_id 开头的 0 丢了 | 训练集 98,110 行，测试集 25,554 行 | 补齐到 8 位，补完 100% 对得上 | C002 |
-| Q3 | 保额放大了 1000 倍 | 房屋 1,395 行、家财 1,402 行（训练集）；测试集 730 行 | 大于 500 万的除以 1000，并加一列标记 | C003 |
-| Q4 | 建筑类型写法混乱（Brick / brick / BRICK），还有 W、T 两个代码 | 11 种写法 | 统一小写，T、W 归为 timber；出现没见过的代码就报错 | C004 |
-| Q5 | 部分理赔对不上任何保单行（大多是 2020 年出险） | 车险 294 笔、房屋 67 笔、家财 49 笔 | 不算进目标，单独列出；合计金额核对差额为 0 | C005 |
-| Q6 | customer_service_contacts 是事后信息：训练集里每出一次险就多 2.5–3 次联系 | 全部行 | 从特征中删除；所有字段都扫描过，只有这一列有问题 | C008 |
-| Q7 | 约 2.5% 的随机缺失（十几个字段） | 每列约 2.5% | 不填平均值。GLM 把缺失单独作为一档；GAM 用中位数填，再加一列"是否缺失"；树模型直接处理空值 | C011 |
-| Q8 | telematics_score 87% 为空 | 车险 | 保留空值，和"是否装设备"一起用 | – |
-| Q9 | renewal_decision 是事后信息，测试集没有 | 训练集 | 不进模型 | – |
-| Q10 | 训练集和测试集分布不同（续保次数、车龄等） | 整体 | 用时间顺序做验证，写进报告 | – |
-| – | smoke_alarms 是"是 / 否 / 空"，被误当成文字类别，导致 XGBoost 报错 | 房屋 | 改成数字 1 / 0 / 空 | C012 |
-| – | 理赔还没发展完：2024 年出险的理赔中 13–25% 未结案，还有没报案的 | 2024 年最明显 | 用报案延迟曲线估算每行的"已报比例"（完成度） | C006 |
-| – | 极端大额理赔（最大一笔 1189 万） | 车险 8.8% 的金额在封顶线以上 | 每个险种在 99.5% 分位处封顶，截掉的部分平摊回去 | C014 |
+| Q1 | exposure entered wrongly: some are entered as a number of days (365), some as 1.0139 (365/360, a full year on a 360-day basis), and some use a 360-day year for part of a year | Training set: motor 5,723 rows, buildings 4,176 rows, contents 4,305 rows; none in the test set | All rows recomputed as (end date − start date + 1) / 365, with the original value kept in a separate column | C001 |
+| Q2 | Leading 0 lost from motor customer_id | 98,110 training rows, 25,554 test rows | Padded to 8 digits; after padding 100% match | C002 |
+| Q3 | Sum insured inflated by a factor of 1000 | Buildings 1,395 rows, contents 1,402 rows (training set); 730 rows in the test set | Values above 5 million are divided by 1000 and a flag column is added | C003 |
+| Q4 | Construction type spelled inconsistently (Brick / brick / BRICK), plus two extra codes W and T | 11 spellings | Lower-cased; T and W mapped to timber; an unseen code raises an error | C004 |
+| Q5 | Some claims match no policy row (mostly losses in 2020) | Motor 294 claims, buildings 67, contents 49 | Not counted in the target and listed separately; the reconciliation of total amounts shows a difference of 0 | C005 |
+| Q6 | customer_service_contacts is after-the-fact information: in the training set each claim adds 2.5–3 contacts | All rows | Removed from the features; all fields were scanned and only this column has the problem | C008 |
+| Q7 | About 2.5% random missingness (in a dozen or so fields) | About 2.5% per column | No mean imputation. The GLM treats missing as its own level; the GAM imputes the median and adds an "is missing" column; tree models handle nulls directly | C011 |
+| Q8 | 87% of telematics_score is blank | Motor | Keep the blanks and use them together with "device installed or not" | – |
+| Q9 | renewal_decision is after-the-fact information and is absent from the test set | Training set | Not used in the model | – |
+| Q10 | Training and test distributions differ (renewal count, vehicle age, etc.) | Overall | Validate in time order and document it in the report | – |
+| – | smoke_alarms is "yes / no / blank" and was mistakenly treated as a text category, causing an XGBoost error | Buildings | Converted to numeric 1 / 0 / blank | C012 |
+| – | Claims not yet fully developed: 13–25% of claims with 2024 losses are still open, and some have not yet been reported | Most pronounced for 2024 | Estimate each row's "reported proportion" (completeness) from the reporting-delay curve | C006 |
+| – | Extreme large claims (the largest is 11.89 million) | Motor: 8.8% of the amount lies above the cap | Cap each line at the 99.5th percentile and spread the trimmed part back evenly | C014 |
 
-另外两个观察（没有改数据，但建模时要知道）：
-- **compulsory_excess 是常数**：车险全是 250，房屋和家财全是 350，对模型没有用处。
-- **测试集约 85% 的保单在训练集中出现过**，所以"这张保单往年出过几次险"是很有用的特征。
+Two more observations (the data was not changed, but worth knowing when modelling):
+- **compulsory_excess is a constant**: all 250 for motor and all 350 for buildings and contents; it is of no use to the model.
+- **About 85% of the test-set policies appear in the training set**, so "how many claims this policy had in earlier years" is a very useful feature.
 
-## 5. 新做出来的字段（派生变量）
+## 5. New fields (derived variables)
 
-| 新字段 | 怎么算 | 类型 | 说明 |
+| New field | How it is computed | Type | Notes |
 |---|---|---|---|
-| customer_age | (保单起始日 − 出生日期) / 365.25 | 连续 | 房屋和家财有 policyholder_age，车险有 driver_age，这个是客户本人的年龄 |
-| customer_tenure | 起始年份 − customer_since_year | 计数 | 在本公司投保了几年 |
-| property_age | 起始年份 − year_built | 连续 | 房龄 |
-| prior_claims | 同一张保单**往年**的理赔次数 | 计数 | 只用起始年份之前的数据，不会偷看答案 |
-| prior_cost | 同一张保单往年的理赔金额 | 连续 | 同上 |
-| prior_exposure | 同一张保单往年的 exposure 总和 | 连续 | 用来区分"没出过险"和"没有历史" |
-| sum_insured_scaled | 保额是否被修正过 | 二元 | C003 |
-| completeness | 这一行到 2024-12-31 为止，理赔应该已经报上来的比例 | 连续 | 只用在目标上，不当特征（C006） |
-| claim_cost / claim_cost_capped | 这一行的理赔总额 / 封顶后的总额 | 目标 | 模型学的是封顶后的版本（C014） |
+| customer_age | (policy start date − date of birth) / 365.25 | Continuous | Buildings and contents have policyholder_age and motor has driver_age; this is the customer's own age |
+| customer_tenure | Start year − customer_since_year | Count | Number of years insured with the company |
+| property_age | Start year − year_built | Continuous | Age of the property |
+| prior_claims | Number of claims on the same policy in **earlier years** | Count | Uses only data from before the start year, so it does not peek at the answer |
+| prior_cost | Claim amount on the same policy in earlier years | Continuous | As above |
+| prior_exposure | Sum of exposure on the same policy in earlier years | Continuous | Used to distinguish "no claims" from "no history" |
+| sum_insured_scaled | Whether the sum insured was corrected | Binary | C003 |
+| completeness | The proportion of claims that should have been reported for this row by 2024-12-31 | Continuous | Used only on the target, not as a feature (C006) |
+| claim_cost / claim_cost_capped | Total claim amount for this row / total after capping | Target | The model learns the capped version (C014) |
 
-**进模型之前删掉的字段**：所有编号、日期、exposure（作为权重而不是特征）、surname、date_of_birth、year_built、customer_since_year（已换算成上面的派生变量）、renewal_decision、customer_service_contacts。
+**Fields dropped before modelling**: all IDs, dates, exposure (used as a weight rather than a feature), surname, date_of_birth, year_built, customer_since_year (already converted into the derived variables above), renewal_decision, customer_service_contacts.
 
-**一个已知的不完美之处**：`branch_id`（网点编号）、`flood_zone`（洪水区）、`household_size` 这类字段在数据里是数字，代码目前把它们当作连续数字处理。`flood_zone` 本来就有高低顺序，这样处理问题不大；但 `branch_id` 只是编号，"5 号网点比 3 号大"没有意义。树模型受的影响较小，GLM 和 GAM 会受影响。建模那一步要修正。
+**A known imperfection**: fields such as `branch_id` (branch code), `flood_zone` and `household_size` are numeric in the data, and the code currently treats them as continuous numbers. `flood_zone` has a natural order, so this is not a big problem; but `branch_id` is only a code, and "branch 5 is larger than branch 3" has no meaning. Tree models are less affected; the GLM and GAM are affected. This must be corrected at the modelling step.

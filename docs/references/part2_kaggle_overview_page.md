@@ -1,8 +1,8 @@
-# Kaggle Part 2 Overview 页原文（存档）
+# Kaggle Part 2 Overview page, original text (archived)
 
-来源：https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-2/overview
-抓取日期：2026-10-24。页面显示：Start a day ago，Close 7 days to go。参与情况：27 Entrants · 7 Participants · 7 Teams · 31 Submissions。
-Challenge 段、Evaluation 表、Prizes 与 Part 1 相同（见 `kaggle_overview_page.md`），下面只记 Part 2 新增或改动的原文。
+Source: https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-2/overview
+Capture date: 2026-10-24. The page showed: Start a day ago, Close 7 days to go. Participation: 27 Entrants · 7 Participants · 7 Teams · 31 Submissions.
+The Challenge section, the Evaluation table and Prizes are the same as Part 1 (see `kaggle_overview_page.md`); only the original text that is new or changed in Part 2 is recorded below.
 
 ---
 

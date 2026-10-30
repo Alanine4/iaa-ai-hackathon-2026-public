@@ -1,18 +1,18 @@
-# AIIAA：IAA AI Assisted Hackathon 2026
+# AIIAA: IAA AI Assisted Hackathon 2026
 
-精算定价比赛：预测 2025 年车险、房屋结构险、家财险每个保单行的最终理赔成本（Tweedie D²，power 1.5）。
+Actuarial pricing competition: predict the final claim cost of every policy row in 2025 for motor, buildings and contents (Tweedie D², power 1.5).
 
-## 每次会话开始先读
-1. `TODO.md`：进度清单。做完一项立即把 `[ ]` 改成 `[x]`，写上日期和产出文件。
-2. `docs/COMPETITION.md`：比赛流程、评分、规则。
-3. `docs/DATA_GUIDE.md`：数据结构、目标定义、数据质量问题 Q1–Q10。
-4. `docs/references/`：Kaggle 网页原文存档，是权威来源。与其他文档冲突时以这里为准。
+## Read at the start of every session
+1. `TODO.md`: the progress checklist. When an item is done, change `[ ]` to `[x]` immediately and write the date and output files.
+2. `docs/COMPETITION.md`: competition process, scoring, rules.
+3. `docs/DATA_GUIDE.md`: data structure, target definition, data quality issues Q1–Q10.
+4. `docs/references/`: archive of the original Kaggle web page text; it is the authoritative source. When it conflicts with other documents, this folder wins.
 
-## 约定
-- Python 只用 `.venv\Scripts\python.exe`；不用 R。
-- 原始数据在 `data/`，作为只读备份提交在私有仓库里，有 SHA256 清单和完整性测试，永远不改（C007）。所有修正都在代码里做。
-- 可复用的逻辑放在 `src/aiiaa/`（clean、target、development），先写测试，测试放在 `tests/`；运行测试：`.venv\Scripts\python.exe -m pytest -q`
-- 一次性分析脚本放在 `scripts/`，分析输出放在 `docs/`，生成的中间数据放在 `output/`（不进 git）。
-- 每一处修改都要记到 `docs/CHANGELOG.md`（编号 C0xx），并在代码注释里引用这个编号。代码和注释一律用英文。
-- 读取标识符列（customer_id、address_id、policy_id、row_id、claim_id）时一律当文本处理。
-- 每一步 AI 参与的工作都记到 `docs/AI_LOG.md`，写清人工如何核对。
+## Conventions
+- For Python use only `.venv\Scripts\python.exe`; do not use R.
+- Raw data is in `data/`, committed as a read-only backup in the private repository, with a SHA256 manifest and an integrity test, and is never modified (C007). All corrections are made in code.
+- Reusable logic goes in `src/aiiaa/` (clean, target, development); write the tests first and put them in `tests/`; run the tests with: `.venv\Scripts\python.exe -m pytest -q`
+- One-off analysis scripts go in `scripts/`, analysis output goes in `docs/`, and generated intermediate data goes in `output/` (not in git).
+- Every change must be recorded in `docs/CHANGELOG.md` (numbered C0xx), and the number must be cited in the code comments. Code and comments are always in English.
+- When reading identifier columns (customer_id, address_id, policy_id, row_id, claim_id), always treat them as text.
+- Every step of AI-assisted work is recorded in `docs/AI_LOG.md`, stating how a human checked it.

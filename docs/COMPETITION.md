@@ -1,50 +1,50 @@
-# 比赛说明（摘要）
+# Competition Summary
 
-原文存档：`docs/references/kaggle_overview_page.md`、`kaggle_rules_page.md`、`kaggle_data_page.md`。本页与原文冲突时以原文为准。
+Archived originals: `docs/references/kaggle_overview_page.md`, `kaggle_rules_page.md`, `kaggle_data_page.md`. Where this page conflicts with the originals, the originals prevail.
 
-## 基本信息
+## Basic Information
 
-- 名称：IAA AI Assisted Hackathon 2026 – Part 1，主办方 International Actuarial Association，仅限受邀者参加。
-- 链接：https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1
-- Part 1 截止：2026-10-21 页面显示还剩 2 天，即约 2026-10-23。Rules 页的日期是占位符，以页面倒计时为准，并注意时区（UTC）。
-- 角色设定：你是一家发达市场保险公司定价团队的成员，要为车险、房屋结构险、家财险建立理赔预测模型，并展示 AI 辅助的精算工作流。模型本身可以是 GLM、机器学习或两者结合。
+- Name: IAA AI Assisted Hackathon 2026 – Part 1, organised by the International Actuarial Association, invited participants only.
+- Link: https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1
+- Part 1 deadline: on 2026-10-21 the page showed 2 days remaining, i.e. about 2026-10-23. The date on the Rules page is a placeholder; follow the countdown on the page and mind the time zone (UTC).
+- Role: you are a member of the pricing team at a developed-market insurer, building claim prediction models for motor, buildings and contents, and demonstrating an AI-assisted actuarial workflow. The model itself can be a GLM, machine learning, or a combination of both.
 
-## 两部分流程
+## Two-Part Process
 
-1. **Part 1 / 第 1 周（当前）**：用 2021–2024 年合成数据预测 2025 年每一行的最终理赔成本，提交到 Kaggle 排行榜。
-2. **Part 2 / 第 2 周**：Part 1 结束时在另一个 Kaggle 页面发布"新兴市场"数据。要说明哪些地方变了、模型怎么调整、还剩哪些不确定性。两部分的队伍必须相同。
-3. **Part 2 结束后统一提交**（通过表单，链接届时公布）：
-   - 队名和成员名单
-   - 第 1 周、第 2 周的预测文件
-   - 视频演示，只评前 5 分钟。内容包括方法、结果、AI 工作流、换新市场后做了哪些改动
-   - 书面报告，只评前 5 页。内容包括建模方法、主要决策、AI 的使用、假设、局限、新市场适配、管控措施
-   - 代码（脚本或 notebook），要有版本控制，别人能看懂、能复现
+1. **Part 1 / Week 1 (current)**: use the 2021–2024 synthetic data to predict the ultimate claim cost of every row in 2025, and submit to the Kaggle leaderboard.
+2. **Part 2 / Week 2**: when Part 1 closes, "emerging market" data is released on a separate Kaggle page. Explain what changed, how the model was adjusted, and which uncertainties remain. The team must be the same for both parts.
+3. **Joint submission after Part 2 closes** (via a form; the link will be announced later):
+   - Team name and member list
+   - Prediction files for Week 1 and Week 2
+   - Video presentation, only the first 5 minutes are assessed. Content: method, results, AI workflow, and the changes made after switching to the new market
+   - Written report, only the first 5 pages are assessed. Content: modelling approach, key decisions, use of AI, assumptions, limitations, adaptation to the new market, controls
+   - Code (scripts or notebooks), under version control, understandable and reproducible by others
 
-## 评分（总分在 Part 2 结束后评定）
+## Scoring (total score determined after Part 2 closes)
 
-| 类别 | 权重 | 怎么评 |
+| Category | Weight | How it is assessed |
 |---|---|---|
-| 定价表现与适应能力 | 40% | Part 1 和 Part 2 的 private 排行榜成绩各占一半，加上评委对建模选择、市场适配、数据质量与不确定性处理的评价 |
-| AI 的有效使用 | 25% | AI 是否贯穿 EDA、特征工程、建模、诊断、测试；是否带来质量或效率的提升；是否严格核对了 AI 的输出 |
-| 信任、验证与管控 | 20% | 验证检查、自动化测试、模型诊断；治理控制、可复现性、人工复核与升级流程 |
-| 沟通与文档 | 15% | 视频与报告是否清晰；代码仓库结构与版本控制 |
+| Pricing performance and adaptability | 40% | Part 1 and Part 2 private leaderboard results each count for half, plus the judges' assessment of modelling choices, market adaptation, and handling of data quality and uncertainty |
+| Effective use of AI | 25% | Whether AI runs through EDA, feature engineering, modelling, diagnostics and testing; whether it improves quality or efficiency; whether AI output was rigorously checked |
+| Trust, validation and governance | 20% | Validation checks, automated tests, model diagnostics; governance controls, reproducibility, human review and escalation process |
+| Communication and documentation | 15% | Clarity of the video and report; repository structure and version control |
 
-主办方会先用 AI 工具初筛交付物，最终由评委决定。只看 Part 1 排行榜名次不能决定奖项。
+The organiser first screens the deliverables with AI tools, and the judges make the final decision. Part 1 leaderboard rank alone does not decide the prizes.
 
-## 提交规则
+## Submission Rules
 
-- 格式：一个 CSV，表头 `row_id,prediction`，覆盖三张测试表全部 626,639 行，预测值 ≥ 0。
-- 指标：Tweedie D²（power=1.5）。
-- 每天最多提交 10 次。可以选 1 个 Final Submission；不选的话，系统用 public 排行榜上最好的一次。
-- 最终排名看 private 排行榜。public 和 private 用的是哪些行不公开，所以不要对着 public 分数过拟合。
+- Format: one CSV with header `row_id,prediction`, covering all 626,639 rows of the three test tables, predictions ≥ 0.
+- Metric: Tweedie D² (power=1.5).
+- At most 10 submissions per day. You may select 1 Final Submission; if you do not, the system uses the best submission on the public leaderboard.
+- The final ranking uses the private leaderboard. Which rows the public and private leaderboards use is not disclosed, so do not overfit to the public score.
 
-## 规则要点
+## Key Rules
 
-- 队伍最多 3 人。Part 1 合队截止后不能再换人。
-- **允许把比赛数据交给 AI 工具（包括托管的大模型）处理**，用途限于参赛（Rules 2.5.a）。
-- 不得向非参赛者分发数据。不得在队伍之外私下分享代码；要分享只能公开发在本比赛的 Kaggle 论坛或 notebook。
-- 外部数据和工具须对所有人公开可得、成本低。一般 AI 助手的订阅费可以接受。
-- 使用的开源代码必须是 OSI 认可、不限制商用的许可证。
-- 不得人工标注或人工判断测试集记录。
-- 获奖者要交出可复现的训练与推理代码、环境说明，并以开源许可证授权。
-- 奖金：CAD 500 / 100 / 50，只发给 IAA 正式会员或准会员协会（MA）的会员或学生。
+- Teams have at most 3 members. After the Part 1 team-merger deadline, members cannot be changed.
+- **Giving the competition data to AI tools (including hosted large language models) is allowed**, for competition purposes only (Rules 2.5.a).
+- Data must not be distributed to non-participants. Code must not be shared privately outside the team; it may only be shared publicly on this competition's Kaggle forum or in a notebook.
+- External data and tools must be publicly available to all at low cost. Subscription fees for general AI assistants are acceptable.
+- Open-source code used must carry an OSI-approved licence that does not restrict commercial use.
+- Test set records must not be labelled or judged manually.
+- Winners must hand over reproducible training and inference code and environment instructions, and license them under an open-source licence.
+- Prizes: CAD 500 / 100 / 50, paid only to members or students of IAA full or associate member associations (MA).

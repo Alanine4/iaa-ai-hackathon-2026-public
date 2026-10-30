@@ -1,7 +1,7 @@
-# Kaggle Part 2 Data 页原文（存档）
+# Kaggle Part 2 Data page, original text (archived)
 
-来源：https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-2/data
-抓取日期：2026-10-24。Glossary 与 Part 1 相同，未重复抄录。
+Source: https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-2/data
+Capture date: 2026-10-24. The Glossary is the same as Part 1 and is not copied again.
 
 ---
 

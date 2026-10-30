@@ -1,8 +1,8 @@
-# Kaggle Rules 页（存档）
+# Kaggle Rules page (archived)
 
-来源：https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/rules
-抓取日期：2026-10-21
-比赛专属条款（Section 1–2）全文摘录如下；Kaggle 通用条款（Foundational Rules）只记与参赛直接相关的要点，完整原文以网页为准。
+Source: https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/rules
+Capture date: 2026-10-21
+The competition-specific terms (Sections 1–2) are excerpted in full below; for the general Kaggle terms (Foundational Rules) only the points directly relevant to participation are recorded, and the full original text is on the web page.
 
 ---
 

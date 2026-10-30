@@ -1,9 +1,9 @@
-# Kaggle Overview 页原文（存档）
+# Kaggle Overview page, original text (archived)
 
-来源：https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/overview
-抓取日期：2026-10-21。页面显示：Start 5 days ago，Close 2 days to go（≈ 2026-10-23 截止，具体时刻以页面为准）。
-主办：International Actuarial Association · Community Prediction Competition · Invitation required
-参与情况（抓取时）：112 Entrants · 40 Participants · 34 Teams · 465 Submissions
+Source: https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/overview
+Capture date: 2026-10-21. The page showed: Start 5 days ago, Close 2 days to go (≈ 2026-10-23 deadline; the exact time follows the page).
+Organiser: International Actuarial Association · Community Prediction Competition · Invitation required
+Participation (at capture time): 112 Entrants · 40 Participants · 34 Teams · 465 Submissions
 
 ---
 
