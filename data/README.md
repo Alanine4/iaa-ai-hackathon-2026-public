@@ -2,8 +2,8 @@
 
 ## Raw data (read-only backup)
 
-`iaa-ai-assisted-hackathon-2026-part-1/` holds the 11 parquet files exactly as downloaded from
-https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/data on 2026-10-21.
+In the team's private working repository, `iaa-ai-assisted-hackathon-2026-part-1/` holds the 11 parquet files exactly as
+downloaded from https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/data on 2026-10-21.
 
 - These files are never edited. `MANIFEST.sha256` stores their SHA256 checksums and
   `tests/test_raw_data_integrity.py` fails if any byte changes.
@@ -13,8 +13,9 @@ https://www.kaggle.com/competitions/iaa-ai-assisted-hackathon-2026-part-1/data o
 
 ## Access
 
-Competition data may only be shared with participants who accepted the competition rules
-(Kaggle Rules 2.5). This repository must stay private and only team members may be collaborators.
+Competition data may only be shared with participants who accepted the competition rules (Kaggle Rules 2.5). The raw
+files are committed only in the team's private working repository; the public copy holds this README and the manifests,
+and the files are downloaded from Kaggle (see README.md, Data; C061).
 
 ## Adding a new raw dataset (e.g. Part 2)
 

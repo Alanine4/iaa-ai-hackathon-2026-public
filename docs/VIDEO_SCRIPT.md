@@ -37,18 +37,18 @@ On screen: the Pricing Performance & Adaptation section. "Public D2 by submissio
 
 ## 2 Effective Use of AI (25%), 2:20-3:25 (148 words)
 
-On screen: the Effective Use of AI section. "The loop on every change" with "Stages in the AI log" below it, then "AI output rejected or corrected after checking" with "Independent audits of AI work", then "Change log outcomes, 61 entries" and "Human review register".
+On screen: the Effective Use of AI section. "The loop on every change" with "Stages in the AI log" below it, then "AI output rejected or corrected after checking" with "Independent audits of AI work", then "Change log outcomes, 62 entries" and "Human review register".
 
 | Spoken (English) |
 |---|
 | We used Claude Code in three roles. |
 | A coordinator plans and decides. Workers write the test first, then the code. Auditors only read and report. |
-| Every change follows one loop: propose, check, sign, log. The AI log holds 34 steps. |
+| Every change follows one loop: propose, check, sign, log. The AI log holds 35 steps. |
 | We reject AI output too. Per-peril curves, C022, equal the pooled curve. A frequency times severity model, C023, fell below the best single model. |
 | Target encoding, C031, and re-tuning, C032, missed the 0.002 rule. |
 | A market interaction blend passed at plus 0.0024, but we overruled it, C042, because of an unvalidated 21 percent new-business shift. |
 | Read-only audits raised B1 to B8 and P2-F1 to P2-F10. P2-F1 found validation was mostly renewals, which led to the test-mix views. |
-| Of 61 change log entries, 43 were adopted, 3 partly, 11 evaluated but not adopted and 4 rejected or withdrawn. |
+| Of 62 change log entries, 44 were adopted, 3 partly, 11 evaluated but not adopted and 4 rejected or withdrawn. |
 | Our team lead signed off sixteen key decisions by 30 October. |
 
 ## 3 Trust, Validation & Guardrails (20%), 3:25-4:15 (115 words)
@@ -62,7 +62,7 @@ On screen: the Trust, Validation & Guardrails section. "Six-view gains in D2, la
 | A time fold and five policy-grouped folds are each scored raw, re-weighted to the 77 percent new-business test share, and on new-business rows only. |
 | A change needs a mean gain of at least 0.002 and no regression. |
 | Seed averaging cannot be tested on folds, so we set its keep rule before the score. |
-| We wrote 341 tests before the code, and the raw data is read-only with a SHA256 check. |
+| We wrote 342 tests before the code, and the raw data is read-only with a SHA256 check. |
 | The rebuild script reproduces S09 and P2-S13. Logged commands reproduced P2-S14 to within one billionth. |
 
 ## 4 Communication & Documentation (15%), 4:15-4:45 (58 words)

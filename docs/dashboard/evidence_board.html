@@ -318,7 +318,7 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     ],
     gatesSource: "CHANGELOG.md C044, C053, C057 · SUBMISSIONS.md P2-S14, P2-S15",
 
-    tests: { count: 341, files: 24, date: "2026-10-30" },
+    tests: { count: 342, files: 24, date: "2026-10-30" },
     guardrails: [
       { fig: "{tests}", text: "pytest cases across {files} test files ({date}), written before the code they test." },
       { fig: "C007", text: "Raw data read-only, SHA256 manifest, integrity test on every run; every correction lives in code." },
@@ -329,10 +329,10 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
     guardSource: "README.md · CLAUDE.md · CHANGELOG.md C007, C058 · HUMAN_REVIEW.md",
 
     changelog: {
-      first: "C000", last: "C060",
+      first: "C000", last: "C061",
       classes: [
         { key: "adopted", label: "Adopted", cls: "o1", ink: "light",
-          ids: ["C000", "C001", "C002", "C003", "C004", "C005", "C006", "C007", "C008", "C009", "C010", "C011", "C012", "C013", "C014", "C015", "C016", "C017", "C018", "C019", "C020", "C021", "C022", "C025", "C026", "C027", "C028", "C029", "C030", "C033", "C034", "C035", "C036", "C037", "C038", "C040", "C043", "C044", "C050", "C057", "C058", "C059", "C060"] },
+          ids: ["C000", "C001", "C002", "C003", "C004", "C005", "C006", "C007", "C008", "C009", "C010", "C011", "C012", "C013", "C014", "C015", "C016", "C017", "C018", "C019", "C020", "C021", "C022", "C025", "C026", "C027", "C028", "C029", "C030", "C033", "C034", "C035", "C036", "C037", "C038", "C040", "C043", "C044", "C050", "C057", "C058", "C059", "C060", "C061"] },
         { key: "partial", label: "Partially adopted", cls: "o2", ink: "light", ids: ["C047", "C052", "C054"] },
         { key: "eval", label: "Evaluation only or not adopted", cls: "o3", ink: "light",
           ids: ["C023", "C031", "C032", "C039", "C041", "C042", "C045", "C046", "C048", "C049", "C053"] },
@@ -341,10 +341,10 @@ td:first-child { color: var(--fg); font-weight: 700; white-space: nowrap; } td.n
       rule: "the Area cell decides (rejected; evaluation, not adopted or probe; one part adopted), else the row's own verdict (not adopted, nothing adopted); C024 is withdrawn (removed by C026); all other rows adopted."
     },
 
-    ailog: { first: "A01", last: "A34", count: 34,
+    ailog: { first: "A01", last: "A35", count: 35,
       stages: {
         "Part 1": [["A01", "Setup"], ["A02", "EDA"], ["A03", "Data quality"], ["A04", "Cleaning rules"], ["A05", "Target & development"], ["A06", "Leakage"], ["A07", "Features & models"], ["A08", "Debugging"], ["A09", "Development"], ["A10, A12", "Models"], ["A11", "Features"], ["A13", "Audit"], ["A14", "Feature policy"], ["A15", "Training"], ["A16", "Refit"], ["A17", "Governance"], ["A18", "Feature test"], ["A19", "Tuning"]],
-        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"]]
+        "Part 2": [["A20", "Data intake"], ["A21", "Pipeline"], ["A22", "Submissions and training-set decision"], ["A23", "Probes"], ["A24", "Audit"], ["A25", "Audit actions"], ["A26", "New models"], ["A27", "Transfer model"], ["A28", "Deliverables"], ["A29", "Refit, merge and reproduction"], ["A30", "Deliverables (dashboard)"], ["A31", "Report table"], ["A32", "Report (LaTeX)"], ["A33", "Report"], ["A34", "Video script"], ["A35", "Public mirror"]]
       } },
 
     loop: [

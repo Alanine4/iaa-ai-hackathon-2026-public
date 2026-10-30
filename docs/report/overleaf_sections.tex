@@ -133,7 +133,7 @@ $519.47 / 0.49 = 1{,}060.14$. The 20 policies total $R = 8{,}969.31$ and $P = 20
 We used Claude Code in three roles. A coordinator (claude-fable-5-1) planned each step, wrote the decision rule before
 a run and proposed what to submit; workers (claude-opus-5-5, claude-sonnet-5-5) wrote a failing test, then the code,
 ran the experiment and logged the change; read-only auditors backed each finding with a script (B1 to B8, P2-F1 to
-P2-F10). \texttt{docs/AI\_LOG.md} (A01 to A34) records each step's output, check and status. Checks stopped or corrected
+P2-F10). \texttt{docs/AI\_LOG.md} (A01 to A35) records each step's output, check and status. Checks stopped or corrected
 several AI proposals (Appendix~\ref{ov:app-ai}): the coordinator rejected a market-interaction blend that passed the rule
 (+0.0024) but moved the new-business level 21\% untested (A23); a buildings renewal segment that passed the gate was
 rejected because its gain came from a new-business-only GLM (A26); a note that read a private score as public was
@@ -157,7 +157,7 @@ Gaps under 0.0005 are ties.
 
 \subsection{Data and Code}
 
-A SHA256 manifest, read-only attributes and a test guard every raw byte (C007); 341 pytest cases in 24 files
+A SHA256 manifest, read-only attributes and a test guard every raw byte (C007); 342 pytest cases in 24 files
 cover the code. The blend step rebuilds S09 byte for byte from the stored model predictions (same SHA256 as the upload; a
 full refit differs slightly between runs, as the tree refits are not bit-reproducible), and P2-S14, rebuilt by two
 routes, differs from the upload by at most 5.1e-10 (C058).
@@ -165,8 +165,8 @@ routes, differs from the upload by at most 5.1e-10 (C058).
 \subsection{Documentation and Reproduction}
 
 \texttt{README.md} gives the task, layout, commands and known limitations. In \texttt{docs/},
-\texttt{CHANGELOG.md} logs each change (C000 to C060) with reason, evidence and code location;
-\texttt{AI\_LOG.md} (A01 to A34) is the AI record; \texttt{HUMAN\_REVIEW.md} lists the signed decisions R01 to R16;
+\texttt{CHANGELOG.md} logs each change (C000 to C061) with reason, evidence and code location;
+\texttt{AI\_LOG.md} (A01 to A35) is the AI record; \texttt{HUMAN\_REVIEW.md} lists the signed decisions R01 to R16;
 \texttt{dashboard/index.html} is the evidence board; \texttt{VIDEO\_SCRIPT.md} is the video script. \texttt{reproduce.ps1} rebuilds S09 from the raw data, and with \texttt{-Part2} also P2-S13.
 
 %==================== PASTE BLOCK 6: after Block 5, as the last graded section ====================
@@ -515,7 +515,7 @@ vectorised weight search covers 888,030 weight vectors for eight candidates,
 and the threaded version cut the motor search from 1,277 to 306 seconds with the same weights (C041). Oussama ran his
 Part 2 experiments in his own Claude session (C048 to C056).
 
-Workers logged every change in \texttt{docs/CHANGELOG.md}: of its 61 entries, 43 were adopted, 3 partly adopted, 11
+Workers logged every change in \texttt{docs/CHANGELOG.md}: of its 62 entries, 44 were adopted, 3 partly adopted, 11
 kept for evaluation only and 4 rejected or withdrawn. Table~\ref{ov:tab-ai} lists the AI proposals that a check changed
 or stopped; the checks came from other agents, from tests and from the data.
 

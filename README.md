@@ -21,7 +21,7 @@ the predicted risk premium, which the judges assess and the leaderboard does not
 | `src/aiiaa/` | Reusable code: `clean.py`, `target.py`, `development.py`, `features.py`, `models.py`, `params.py`, `evaluate.py`, `freqsev.py`, and `markets.py` (data folder, training years, output folder and trend options of each market, C034) |
 | `scripts/` | Pipeline entry points (`build_target.py`, `oof_predictions.py`, `blend.py`, `blend_runs.py` for the Part 2 cross-run and segment blends, `tune_cv.py`, `train_validate.py`) and one-off analysis and investigation scripts |
 | `tests/` | pytest suite, including the raw-data integrity test |
-| `data/` | The 11 raw Part 1 parquet files, the Part 2 folder (13 emerging files), a SHA256 manifest for each, and `data/README.md` |
+| `data/` | The 11 raw Part 1 parquet files and the 13 Part 2 emerging files, kept in the private repository only; the public copy holds a SHA256 manifest for each folder and `data/README.md` |
 | `docs/` | `CHANGELOG.md`, `AI_LOG.md`, `AUDIT_2026-10-22.md`, `AUDIT_PART2.md`, `SUBMISSIONS.md`, `HUMAN_REVIEW.md` (sign-off sheet for key AI decisions, in Chinese), `OFFICE_PREMIUM_DRAFT.md` (office premium formula chain for the 20 reference policies), `COMPETITION.md`, `DATA_GUIDE.md`, `DATA_WALKTHROUGH.md`, validation and CV reports, and `references/` (archived Kaggle pages) |
 | `docs/part2_validation/` | Copy of the Part 2 validation evidence from `output/emerging/`: fold scores and blend weights per run, logs, and its own README |
 | `submissions/` | Kaggle files kept for the record: Part 1 final (S09) and the Part 1 post-deadline blend (late submission, not ranked), Part 2 candidates P2-S13, P2-S14 and P2-S15 (the final candidate) and hedge P2-S12 |
@@ -47,17 +47,26 @@ statsmodels 0.15.0 and others). Run all scripts with `.venv\Scripts\python.exe`.
 
 ## Data
 
-The 11 raw files sit in `data/iaa-ai-assisted-hackathon-2026-part-1/` exactly as downloaded on 2026-10-21. They are
-committed as a read-only backup with a SHA256 manifest (`MANIFEST.sha256`), and `tests/test_raw_data_integrity.py` fails
-if any byte changes (C007). No correction is ever written back to the raw files. Every fix is applied in code at load
-time and has a change-log row. See `data/README.md` for the access rules (the repository must stay private) and for how
-to add a new dataset. Field definitions and the data-quality issues Q1 to Q10 are in `docs/DATA_GUIDE.md`.
+The raw Kaggle data is not in the public copy of this repository, because the competition rules do not allow us to
+redistribute it. To run the code, download the files from the Kaggle competitions
+`iaa-ai-assisted-hackathon-2026-part-1` (Part 1) and `iaa-ai-assisted-hackathon-2026-part-2` (Part 2), keep the file
+names, and put them in `data/iaa-ai-assisted-hackathon-2026-part-1/` and `data/iaa-ai-assisted-hackathon-2026-part-2/`
+(the code reads the `emerging/` folder there). The `MANIFEST.sha256` files and `tests/test_raw_data_integrity.py` verify
+the bytes; those tests skip while the data is absent (C061).
 
-The Part 2 files were added on 2026-10-24 under `data/iaa-ai-assisted-hackathon-2026-part-2/` (C033). `emerging/` holds
-the 13 emerging-market files (the 11 file types of Part 1 plus `expenses.parquet` and `reference_policies.parquet`) and is
-committed with its own `MANIFEST.sha256`, which the same integrity test checks. `developed/` is a byte-identical copy of
-the Part 1 folder (all 11 SHA256 values match the Part 1 manifest), so its parquet files are not stored twice: the
-repository keeps only its manifest, and the code reads the Part 1 folder for the developed market.
+In the team's private working repository the 11 raw files sit in `data/iaa-ai-assisted-hackathon-2026-part-1/` exactly
+as downloaded on 2026-10-21. They are committed as a read-only backup with a SHA256 manifest (`MANIFEST.sha256`), and
+`tests/test_raw_data_integrity.py` fails if any byte changes (C007). No correction is ever written back to the raw
+files. Every fix is applied in code at load time and has a change-log row. See `data/README.md` for the access rules
+(the raw files stay in the private repository) and for how to add a new dataset. Field definitions and the data-quality
+issues Q1 to Q10 are in `docs/DATA_GUIDE.md`.
+
+The Part 2 files were added to the private repository on 2026-10-24 under `data/iaa-ai-assisted-hackathon-2026-part-2/`
+(C033). There `emerging/` holds the 13 emerging-market files (the 11 file types of Part 1 plus `expenses.parquet` and
+`reference_policies.parquet`) and is committed with its own `MANIFEST.sha256`, which the same integrity test checks.
+`developed/` is a byte-identical copy of the Part 1 folder (all 11 SHA256 values match the Part 1 manifest), so its
+parquet files are not stored twice: the repository keeps only its manifest, and the code reads the Part 1 folder for the
+developed market.
 
 ## Reproducing a submission
 
@@ -215,9 +224,9 @@ adopted by a rule fixed before the score was seen (keep it unless the public sco
 ## Governance
 
 Every change to data handling, code behaviour or modelling assumptions has a row in `docs/CHANGELOG.md` with its reason,
-evidence and code location (C000 to C060). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
+evidence and code location (C000 to C061). Code comments cite the same IDs. `docs/AI_LOG.md` records each piece of work
 the AI assistant did, how a person or a test checked it, and whether it was accepted, modified or rejected. The test suite in
-`tests/` (341 tests) covers cleaning, target matching, development, features, models, tuned parameters, scoring, the market
+`tests/` (342 tests) covers cleaning, target matching, development, features, models, tuned parameters, scoring, the market
 configuration and the Part 2 blends and validation views, and was written before the code it tests. `tests/test_raw_data_integrity.py` checks the raw files against the manifest. On 2026-10-22 an
 independent read-only audit reviewed the pipeline (`docs/AUDIT_2026-10-22.md`). Its findings B1 to B8 fed into C026 and C027;
 the remaining ones are listed below. On 2026-10-25 a second read-only audit covered the Part 2 pipeline (`docs/AUDIT_PART2.md`, findings
